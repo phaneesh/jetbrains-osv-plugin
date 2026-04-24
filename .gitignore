@@ -1,0 +1,118 @@
+# OSV IntelliJ Plugin - Git Ignore
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+*.log
+out/
+!.idea/**/templates/**/templates.xml
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.DS_Store
+*.swp
+*.swo
+*~
+
+# OSV Plugin - Planning & Configuration Files
+
+# Phase directories (keep structure but exclude contents)
+.planning/phases/*/
+!.planning/phases/*/README.md
+
+# State files
+.planning/STATE.md
+.planning/IMPLEMENTATION.md
+.planning/PROJECT.md
+.planning/REQUIREMENTS.md
+.planning/ROADMAP.md
+
+# Agent configuration and runtime
+.pi/
+.pi/
+
+# GSD (Global State Database) configuration
+.gsd/
+.gsd/
+
+# Pi Lens
+.pi-lens/
+
+# Agent workflows and runs
+.workflows/
+.workflows/
+
+# Agent-specific state
+.agents/
+.agents/
+
+# Plugin-specific config
+*.plugin.xml
+
+# Documentation (optional - uncomment if not to be committed)
+# docs/
+# README*.md
+# CHANGELOG*.md
+
+# License policy configuration (contains sensitive data)
+*.licenserc.yaml
+.licenserc.yaml
+
+# Generated files
+target/
+generated/
+!**/src/main/**/generated/**
+
+# Local development files
+*.local
+.env
+.env.*
+
+# Test coverage reports (optional)
+coverage/
+.jacoco/
+
+# Maven/Gradle wrapper
+# gradlew and gradlew.bat should be tracked in git for CI/CD
+# gradlew
+# gradlew.bat
+!gradle/wrapper/gradle-wrapper.jar
+
+# Package Files
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Virtual machine crash logs
+hs_err_pid*
+replay_pid*
+
+# Android Studio
+local.properties
+*.keystore
+*.jks
+
+# IDE specific
+.classpath
+.project
+.settings/
+bin/
+
+# OSV Plugin - Custom directories
+.planning/
+
+# Spec documents
+ENTERPRISE_GAP_ANALYSIS.md
+ENTERPRISE_TASK_LIST.md
+IMPLEMENTATION_SUMMARY.md
+JETBRAINS_COMPLIANCE_REPORT.md
+PRODUCTION_READINESS.md
