@@ -7,7 +7,7 @@
     A free, open-source IntelliJ IDEA plugin that provides security vulnerability scanning for open-source dependencies using the OSV (Open Source Vulnerabilities) database.
     ]]></description>
     
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.java</depends>

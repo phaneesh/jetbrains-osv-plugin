@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.dyuti"
-version = "1.0.0"
+version = "1.1.0"
 
 repositories {
     mavenCentral()
@@ -58,6 +58,12 @@ tasks.patchPluginXml {
 
     changeNotes.set(
         """
+        Version 1.1.0
+        - Updated compatibility to support IntelliJ IDEA 2026.1.x and later
+        - Fixed plugin.xml compatibility constraints
+        - Added JSON module dependency for improved file parsing
+        - Improved tree view rendering
+        
         Version 1.0.0
         - Initial release
         - Dependency parsing for Maven, Gradle, npm, and pip
@@ -72,9 +78,9 @@ tasks.patchPluginXml {
         """.trimIndent(),
     )
 
-    // Support newer IDE builds
+    // Support IntelliJ IDEA 2023.3 and later (including 2026.x)
     sinceBuild.set("233.0")
-    untilBuild.set("261.*")
+    untilBuild.set("262.*")
 }
 
 tasks.buildPlugin {
