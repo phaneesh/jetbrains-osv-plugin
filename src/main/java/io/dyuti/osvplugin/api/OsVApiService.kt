@@ -16,6 +16,8 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody
 import java.io.IOException
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
 /**
@@ -230,13 +232,16 @@ class OsVApiService {
             }
         }
 
+        // Parse CVSS severity from severity array
+        val (severity, cvssScore) = parseCvssSeverity(vuln)
+
         return Vulnerability(
             id = id,
             cveIds = aliases.filter { it.startsWith("CVE-") || it.startsWith("GHSA-") },
             summary = summary,
             details = details,
-            severity = OsVSeverity.MEDIUM, // Default - OSV may have severity info
-            cvssScore = null, // OSV doesn't provide CVSS scores
+            severity = severity,
+            cvssScore = cvssScore,
             affectedVersions = emptyList(), // Will be populated from affected ranges
             fixedVersions = fixedVersions,
             references = references,
@@ -245,52 +250,198 @@ class OsVApiService {
     }
 
     /**
-     * Batch query vulnerabilities for multiple dependencies using OSV API
-     * Uses individual queries since batch API is returning empty responses
+     * Parse CVSS severity from OSV severity array.
+     * Priority: CVSS_V3 > CVSS_V2. Returns score and mapped severity.
+     */
+    internal fun parseCvssSeverity(vuln: JsonObject): Pair<OsVSeverity, Double?> {
+        val severityArray =
+            vuln.getAsJsonArray("severity")
+                ?: return Pair(OsVSeverity.MEDIUM, null)
+
+        // Find the best score: prefer CVSS_V3, fallback to CVSS_V2
+        var bestScore: Double? = null
+        var foundType = false
+
+        // First pass: try CVSS_V3
+        severityArray.forEach { sev ->
+            val sevObj = sev.asJsonObject
+            val type = sevObj.getAsJsonPrimitive("type")?.asString
+            if (type == "CVSS_V3") {
+                val scoreStr = sevObj.getAsJsonPrimitive("score")?.asString
+                val score = scoreStr?.toDoubleOrNull()
+                if (score != null) {
+                    bestScore = score
+                    foundType = true
+                }
+            }
+        }
+
+        // Second pass: try CVSS_V2 if no V3 found
+        if (!foundType) {
+            severityArray.forEach { sev ->
+                val sevObj = sev.asJsonObject
+                val type = sevObj.getAsJsonPrimitive("type")?.asString
+                if (type == "CVSS_V2") {
+                    val scoreStr = sevObj.getAsJsonPrimitive("score")?.asString
+                    val score = scoreStr?.toDoubleOrNull()
+                    if (score != null) {
+                        bestScore = score
+                        foundType = true
+                    }
+                }
+            }
+        }
+
+        return Pair(mapCvssToSeverity(bestScore), bestScore)
+    }
+
+    /**
+     * Map a CVSS score to OsVSeverity enum.
+     * - 9.0–10.0 → CRITICAL
+     * - 7.0–8.9 → HIGH
+     * - 4.0–6.9 → MEDIUM
+     * - 0.1–3.9 → LOW
+     */
+    internal fun mapCvssToSeverity(score: Double?): OsVSeverity {
+        if (score == null) return OsVSeverity.MEDIUM
+        return when {
+            score >= 9.0 -> OsVSeverity.CRITICAL
+            score >= 7.0 -> OsVSeverity.HIGH
+            score >= 4.0 -> OsVSeverity.MEDIUM
+            score > 0.0 -> OsVSeverity.LOW
+            else -> OsVSeverity.MEDIUM
+        }
+    }
+
+    /**
+     * Batch query vulnerabilities for multiple dependencies using OSV API.
+     * Executes queries in parallel with max 10 concurrent requests for performance.
      */
     @Throws(OsVApiException::class)
     fun batchQueryVulnerabilities(dependencies: List<Dependency>): Map<Dependency, List<Vulnerability>> {
         val results = mutableMapOf<Dependency, List<Vulnerability>>()
 
         // Check cache first
-        val uncategorizedDependencies = mutableListOf<Dependency>()
+        val uncachedDependencies = mutableListOf<Dependency>()
         dependencies.forEach { dep ->
             val cacheKey = "${dep.name}:${dep.ecosystem}:${dep.version}"
             cacheManager.getCachedVulnerabilities(cacheKey)?.let {
                 results[dep] = it
             } ?: run {
-                uncategorizedDependencies.add(dep)
+                uncachedDependencies.add(dep)
             }
         }
 
-        if (uncategorizedDependencies.isEmpty()) {
+        if (uncachedDependencies.isEmpty()) {
             return results
         }
 
-        // Check rate limit
-        if (!checkRateLimit(uncategorizedDependencies.size)) {
+        // Check rate limit before any async calls
+        if (!checkRateLimit(uncachedDependencies.size)) {
             throw OsVApiException("Rate limit exceeded")
         }
 
-        // Query each dependency individually
-        // This is less efficient than batch API but works reliably
-        for (dep in uncategorizedDependencies) {
-            try {
-                val vulnerabilities =
-                    queryVulnerabilities(
-                        packageName = dep.name,
-                        ecosystem = dep.ecosystem,
-                        version = dep.version,
-                    )
-                results[dep] = vulnerabilities
-            } catch (e: OsVApiException) {
-                // Continue with other dependencies even if one fails
-                System.err.println("Error querying ${dep.name}: ${e.message}")
-                results[dep] = emptyList()
-            }
+        // Execute parallel async queries with max 10 concurrent
+        executeParallelQueries(uncachedDependencies, results)
+        return results
+    }
+
+    /**
+     * Execute parallel async queries with Semaphore-based concurrency control.
+     * Max 10 concurrent requests. Uses OkHttp Call.enqueue() for async execution.
+     */
+    private fun executeParallelQueries(
+        dependencies: List<Dependency>,
+        results: MutableMap<Dependency, List<Vulnerability>>,
+    ) {
+        val maxConcurrent = 10
+        val semaphore = Semaphore(maxConcurrent)
+        val finishedLatch = CountDownLatch(dependencies.size)
+        val errors = mutableListOf<String>()
+
+        dependencies.forEach { dep ->
+            semaphore.acquire()
+            val requestJson = buildQueryRequest(dep.name, dep.ecosystem, dep.version)
+            val mediaType = "application/json".toMediaType()
+
+            @Suppress("DEPRECATION")
+            val body = RequestBody.create(mediaType, requestJson)
+            val request =
+                Request
+                    .Builder()
+                    .url(osvApiUrl)
+                    .post(body)
+                    .build()
+
+            httpClient.newCall(request).enqueue(
+                object : Callback {
+                    override fun onFailure(
+                        call: Call,
+                        e: IOException,
+                    ) {
+                        synchronized(errors) {
+                            errors.add("${dep.name}: ${e.message}")
+                        }
+                        synchronized(results) {
+                            results[dep] = emptyList()
+                        }
+                        semaphore.release()
+                        finishedLatch.countDown()
+                    }
+
+                    override fun onResponse(
+                        call: Call,
+                        response: Response,
+                    ) {
+                        try {
+                            if (!response.isSuccessful) {
+                                synchronized(results) {
+                                    results[dep] = emptyList()
+                                }
+                            } else {
+                                val bodyStr = response.body?.string()
+                                if (bodyStr == null) {
+                                    synchronized(results) {
+                                        results[dep] = emptyList()
+                                    }
+                                } else {
+                                    val vulns = parseVulnerabilities(bodyStr)
+                                    synchronized(results) {
+                                        results[dep] = vulns
+                                    }
+                                    // Cache the result
+                                    val cacheKey = "${dep.name}:${dep.ecosystem}:${dep.version}"
+                                    cacheManager.cacheVulnerabilities(cacheKey, vulns)
+                                    incrementRequestCount()
+                                }
+                            }
+                        } catch (e: Exception) {
+                            synchronized(errors) {
+                                errors.add("${dep.name}: ${e.message}")
+                            }
+                            synchronized(results) {
+                                results[dep] = emptyList()
+                            }
+                        } finally {
+                            response.close()
+                            semaphore.release()
+                            finishedLatch.countDown()
+                        }
+                    }
+                },
+            )
         }
 
-        return results
+        // Wait for all requests to complete (with generous timeout)
+        val allDone = finishedLatch.await(60, TimeUnit.SECONDS)
+        if (!allDone) {
+            throw OsVApiException("Batch query timed out waiting for responses")
+        }
+
+        // Log any errors that occurred
+        errors.forEach { err ->
+            System.err.println("Error querying dependency: $err")
+        }
     }
 }
 
