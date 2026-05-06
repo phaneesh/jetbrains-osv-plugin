@@ -79,10 +79,7 @@ coverage/
 .jacoco/
 
 # Maven/Gradle wrapper
-# gradlew and gradlew.bat should be tracked in git for CI/CD
-# gradlew
-# gradlew.bat
-!gradle/wrapper/gradle-wrapper.jar
+gradle-app.setting
 
 # Package Files
 *.jar
