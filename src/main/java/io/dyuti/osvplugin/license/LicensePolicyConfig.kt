@@ -11,28 +11,29 @@ import com.intellij.util.xmlb.XmlSerializerUtil
  */
 @State(
     name = "OsVLicensePolicy",
-    storages = [Storage("osv-license-policy.xml")]
+    storages = [Storage("osv-license-policy.xml")],
 )
 class LicensePolicyConfig : PersistentStateComponent<LicensePolicyConfig> {
-    
     var allowedLicenses: List<String> = emptyList()
     var blockedLicenses: List<String> = emptyList()
     var copyleftAllowList: List<String> = emptyList()
-    
+    var strictMode: Boolean = true
+
     companion object {
-        fun getInstance(): LicensePolicyConfig {
-            return com.intellij.openapi.components.ServiceManager.getService(LicensePolicyConfig::class.java)
-        }
+        @Suppress("DEPRECATION")
+        fun getInstance(): LicensePolicyConfig =
+            com.intellij.openapi.components.ServiceManager
+                .getService(LicensePolicyConfig::class.java)
     }
-    
-    override fun getState(): LicensePolicyConfig {
-        return this
-    }
-    
+
+    override fun getState(): LicensePolicyConfig = this
+
     override fun loadState(state: LicensePolicyConfig) {
         XmlSerializerUtil.copyBean(state, this)
+        // Ensure strictMode is properly loaded
+        strictMode = state.strictMode
     }
-    
+
     /**
      * Check if license is allowed
      */
@@ -41,14 +42,12 @@ class LicensePolicyConfig : PersistentStateComponent<LicensePolicyConfig> {
         if (allowedLicenses.isEmpty()) return true
         return allowedLicenses.contains(license)
     }
-    
+
     /**
      * Check if license is blocked
      */
-    fun isLicenseBlocked(license: String): Boolean {
-        return blockedLicenses.contains(license)
-    }
-    
+    fun isLicenseBlocked(license: String): Boolean = blockedLicenses.contains(license)
+
     /**
      * Check if copyleft license is allowed
      */

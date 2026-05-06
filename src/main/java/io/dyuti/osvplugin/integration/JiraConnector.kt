@@ -1,4 +1,6 @@
 // Jira Connector - Enterprise Integration
+@file:Suppress("DEPRECATION")
+
 package io.dyuti.osvplugin.integration
 
 import com.google.gson.Gson

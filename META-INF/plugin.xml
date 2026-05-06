@@ -1,0 +1,52 @@
+<idea-plugin>
+  <change-notes><![CDATA[Version 1.0.0
+- Initial release
+- Dependency parsing for Maven, Gradle, npm, and pip
+- OSV API integration
+- Tool window with vulnerability display
+- Local inspection with inline highlighting
+- Settings configuration
+- Organization management
+- Jira integration
+- License detection
+- SARIF export]]></change-notes>
+  <idea-version since-build="233.0" until-build="261.*" />
+  <id>io.dyuti.osvplugin</id>
+  <name>OSV Vulnerability Scanner</name>
+  <vendor email="support@dyuti.io" url="https://github.com/dyuti/jetbrains-osv-plugin">Dyuti</vendor>
+  <description><![CDATA[A free, open-source IntelliJ IDEA plugin that provides security vulnerability scanning for open-source dependencies using the OSV database.]]></description>
+  <version>1.0.0</version>
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.java</depends>
+  <actions>
+    <!-- Add actions here if needed -->
+  </actions>
+  <application-components>
+    <!-- Application-level components -->
+  </application-components>
+  <project-components>
+    <!-- Project-level components -->
+  </project-components>
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Inspection -->
+    <localInspection language="JAVA" shortName="OsVInspection" displayName="OSV Vulnerability Check" groupName="Security" enabledByDefault="true" level="WARNING" implementationClass="io.dyuti.osvplugin.inspection.OsVInspection" />
+    <!-- License Inspection -->
+    <localInspection language="JAVA" shortName="LicenseInspection" displayName="License Compliance Check" groupName="Security" enabledByDefault="true" level="WARNING" implementationClass="io.dyuti.osvplugin.license.LicenseInspection" />
+    <!-- Settings Configurable -->
+    <applicationConfigurable instance="io.dyuti.osvplugin.settings.OsVConfigurable" parentId="tools" displayName="OSV Scanner" id="osv.scanner.settings" />
+    <!-- License Policy Configurable -->
+    <applicationConfigurable instance="io.dyuti.osvplugin.license.LicensePolicyConfigurable" parentId="osv.scanner.settings" displayName="License Policy" id="osv.scanner.license" />
+    <!-- Tool Window Factory -->
+    <toolWindow id="OSV Vulnerability Scanner" factoryClass="io.dyuti.osvplugin.toolwindow.OsVToolWindowFactory" anchor="bottom" icon="/icons/osv-icon-48.png" />
+    <!-- Configuration -->
+    <applicationService serviceImplementation="io.dyuti.osvplugin.config.OsVConfig" />
+    <applicationService serviceImplementation="io.dyuti.osvplugin.license.LicensePolicyConfig" />
+    <!-- Organization Service -->
+    <projectService serviceImplementation="io.dyuti.osvplugin.organization.OrganizationManager" />
+    <projectService serviceImplementation="io.dyuti.osvplugin.organization.TeamPermissionService" />
+    <!-- Jira Integration -->
+    <projectService serviceImplementation="io.dyuti.osvplugin.integration.JiraConnector" />
+    <projectService serviceImplementation="io.dyuti.osvplugin.integration.JiraIssueCreator" />
+  </extensions>
+  <resource-bundle>OsVBundle</resource-bundle>
+</idea-plugin>

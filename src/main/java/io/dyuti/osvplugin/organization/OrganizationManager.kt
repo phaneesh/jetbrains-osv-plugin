@@ -1,4 +1,6 @@
 // Organization Management Service
+@file:Suppress("DEPRECATION")
+
 package io.dyuti.osvplugin.organization
 
 import com.intellij.openapi.components.ServiceManager

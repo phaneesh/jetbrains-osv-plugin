@@ -14,6 +14,7 @@ object LicenseParser {
     fun parseLicense(dependency: Dependency): String {
         // Try to extract license from common patterns
         val name = dependency.name.lowercase()
+        @Suppress("UNUSED_VARIABLE")
         val version = dependency.version.lowercase()
         
         // Maven/Gradle: Often in metadata

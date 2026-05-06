@@ -1,4 +1,6 @@
 // GitHub Branch Comparison Manager - Simplified
+@file:Suppress("DEPRECATION")
+
 package io.dyuti.osvplugin.utils
 
 import com.intellij.openapi.components.ServiceManager

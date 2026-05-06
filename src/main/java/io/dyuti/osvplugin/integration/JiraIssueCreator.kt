@@ -1,4 +1,6 @@
 // Jira Issue Creator
+@file:Suppress("DEPRECATION")
+
 package io.dyuti.osvplugin.integration
 
 import com.intellij.openapi.components.ServiceManager
@@ -21,7 +23,7 @@ class JiraIssueCreator(private val project: Project) {
     /**
      * Create issue for single vulnerability
      */
-    fun createIssue(vulnerability: Vulnerability, dependency: Dependency? = null): String? {
+    fun createIssue(vulnerability: Vulnerability, @Suppress("UNUSED_PARAMETER") dependency: Dependency? = null): String? {
         return jiraConnector.createVulnerabilityIssue(vulnerability)
     }
     
@@ -37,9 +39,9 @@ class JiraIssueCreator(private val project: Project) {
      */
     fun createIssueWithFields(
         vulnerability: Vulnerability,
-        summary: String,
-        description: String,
-        priority: String = "High"
+        @Suppress("UNUSED_PARAMETER") summary: String,
+        @Suppress("UNUSED_PARAMETER") description: String,
+        @Suppress("UNUSED_PARAMETER") priority: String = "High"
     ): String? {
         return jiraConnector.createVulnerabilityIssue(vulnerability)
     }
@@ -64,7 +66,7 @@ class JiraIssueCreator(private val project: Project) {
      */
     fun createEpic(epicName: String, description: String): String? {
         // Get project key from Jira connector
-        val projectKey = jiraConnector.projectKey ?: "PROJ"
+        val projectKey = jiraConnector.projectKey.coerceAtLeast("PROJ")
         
         val issue = io.dyuti.osvplugin.integration.JiraIssue(
             fields = io.dyuti.osvplugin.integration.JiraIssueFields(

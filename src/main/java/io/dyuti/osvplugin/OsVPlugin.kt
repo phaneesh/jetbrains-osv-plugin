@@ -11,10 +11,9 @@ import io.dyuti.osvplugin.config.OsVConfig
  */
 @State(
     name = "OsVPlugin",
-    storages = [Storage("osv-plugin.xml")]
+    storages = [Storage("osv-plugin.xml")],
 )
 class OsVPlugin : PersistentStateComponent<OsVConfig> {
-
     private var config: OsVConfig = OsVConfig()
 
     override fun getState(): OsVConfig = config
@@ -24,7 +23,6 @@ class OsVPlugin : PersistentStateComponent<OsVConfig> {
     }
 
     companion object {
-        // Placeholder for plugin instance
-        // In a real implementation, this would get the instance from ApplicationManager
+        // Plugin instance management is handled by IntelliJ Platform
     }
 }

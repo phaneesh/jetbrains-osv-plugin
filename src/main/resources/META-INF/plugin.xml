@@ -64,7 +64,7 @@
             id="OSV Vulnerability Scanner"
             factoryClass="io.dyuti.osvplugin.toolwindow.OsVToolWindowFactory"
             anchor="bottom"
-            icon="/icons/osv-icon.png"/>
+            icon="/icons/osv-icon-48.png"/>
         
         <!-- Configuration -->
         <applicationService
@@ -85,9 +85,5 @@
             serviceImplementation="io.dyuti.osvplugin.integration.JiraIssueCreator"/>
     </extensions>
     
-    <resource-bundle>messages.OsVBundle</resource-bundle>
-    
-    <ui-customization>
-        <!-- Custom UI settings -->
-    </ui-customization>
+    <resource-bundle>OsVBundle</resource-bundle>
 </idea-plugin>

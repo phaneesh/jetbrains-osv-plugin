@@ -8,10 +8,9 @@ import io.dyuti.osvplugin.api.model.OsVSeverity
 
 @State(
     name = "OsVConfig",
-    storages = [Storage("osv-config.xml")]
+    storages = [Storage("osv-config.xml")],
 )
 class OsVConfig : PersistentStateComponent<OsVConfig> {
-    
     var minimumSeverity: OsVSeverity = OsVSeverity.MEDIUM
     var inspectionEnabled: Boolean = true
     var cacheTtl: Int = 1
@@ -26,20 +25,23 @@ class OsVConfig : PersistentStateComponent<OsVConfig> {
     var focusModeEnabled: Boolean = false
     var baseBranch: String = "main"
     var sarifExportPath: String? = null
-    
+
+    // Ignored packages for suppression
+    var ignoredPackages: List<String> = listOf()
+
     // Organization Management
     var orgManagementEnabled: Boolean = false
     var currentOrganization: String? = null
-    
+
     // Jira Integration
     var jiraEnabled: Boolean = false
     var jiraBaseUrl: String? = null
     var jiraProjectKey: String? = null
     var jiraEmail: String? = null
     var jiraToken: String? = null
-    
+
     override fun getState(): OsVConfig = this
-    
+
     override fun loadState(state: OsVConfig) {
         minimumSeverity = state.minimumSeverity
         inspectionEnabled = state.inspectionEnabled
@@ -55,6 +57,7 @@ class OsVConfig : PersistentStateComponent<OsVConfig> {
         focusModeEnabled = state.focusModeEnabled
         baseBranch = state.baseBranch
         sarifExportPath = state.sarifExportPath
+        ignoredPackages = state.ignoredPackages
         orgManagementEnabled = state.orgManagementEnabled
         currentOrganization = state.currentOrganization
         jiraEnabled = state.jiraEnabled
@@ -63,7 +66,7 @@ class OsVConfig : PersistentStateComponent<OsVConfig> {
         jiraEmail = state.jiraEmail
         jiraToken = state.jiraToken
     }
-    
+
     companion object {
         fun getInstance(): OsVConfig = service<OsVConfig>()
     }
