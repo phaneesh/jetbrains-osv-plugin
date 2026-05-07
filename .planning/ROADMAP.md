@@ -54,25 +54,37 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 
 ---
 
-### Phase 6: Foundation Fixes (Post-Competitive Research)
+### Phase 6: Foundation Fixes (Post-Competitive Research) ✓ COMPLETE
 
 **Goal:** Fix broken/non-functional features identified during competitive analysis
 **Research:** Competitive analysis completed 2026-05-06
+**Completed:** 2026-05-07
 
 **Features:**
 
-- [ ] Fix CVSS severity parsing (currently defaults to MEDIUM)
-- [ ] Implement real license fetching from package registries
-- [ ] Convert inspections to async to prevent UI freezing
-- [ ] Replace string-based auto-fix with PSI-based refactoring
-- [ ] Fix batch OSV API queries
+- [x] Fix CVSS severity parsing (OSV severity array → CVSS_V3/V2 → OsVSeverity)
+- [x] Implement real license fetching from package registries (Maven Central, NPM, PyPI)
+- [x] Convert inspections to async to prevent UI freezing (per-file cache, debounce, Backgroundable)
+- [x] Replace string-based auto-fix with PSI-based refactoring + transitive dep support
+- [x] Fix batch OSV API queries (parallel async with Semaphore(10))
 
 ---
 
-### Phase 7: Problems Tab Integration
+### Phase 7: Problems Tab Integration ✓ COMPLETE
 
 **Goal:** Align with JetBrains-native patterns by adding OSV tab to standard Problems tool window
 **Rationale:** Mend.io and Qodana both use this pattern; custom tool windows feel foreign
+**Completed:** 2026-05-07
+
+**Features:**
+
+- [x] Multi-language inspection registration (XML, Groovy, Kotlin, JSON, plain text)
+- [x] Inspection runs on pom.xml, build.gradle, build.gradle.kts, package.json, requirements.txt
+- [x] Severity mapping to IntelliJ highlight types: CRITICAL→ERROR, HIGH→WARNING, MEDIUM→WEAK_WARNING, LOW→INFO
+- [x] Alt+Enter quick-fix integration (upgrade, suppress, ignore)
+- [x] Custom tool window retained for dashboard, SARIF export, focus mode
+
+**Note:** Line-level PsiElement registration for exact-line navigation is a future enhancement (currently file-level with lineNumber preserved in vulnerability model).
 
 **Features:**
 
