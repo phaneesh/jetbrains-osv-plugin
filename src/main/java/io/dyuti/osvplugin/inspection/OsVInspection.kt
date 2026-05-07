@@ -175,7 +175,18 @@ class OsVInspection : LocalInspectionTool() {
                             val vulnerabilitiesByDep =
                                 apiService.batchQueryVulnerabilities(dependencies)
 
-                            for ((dep, vulnerabilities) in vulnerabilitiesByDep) {
+                            for ((dep, rawVulnerabilities) in vulnerabilitiesByDep) {
+                                // Mirror the source dependency's line number into each
+                                // vulnerability so that navigation in the Problems view or on
+                                // double-click lands on the correct manifest line.
+                                val vulnerabilities =
+                                    rawVulnerabilities.map { vuln ->
+                                        if (vuln.lineNumber == null) {
+                                            vuln.copy(lineNumber = dep.lineNumber)
+                                        } else {
+                                            vuln
+                                        }
+                                    }
                                 for (vuln in vulnerabilities) {
                                     if (shouldReportVulnerability(vuln)) {
                                         results.add(VulnerabilityResult(dep, vuln))
@@ -267,9 +278,14 @@ class OsVInspection : LocalInspectionTool() {
         // Use batch query for performance
         val vulnerabilitiesByDep = apiService.batchQueryVulnerabilities(dependencies)
 
-        for ((dep, vulnerabilities) in vulnerabilitiesByDep) {
-            if (vulnerabilities.isNotEmpty()) {
-                results.add(DependencyWithVulnerabilities(dep, vulnerabilities, "", dep.lineNumber ?: 1))
+        for ((dep, rawVulns) in vulnerabilitiesByDep) {
+            if (rawVulns.isNotEmpty()) {
+                // Propagate source dependency line number onto each vulnerability
+                val withLines =
+                    rawVulns.map { vuln ->
+                        if (vuln.lineNumber == null) vuln.copy(lineNumber = dep.lineNumber) else vuln
+                    }
+                results.add(DependencyWithVulnerabilities(dep, withLines, "", dep.lineNumber ?: 1))
             }
         }
 

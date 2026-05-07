@@ -649,7 +649,12 @@ class OsVToolWindowPanel
                             dep.ecosystem,
                             dep.version,
                         )
-                    vulnerabilities.addAll(depVulns)
+                    // Preserve the source dependency's line number so tree double-click
+                    // navigates to the exact line where the dependency is declared.
+                    // TODO: for transitive deps, navigate to parent dep line.
+                    vulnerabilities.addAll(
+                        depVulns.map { vuln -> vuln.copy(lineNumber = dep.lineNumber) },
+                    )
                 } catch (e: Exception) {
                     System.err.println("Error querying vulnerabilities for ${dep.name}: ${e.message}")
                 }
