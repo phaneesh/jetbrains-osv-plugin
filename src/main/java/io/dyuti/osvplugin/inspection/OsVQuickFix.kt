@@ -1,18 +1,25 @@
-// OSV Vulnerability Scanner Quick Fix
+// OSV Vulnerability Scanner Quick Fix — Document-based refactoring with undo support
 package io.dyuti.osvplugin.inspection
 
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import io.dyuti.osvplugin.api.model.Dependency
 import io.dyuti.osvplugin.api.model.Vulnerability
 import io.dyuti.osvplugin.config.OsVConfig
 
 /**
- * Quick fix for OSV vulnerabilities
+ * Quick fix for OSV vulnerabilities using document-level editing.
+ *
+ * All changes are wrapped in [WriteCommandAction] for undo support (Ctrl+Z).
+ * Uses [FileDocumentManager] to get the [Document] for safe text edits,
+ * then saves the document.
  */
 class OsVQuickFix private constructor(
     private val dependency: Dependency,
@@ -44,59 +51,70 @@ class OsVQuickFix private constructor(
 
     override fun getFamilyName(): String = "OSV Vulnerability Fix"
 
+    override fun getName(): String =
+        when (fixType) {
+            FixType.UPGRADE -> "Upgrade ${dependency.name} to fixed version"
+            FixType.SUPPRESS -> "Suppress ${vulnerability.id}"
+            FixType.IGNORE -> "Ignore ${dependency.name}"
+        }
+
     override fun applyFix(
         project: Project,
         descriptor: ProblemDescriptor,
     ) {
         val file = descriptor.psiElement.containingFile ?: return
-        val virtualFile = file.virtualFile ?: return
 
         when (fixType) {
-            FixType.UPGRADE -> upgradeVersion(project, virtualFile)
-            FixType.SUPPRESS -> suppressVulnerability(project, virtualFile)
+            FixType.UPGRADE -> upgradeVersion(project, file)
+            FixType.SUPPRESS -> suppressVulnerability(project, file)
             FixType.IGNORE -> ignorePackage(project)
         }
     }
 
+    // ───────────────────────────────────────────────────────────────────────────
+    // UPGRADE — document-level version replacement with undo support
+    // ───────────────────────────────────────────────────────────────────────────
+
     private fun upgradeVersion(
         project: Project,
-        virtualFile: VirtualFile,
+        file: PsiFile,
     ) {
+        val latestFixedVersion = findLatestFixedVersion()
+
+        if (latestFixedVersion == null) {
+            Messages.showWarningDialog(
+                project,
+                "No fixed version available for ${dependency.name}",
+                "OSV Vulnerability Fix",
+            )
+            return
+        }
+
         try {
-            val latestFixedVersion = findLatestFixedVersion()
+            when {
+                file.name == "pom.xml" -> {
+                    upgradeMavenVersion(project, file, latestFixedVersion)
+                }
 
-            if (latestFixedVersion == null) {
-                Messages.showWarningDialog(
-                    project,
-                    "No fixed version available",
-                    "OSV Vulnerability Fix",
-                )
-                return
-            }
+                file.name.endsWith(".gradle") || file.name.endsWith(".gradle.kts") -> {
+                    upgradeGradleVersion(project, file, latestFixedVersion)
+                }
 
-            val content = String(virtualFile.contentsToByteArray())
-            val updatedContent =
-                updateDependencyVersion(
-                    content,
-                    dependency.version,
-                    latestFixedVersion,
-                )
+                file.name == "package.json" -> {
+                    upgradeNpmVersion(project, file, latestFixedVersion)
+                }
 
-            if (updatedContent != null) {
-                virtualFile.setBinaryContent(updatedContent.toByteArray(Charsets.UTF_8))
-                virtualFile.refresh(false, false)
+                file.name == "requirements.txt" -> {
+                    upgradePipVersion(project, file, latestFixedVersion)
+                }
 
-                Messages.showInfoMessage(
-                    project,
-                    "Successfully upgraded ${dependency.name} from ${dependency.version} to $latestFixedVersion",
-                    "OSV Vulnerability Fix",
-                )
-            } else {
-                Messages.showWarningDialog(
-                    project,
-                    "Could not find dependency ${dependency.name} in the file",
-                    "OSV Vulnerability Fix",
-                )
+                else -> {
+                    Messages.showWarningDialog(
+                        project,
+                        "Unsupported file type: ${file.name}",
+                        "OSV Vulnerability Fix",
+                    )
+                }
             }
         } catch (e: Exception) {
             Messages.showErrorDialog(
@@ -109,152 +127,276 @@ class OsVQuickFix private constructor(
 
     private fun findLatestFixedVersion(): String? = vulnerability.fixedVersions.maxOrNull()
 
-    private fun updateDependencyVersion(
-        content: String,
-        oldVersion: String,
+    /**
+     * Maven: Match the exact <dependency> block by <artifactId> and update <version>.
+     * Operates on [Document] so the change is undoable.
+     */
+    private fun upgradeMavenVersion(
+        project: Project,
+        file: PsiFile,
         newVersion: String,
-    ): String? {
-        val lines = content.lines()
-        val updatedLines = mutableListOf<String>()
-        var found = false
+    ) {
+        val document = getDocument(file) ?: return
 
-        for (line in lines) {
-            val updatedLine =
-                when {
-                    isMavenDependency(line) -> {
-                        val updated = replaceMavenVersion(line, oldVersion, newVersion)
-                        if (updated != line) found = true
-                        updated
-                    }
+        WriteCommandAction.runWriteCommandAction(
+            project,
+            "Upgrade ${dependency.name} to $newVersion",
+            null,
+            Runnable {
+                val text = document.text
+                val depName = dependency.name
+                val oldVersion = dependency.version
 
-                    isGradleDependency(line) -> {
-                        val updated = replaceGradleVersion(line, oldVersion, newVersion)
-                        if (updated != line) found = true
-                        updated
-                    }
+                // Find <dependency> block containing the artifactId
+                val depBlockPattern =
+                    Regex(
+                        "(<dependency[^>]*>\\s*(?:(?!</dependency>).)*?<artifactId>\\s*$depName\\s*</artifactId>" +
+                            "(?:(?!</dependency>).)*?<version>\\s*$oldVersion\\s*</version>" +
+                            "(?:(?!</dependency>).)*?</dependency>)",
+                        RegexOption.DOT_MATCHES_ALL,
+                    )
+                val match = depBlockPattern.find(text)
 
-                    isNpmDependency(line) -> {
-                        val updated = replaceNpmVersion(line, oldVersion, newVersion)
-                        if (updated != line) found = true
-                        updated
-                    }
+                if (match != null) {
+                    val block = match.groupValues[0]
+                    val updatedBlock =
+                        block.replace(
+                            Regex("(<version>\\s*)$oldVersion(\\s*</version>)"),
+                            "$1$newVersion$2",
+                        )
+                    document.replaceString(match.range.first, match.range.last + 1, updatedBlock)
+                    FileDocumentManager.getInstance().saveDocument(document)
 
-                    isPipDependency(line) -> {
-                        val updated = replacePipVersion(line, oldVersion, newVersion)
-                        if (updated != line) found = true
-                        updated
-                    }
+                    Messages.showInfoMessage(
+                        project,
+                        "Upgraded $depName to $newVersion",
+                        "OSV Vulnerability Fix",
+                    )
+                } else {
+                    // Fallback: try broader search for <version> near the artifactId
+                    val versionPattern =
+                        Regex(
+                            "(<artifactId>\\s*$depName\\s*</artifactId>(?:(?!</dependency>).){0,500}?)" +
+                                "<version>\\s*$oldVersion\\s*</version>",
+                            RegexOption.DOT_MATCHES_ALL,
+                        )
+                    val fallbackMatch = versionPattern.find(text)
+                    if (fallbackMatch != null) {
+                        val start = fallbackMatch.range.first + fallbackMatch.groupValues[1].length
+                        val end = fallbackMatch.range.last + 1
+                        val oldText = text.substring(start, end)
+                        val newText = oldText.replace(oldVersion, newVersion)
+                        document.replaceString(start, end, newText)
+                        FileDocumentManager.getInstance().saveDocument(document)
 
-                    else -> {
-                        line
+                        Messages.showInfoMessage(
+                            project,
+                            "Upgraded $depName to $newVersion",
+                            "OSV Vulnerability Fix",
+                        )
+                    } else {
+                        Messages.showWarningDialog(
+                            project,
+                            "Could not find dependency $depName ($oldVersion) in pom.xml",
+                            "OSV Vulnerability Fix",
+                        )
                     }
                 }
-            updatedLines.add(updatedLine)
-        }
-
-        return if (found) updatedLines.joinToString("\n") else null
-    }
-
-    private fun isMavenDependency(line: String): Boolean =
-        line.contains("<artifactId>${dependency.name}</artifactId>") ||
-            (line.contains(dependency.name) && line.contains("<version>"))
-
-    private fun replaceMavenVersion(
-        line: String,
-        oldVersion: String,
-        newVersion: String,
-    ): String =
-        @Suppress("UNUSED_PARAMETER")
-        line.replace(
-            "<version>$oldVersion</version>",
-            "<version>$newVersion</version>",
+            },
         )
-
-    private fun isGradleDependency(line: String): Boolean =
-        line.contains(dependency.name) &&
-            (line.contains("'") || line.contains("\""))
-
-    private fun replaceGradleVersion(
-        line: String,
-        oldVersion: String,
-        newVersion: String,
-    ): String {
-        @Suppress("UNUSED_PARAMETER")
-        val escapedName = Regex.escape(dependency.name)
-        val singleQuotePattern =
-            Regex("'([^:]+):$escapedName:$oldVersion'")
-        val doubleQuotePattern =
-            Regex("\"([^:]+):$escapedName:$oldVersion\"")
-
-        var result =
-            line.replace(singleQuotePattern) {
-                "'${it.groups[1]?.value}:${dependency.name}:$newVersion'"
-            }
-        result =
-            result.replace(doubleQuotePattern) {
-                "\"${it.groups[1]?.value}:${dependency.name}:$newVersion\""
-            }
-        return result
     }
 
-    private fun isNpmDependency(line: String): Boolean = line.contains("\"${dependency.name}\"") && line.contains(":")
-
-    @Suppress("UNUSED_PARAMETER")
-    private fun replaceNpmVersion(
-        line: String,
-        _oldVersion: String,
+    /**
+     * Gradle: Match dependency declaration string (single or double quotes)
+     * and replace version component.
+     */
+    private fun upgradeGradleVersion(
+        project: Project,
+        file: PsiFile,
         newVersion: String,
-    ): String {
-        val escapedName = Regex.escape(dependency.name)
-        val pattern = Regex("\"$escapedName\":\\s*\"[^\"]+\"")
-        return pattern.replace(line) {
-            "\"${dependency.name}\": \"$newVersion\""
-        }
+    ) {
+        val document = getDocument(file) ?: return
+
+        WriteCommandAction.runWriteCommandAction(
+            project,
+            "Upgrade ${dependency.name} to $newVersion",
+            null,
+            Runnable {
+                val text = document.text
+                val depName = dependency.name
+                val oldVersion = dependency.version
+
+                // Match 'group:artifact:version' or "group:artifact:version"
+                val gradlePattern =
+                    Regex(
+                        "(['\"])((?:(?!\\1).)*?:$depName:$oldVersion)\\1",
+                    )
+                val match = gradlePattern.find(text)
+
+                if (match != null) {
+                    val oldDepText = match.groupValues[2]
+                    val newDepText = oldDepText.replace(":$oldVersion", ":$newVersion")
+                    val fullNew = "${match.groupValues[1]}$newDepText${match.groupValues[1]}"
+                    document.replaceString(match.range.first, match.range.last + 1, fullNew)
+                    FileDocumentManager.getInstance().saveDocument(document)
+
+                    Messages.showInfoMessage(
+                        project,
+                        "Upgraded $depName to $newVersion",
+                        "OSV Vulnerability Fix",
+                    )
+                } else {
+                    Messages.showWarningDialog(
+                        project,
+                        "Could not find dependency $depName in ${file.name}",
+                        "OSV Vulnerability Fix",
+                    )
+                }
+            },
+        )
     }
 
-    private fun isPipDependency(line: String): Boolean =
-        line.contains(dependency.name) &&
-            (line.contains("==") || line.contains(">="))
-
-    @Suppress("UNUSED_PARAMETER")
-    private fun replacePipVersion(
-        line: String,
-        _oldVersion: String,
+    /**
+     * npm: Match "packageName": "version" in dependencies or devDependencies.
+     */
+    private fun upgradeNpmVersion(
+        project: Project,
+        file: PsiFile,
         newVersion: String,
-    ): String {
-        val escapedName = Regex.escape(dependency.name)
-        val pattern = Regex("($escapedName==)[^\\s]+")
-        return pattern.replace(line) { "${it.groups[1]?.value}$newVersion" }
+    ) {
+        val document = getDocument(file) ?: return
+
+        WriteCommandAction.runWriteCommandAction(
+            project,
+            "Upgrade ${dependency.name} to $newVersion",
+            null,
+            Runnable {
+                val text = document.text
+                val depName = dependency.name
+                val oldVersion = dependency.version
+
+                val npmPattern =
+                    Regex(
+                        "(\"$depName\"\\s*:\\s*\")$oldVersion(\"",
+                    )
+                val match = npmPattern.find(text)
+
+                if (match != null) {
+                    document.replaceString(match.range.first, match.range.last + 1, "$1$newVersion\"")
+                    FileDocumentManager.getInstance().saveDocument(document)
+
+                    Messages.showInfoMessage(
+                        project,
+                        "Upgraded $depName to $newVersion in package.json",
+                        "OSV Vulnerability Fix",
+                    )
+                } else {
+                    Messages.showWarningDialog(
+                        project,
+                        "Could not find $depName in package.json",
+                        "OSV Vulnerability Fix",
+                    )
+                }
+            },
+        )
     }
+
+    /**
+     * pip: Match various version specifiers (== >= <= ~= != < >).
+     */
+    private fun upgradePipVersion(
+        project: Project,
+        file: PsiFile,
+        newVersion: String,
+    ) {
+        val document = getDocument(file) ?: return
+
+        WriteCommandAction.runWriteCommandAction(
+            project,
+            "Upgrade ${dependency.name} to $newVersion",
+            null,
+            Runnable {
+                val text = document.text
+                val depName = dependency.name
+                val oldVersion = dependency.version
+                val escapedName = Regex.escape(depName)
+
+                val pipPattern =
+                    Regex(
+                        "($escapedName(?:==|>=|<=|~=|!=|>|<))$oldVersion",
+                    )
+                val match = pipPattern.find(text)
+
+                if (match != null) {
+                    document.replaceString(match.range.first, match.range.last + 1, "$1$newVersion")
+                    FileDocumentManager.getInstance().saveDocument(document)
+
+                    Messages.showInfoMessage(
+                        project,
+                        "Upgraded $depName to $newVersion in requirements.txt",
+                        "OSV Vulnerability Fix",
+                    )
+                } else {
+                    Messages.showWarningDialog(
+                        project,
+                        "Could not find $depName in requirements.txt",
+                        "OSV Vulnerability Fix",
+                    )
+                }
+            },
+        )
+    }
+
+    // ───────────────────────────────────────────────────────────────────────────
+    // SUPPRESS — add comment/document marker
+    // ───────────────────────────────────────────────────────────────────────────
 
     private fun suppressVulnerability(
         project: Project,
-        virtualFile: VirtualFile,
+        file: PsiFile,
     ) {
-        val content = String(virtualFile.contentsToByteArray())
+        val document = getDocument(file) ?: return
 
-        val suppressionComment =
-            "// OSV Suppressed: ${vulnerability.id} - ${vulnerability.summary}"
-        val updatedContent =
-            content.lines().joinToString("\n") { line ->
-                if (line.contains(dependency.name)) {
-                    "$line $suppressionComment"
-                } else {
-                    line
-                }
-            }
+        WriteCommandAction.runWriteCommandAction(
+            project,
+            "Suppress ${vulnerability.id}",
+            null,
+            Runnable {
+                val commentText =
+                    when {
+                        file.name == "pom.xml" -> {
+                            "<!-- OSV Suppressed: ${vulnerability.id} - ${vulnerability.summary} -->\n"
+                        }
 
-        if (updatedContent != content) {
-            virtualFile.setBinaryContent(updatedContent.toByteArray(Charsets.UTF_8))
-            virtualFile.refresh(false, false)
+                        file.name.endsWith(".gradle") || file.name.endsWith(".gradle.kts") -> {
+                            "// OSV Suppressed: ${vulnerability.id} - ${vulnerability.summary}\n"
+                        }
 
-            Messages.showInfoMessage(
-                project,
-                "Suppressed vulnerability ${vulnerability.id} for ${dependency.name}",
-                "OSV Vulnerability Fix",
-            )
-        }
+                        file.name == "package.json" -> {
+                            "// OSV Suppressed: ${vulnerability.id} - ${vulnerability.summary}\n"
+                        }
+
+                        else -> {
+                            "# OSV Suppressed: ${vulnerability.id} - ${vulnerability.summary}\n"
+                        }
+                    }
+
+                // Insert at the beginning of the file
+                document.insertString(0, commentText)
+                FileDocumentManager.getInstance().saveDocument(document)
+
+                Messages.showInfoMessage(
+                    project,
+                    "Suppressed ${vulnerability.id} for ${dependency.name}",
+                    "OSV Vulnerability Fix",
+                )
+            },
+        )
     }
+
+    // ───────────────────────────────────────────────────────────────────────────
+    // IGNORE — no file changes
+    // ───────────────────────────────────────────────────────────────────────────
 
     private fun ignorePackage(project: Project) {
         @Suppress("DEPRECATION")
@@ -273,5 +415,15 @@ class OsVQuickFix private constructor(
                 "OSV Vulnerability Fix",
             )
         }
+    }
+
+    // ───────────────────────────────────────────────────────────────────────────
+    // Helpers
+    // ───────────────────────────────────────────────────────────────────────────
+
+    /** Obtains the [Document] for a PSI file. */
+    private fun getDocument(file: PsiFile): Document? {
+        val virtualFile = file.virtualFile ?: return null
+        return FileDocumentManager.getInstance().getDocument(virtualFile)
     }
 }
