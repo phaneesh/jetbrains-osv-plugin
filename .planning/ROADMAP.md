@@ -167,15 +167,50 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 
 ---
 
+### Phase 13: Risk Scoring Beyond Severity ✓ COMPLETE
+
+**Goal:** EPSS + CISA KEV composite risk scoring for exploitability-based prioritization
+**Rationale:** Snyk/Mend.io offer EPSS as premium; positions OSV plugin as actionable decision tool
+**Completed:** 2026-05-07
+
+**Features:**
+
+- [x] RiskScoringService: composite (CVSS×40% + EPSS×30% + KEV×20% + exploit×10%)
+- [x] EPSS API integration (FIRST.org): exploitation probability + percentile
+- [x] CISA KEV catalog feed: known exploited vulnerabilities
+- [x] Graceful degradation: API unavailable → CVSS-only fallback
+- [x] RiskLevel enum: CRITICAL≥80, HIGH≥60, MEDIUM≥40, LOW≥20, MINIMAL<20
+
+**Limitations:** OSV API still receives real package names; EPSS scores updated daily (no persistent cache)
+
+---
+
+### Phase 14: Policy Enforcement ✓ COMPLETE
+
+**Goal:** Organization-wide dependency compliance policies with auto-reject gates
+**Rationale:** Enterprise users need policy-as-code for CI gates; differentiates from personal-use-only tools
+**Completed:** 2026-05-07
+
+**Features:**
+
+- [x] PolicyConfig: severity threshold, CVSS cap, CISA KEV block, license block, glob ignore patterns
+- [x] PolicyEvaluator: evaluates dependencies against policy rules
+- [x] Enforcement modes: FAIL (block), WARN (non-blocking), IGNORE (skip)
+- [x] Batch evaluation API for multi-dependency projects
+- [x] PolicyViolation data model with human-readable messages
+
+**Limitations:** No persistent policy storage yet (uses in-memory config); no policy file format (JSON/YAML)
+
+---
+
 ### Future Phases (Backlog)
 
-- Phase 12: CI/CD integration as Qodana linter
-- Phase 13: Risk scoring beyond severity (EPSS, exploitability)
-- Phase 14: Policy enforcement (auto-approve/reject dependencies)
 - Phase 15: Multi-tenant / team collaboration features
-- Phase 13: Risk scoring beyond severity (EPSS, exploitability)
-- Phase 14: Policy enforcement (auto-approve/reject dependencies)
-- Phase 15: Multi-tenant / team collaboration features
+- Phase 16: Differential analysis (compare two scans)
+- Phase 17: Historical trending (vulnerability counts over time)
+- Phase 18: SBOM generation (CycloneDX/SPDX export)
+- Phase 19: Configuration audit (detect insecure framework configs)
+- Phase 20: IDE notification system (real-time alerts for new CVEs)
 
 ---
 
@@ -194,6 +229,9 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 | 9     | Malicious Package Detection | ✅ Complete     | 2026-05-07 |
 | 10    | Basic SAST / Taint Analysis | ✅ Complete     | 2026-05-07 |
 | 11    | Privacy-Preserving Queries  | ✅ Complete     | 2026-05-07 |
+| 12    | CI/CD Qodana linter         | ⏭ Dropped       | —          |
+| 13    | Risk Scoring Beyond Severity| ✅ Complete     | 2026-05-07 |
+| 14    | Policy Enforcement          | ✅ Complete     | 2026-05-07 |
 
 ---
 
