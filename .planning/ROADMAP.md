@@ -203,35 +203,55 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 
 ---
 
+### Phase 15: Multi-tenant / Team Collaboration ✓ COMPLETE
+
+**Goal:** Project-level team config and IDE notifications for shared policy enforcement
+**Rationale:** Organizations need consistent security posture across all IDE users on a team
+**Completed:** 2026-05-07
+
+**Features:**
+
+- [x] TeamConfig: project-level scan settings, notification thresholds, auto-fix enablement
+- [x] TeamPolicyOverrides: project-level policy overrides (maxSeverity, CVSS cap, CISA KEV, license block)
+- [x] TeamConfigManager: `.idea/osv-plugin-config.json` persistence (version-controllable via git)
+- [x] Config hierarchy: project-level → user-level → plugin defaults
+- [x] Policy merge: project overrides applied on top of base policy
+- [x] VulnerabilityNotification data model: IDE balloon/toast structured data
+- [x] ScanMetrics: per-scan aggregation for team reporting
+
+**Limitations:** No actual IDE notification service yet (models only); no UI for editing team config
+
+---
+
 ### Future Phases (Backlog)
 
-- Phase 15: Multi-tenant / team collaboration features
-- Phase 16: Differential analysis (compare two scans)
-- Phase 17: Historical trending (vulnerability counts over time)
+- Phase 16: Differential analysis (compare two scans over time)
+- Phase 17: Historical trending (vulnerability counts over time charts)
 - Phase 18: SBOM generation (CycloneDX/SPDX export)
 - Phase 19: Configuration audit (detect insecure framework configs)
-- Phase 20: IDE notification system (real-time alerts for new CVEs)
+- Phase 20: IDE notification service (real-time balloon alerts for new CVEs)
 
 ---
 
 ## Progress
 
-| Phase | Goal                        | Status          | Complete   |
-| ----- | --------------------------- | --------------- | ---------- |
-| 1     | Core Foundation             | ✅ Complete     | 2026-04-24 |
-| 2     | IntelliJ Integration        | ✅ Complete     | 2026-04-24 |
-| 3     | Advanced Features           | ✅ Complete     | 2026-04-24 |
-| 4     | Modern UI                   | ✅ Complete     | 2026-04-28 |
-| 5     | Feature Completion          | ✅ Plan Created | 2026-04-28 |
-| 6     | Foundation Fixes            | ✅ Complete     | 2026-05-07 |
-| 7     | Problems Tab Integration    | ✅ Complete     | 2026-05-07 |
-| 8     | Vulnerable API Detection    | ✅ Complete     | 2026-05-07 |
-| 9     | Malicious Package Detection | ✅ Complete     | 2026-05-07 |
-| 10    | Basic SAST / Taint Analysis | ✅ Complete     | 2026-05-07 |
-| 11    | Privacy-Preserving Queries  | ✅ Complete     | 2026-05-07 |
-| 12    | CI/CD Qodana linter         | ⏭ Dropped       | —          |
-| 13    | Risk Scoring Beyond Severity| ✅ Complete     | 2026-05-07 |
-| 14    | Policy Enforcement          | ✅ Complete     | 2026-05-07 |
+| Phase | Goal                         | Status          | Complete   |
+| ----- | ---------------------------- | --------------- | ---------- |
+| 1     | Core Foundation              | ✅ Complete     | 2026-04-24 |
+| 2     | IntelliJ Integration         | ✅ Complete     | 2026-04-24 |
+| 3     | Advanced Features            | ✅ Complete     | 2026-04-24 |
+| 4     | Modern UI                    | ✅ Complete     | 2026-04-28 |
+| 5     | Feature Completion           | ✅ Plan Created | 2026-04-28 |
+| 6     | Foundation Fixes             | ✅ Complete     | 2026-05-07 |
+| 7     | Problems Tab Integration     | ✅ Complete     | 2026-05-07 |
+| 8     | Vulnerable API Detection     | ✅ Complete     | 2026-05-07 |
+| 9     | Malicious Package Detection  | ✅ Complete     | 2026-05-07 |
+| 10    | Basic SAST / Taint Analysis  | ✅ Complete     | 2026-05-07 |
+| 11    | Privacy-Preserving Queries   | ✅ Complete     | 2026-05-07 |
+| 12    | CI/CD Qodana linter          | ⏭ Dropped      | —          |
+| 13    | Risk Scoring Beyond Severity | ✅ Complete     | 2026-05-07 |
+| 14    | Policy Enforcement           | ✅ Complete     | 2026-05-07 |
+| 15    | Team Collaboration           | ✅ Complete     | 2026-05-07 |
 
 ---
 
