@@ -26,8 +26,11 @@ class OsVConfig : PersistentStateComponent<OsVConfig> {
     var baseBranch: String = "main"
     var sarifExportPath: String? = null
 
-    // Ignored packages for suppression
     var ignoredPackages: List<String> = listOf()
+
+    // Privacy-preserving mode
+    var privacyPreservingEnabled: Boolean = false
+    var privacySalt: String? = null
 
     // Organization Management
     var orgManagementEnabled: Boolean = false

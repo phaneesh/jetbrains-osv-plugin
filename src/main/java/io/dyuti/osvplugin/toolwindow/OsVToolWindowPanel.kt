@@ -548,6 +548,7 @@ class ModuleTreeNode(
 class VulnerabilityTreeNode(
     val vulnerability: Vulnerability,
     val moduleFile: VirtualFile?,
+    val ecosystem: String = "Maven",
 ) : DefaultMutableTreeNode(vulnerability) {
     private val displayId =
         if (vulnerability.cveIds.isNotEmpty()) {

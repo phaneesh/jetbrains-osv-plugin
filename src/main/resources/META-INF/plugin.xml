@@ -104,6 +104,13 @@
             displayName="License Policy"
             id="osv.scanner.license"/>
         
+        <!-- Privacy Configurable -->
+        <applicationConfigurable
+            instance="io.dyuti.osvplugin.privacy.PrivacyConfigurable"
+            parentId="osv.scanner.settings"
+            displayName="Privacy"
+            id="osv.scanner.privacy"/>
+        
         <!-- Tool Window Factory -->
         <toolWindow
             id="OSV Vulnerability Scanner"

@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder
 import io.dyuti.osvplugin.api.model.Dependency
 import io.dyuti.osvplugin.api.model.OsVSeverity
 import io.dyuti.osvplugin.api.model.Vulnerability
+import io.dyuti.osvplugin.privacy.PrivacyService
 import java.io.File
 import java.io.FileWriter
 
@@ -13,61 +14,60 @@ import java.io.FileWriter
  * Export vulnerabilities to SARIF v2.1.0 format
  */
 class SarifExporter {
-    
-    private val gson: Gson = GsonBuilder()
-        .setPrettyPrinting()
-        .create()
-    
+    private val gson: Gson =
+        GsonBuilder()
+            .setPrettyPrinting()
+            .create()
+
     /**
      * Export vulnerabilities to SARIF format
      */
     fun exportVulnerabilities(
         vulnerabilities: List<VulnerabilityWithDependency>,
-        outputFile: String
-    ): Boolean {
-        return try {
+        outputFile: String,
+    ): Boolean =
+        try {
             val sarif = createSarifReport(vulnerabilities)
             val json = gson.toJson(sarif)
-            
+
             File(outputFile).writeText(json)
             true
         } catch (e: Exception) {
             System.err.println("Error exporting SARIF: ${e.message}")
             false
         }
-    }
-    
+
     /**
      * Create SARIF report structure
      */
-    private fun createSarifReport(
-        vulnerabilities: List<VulnerabilityWithDependency>
-    ): SarifReport {
-        val run = SarifRun(
-            tool = SarifTool(
-                driver = SarifDriver(
-                    name = "OSV Vulnerability Scanner",
-                    version = "2.0.0",
-                    informationUri = "https://osv.dev",
-                    rules = createRules(vulnerabilities)
-                )
-            ),
-            results = createResults(vulnerabilities)
-        )
-        
+    private fun createSarifReport(vulnerabilities: List<VulnerabilityWithDependency>): SarifReport {
+        val run =
+            SarifRun(
+                tool =
+                    SarifTool(
+                        driver =
+                            SarifDriver(
+                                name = "OSV Vulnerability Scanner",
+                                version = "2.0.0",
+                                informationUri = "https://osv.dev",
+                                rules = createRules(vulnerabilities),
+                            ),
+                    ),
+                results = createResults(vulnerabilities),
+            )
+
         return SarifReport(
             version = "2.1.0",
-            runs = listOf(run)
+            runs = listOf(run),
         )
     }
-    
+
     /**
      * Create SARIF rules from vulnerabilities
      */
-    private fun createRules(
-        vulnerabilities: List<VulnerabilityWithDependency>
-    ): List<SarifRule> {
-        return vulnerabilities.groupBy { it.vulnerability.id }
+    private fun createRules(vulnerabilities: List<VulnerabilityWithDependency>): List<SarifRule> =
+        vulnerabilities
+            .groupBy { it.vulnerability.id }
             .map { (vulnId, vulns) ->
                 val vuln = vulns.first().vulnerability
                 SarifRule(
@@ -77,55 +77,61 @@ class SarifExporter {
                     fullDescription = SarifMessage(vuln.details),
                     helpUri = vuln.references.firstOrNull() ?: "https://osv.dev",
                     severity = mapSeverity(vuln.severity),
-                    properties = SarifProperties(
-                        tags = listOf("vulnerability", "security"),
-                        securitySeverity = mapSeverity(vuln.severity)
-                    )
+                    properties =
+                        SarifProperties(
+                            tags = listOf("vulnerability", "security"),
+                            securitySeverity = mapSeverity(vuln.severity),
+                        ),
                 )
             }
-    }
-    
+
     /**
      * Create SARIF results from vulnerabilities
      */
-    private fun createResults(
-        vulnerabilities: List<VulnerabilityWithDependency>
-    ): List<SarifResult> {
-        return vulnerabilities.map { vulnWithDep ->
+    private fun createResults(vulnerabilities: List<VulnerabilityWithDependency>): List<SarifResult> =
+        vulnerabilities.map { vulnWithDep ->
+            // Obfuscate dependency name if privacy mode is enabled
+            val depName =
+                PrivacyService
+                    .getInstance()
+                    .obfuscate(vulnWithDep.dependency.name, vulnWithDep.dependency.ecosystem)
             SarifResult(
                 ruleId = vulnWithDep.vulnerability.id,
                 level = mapSeverity(vulnWithDep.vulnerability.severity),
-                message = SarifMessage(
-                    text = "${vulnWithDep.vulnerability.id}: ${vulnWithDep.vulnerability.summary}"
-                ),
-                locations = listOf(
-                    SarifLocation(
-                        physicalLocation = SarifPhysicalLocation(
-                            artifactLocation = SarifArtifactLocation(
-                                uri = "dependency:///${vulnWithDep.dependency.name}"
-                            )
-                        )
-                    )
-                ),
-                properties = SarifResultProperties(
-                    securitySeverity = mapSeverity(vulnWithDep.vulnerability.severity),
-                    precision = "high"
-                )
+                message =
+                    SarifMessage(
+                        text = "${vulnWithDep.vulnerability.id}: ${vulnWithDep.vulnerability.summary}",
+                    ),
+                locations =
+                    listOf(
+                        SarifLocation(
+                            physicalLocation =
+                                SarifPhysicalLocation(
+                                    artifactLocation =
+                                        SarifArtifactLocation(
+                                            uri = "dependency:///$depName",
+                                        ),
+                                ),
+                        ),
+                    ),
+                properties =
+                    SarifResultProperties(
+                        securitySeverity = mapSeverity(vulnWithDep.vulnerability.severity),
+                        precision = "high",
+                    ),
             )
         }
-    }
-    
+
     /**
      * Map OSV severity to SARIF severity
      */
-    private fun mapSeverity(severity: OsVSeverity): String {
-        return when (severity) {
+    private fun mapSeverity(severity: OsVSeverity): String =
+        when (severity) {
             OsVSeverity.CRITICAL -> "critical"
             OsVSeverity.HIGH -> "high"
             OsVSeverity.MEDIUM -> "medium"
             OsVSeverity.LOW -> "low"
         }
-    }
 }
 
 /**
@@ -133,7 +139,7 @@ class SarifExporter {
  */
 data class SarifReport(
     val version: String,
-    val runs: List<SarifRun>
+    val runs: List<SarifRun>,
 )
 
 /**
@@ -141,14 +147,14 @@ data class SarifReport(
  */
 data class SarifRun(
     val tool: SarifTool,
-    val results: List<SarifResult>
+    val results: List<SarifResult>,
 )
 
 /**
  * SARIF Tool Structure
  */
 data class SarifTool(
-    val driver: SarifDriver
+    val driver: SarifDriver,
 )
 
 /**
@@ -158,7 +164,7 @@ data class SarifDriver(
     val name: String,
     val version: String,
     val informationUri: String,
-    val rules: List<SarifRule>
+    val rules: List<SarifRule>,
 )
 
 /**
@@ -171,14 +177,14 @@ data class SarifRule(
     val fullDescription: SarifMessage,
     val helpUri: String,
     val severity: String,
-    val properties: SarifProperties
+    val properties: SarifProperties,
 )
 
 /**
  * SARIF Message Structure
  */
 data class SarifMessage(
-    val text: String
+    val text: String,
 )
 
 /**
@@ -186,7 +192,7 @@ data class SarifMessage(
  */
 data class SarifProperties(
     val tags: List<String>,
-    val securitySeverity: String
+    val securitySeverity: String,
 )
 
 /**
@@ -197,7 +203,7 @@ data class SarifResult(
     val level: String,
     val message: SarifMessage,
     val locations: List<SarifLocation>,
-    val properties: SarifResultProperties
+    val properties: SarifResultProperties,
 )
 
 /**
@@ -205,28 +211,28 @@ data class SarifResult(
  */
 data class SarifResultProperties(
     val securitySeverity: String,
-    val precision: String
+    val precision: String,
 )
 
 /**
  * SARIF Location Structure
  */
 data class SarifLocation(
-    val physicalLocation: SarifPhysicalLocation
+    val physicalLocation: SarifPhysicalLocation,
 )
 
 /**
  * SARIF Physical Location
  */
 data class SarifPhysicalLocation(
-    val artifactLocation: SarifArtifactLocation
+    val artifactLocation: SarifArtifactLocation,
 )
 
 /**
  * SARIF Artifact Location
  */
 data class SarifArtifactLocation(
-    val uri: String
+    val uri: String,
 )
 
 /**
@@ -234,5 +240,5 @@ data class SarifArtifactLocation(
  */
 data class VulnerabilityWithDependency(
     val vulnerability: Vulnerability,
-    val dependency: Dependency
+    val dependency: Dependency,
 )

@@ -148,10 +148,31 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 
 ---
 
+### Phase 11: Privacy-Preserving Queries ✓ COMPLETE
+
+**Goal:** Obfuscate package names in UI, logs, exports, and persistent state
+**Rationale:** Protect intellectual property without relying on users to self-censor screenshots and exports
+**Completed:** 2026-05-07
+
+**Features:**
+
+- [x] SHA-256 deterministic hashing with per-installation salt (PrivacyHasher)
+- [x] In-memory hash → name mapping (cleared on restart, non-recoverable)
+- [x] Privacy settings panel under Tools → OSV → Privacy (toggle, rotate salt, clear cache)
+- [x] SARIF export obfuscation (artifact URIs hashed when privacy mode enabled)
+- [x] Thread-safe implementation via ConcurrentHashMap
+- [x] Standalone PrivacyHasher with zero IntelliJ dependencies (fully unit-testable)
+
+**Limitations:** OSV API still receives real package names (inherent — OSV indexes by name, no hash endpoint)
+
+---
+
 ### Future Phases (Backlog)
 
-- Phase 11: Privacy-preserving queries (hash package names before API calls)
 - Phase 12: CI/CD integration as Qodana linter
+- Phase 13: Risk scoring beyond severity (EPSS, exploitability)
+- Phase 14: Policy enforcement (auto-approve/reject dependencies)
+- Phase 15: Multi-tenant / team collaboration features
 - Phase 13: Risk scoring beyond severity (EPSS, exploitability)
 - Phase 14: Policy enforcement (auto-approve/reject dependencies)
 - Phase 15: Multi-tenant / team collaboration features
@@ -172,6 +193,7 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 | 8     | Vulnerable API Detection    | ✅ Complete     | 2026-05-07 |
 | 9     | Malicious Package Detection | ✅ Complete     | 2026-05-07 |
 | 10    | Basic SAST / Taint Analysis | ✅ Complete     | 2026-05-07 |
+| 11    | Privacy-Preserving Queries  | ✅ Complete     | 2026-05-07 |
 
 ---
 
