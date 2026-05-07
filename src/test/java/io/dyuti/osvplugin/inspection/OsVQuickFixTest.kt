@@ -144,5 +144,51 @@ class OsVQuickFixTest {
         val fix = OsVQuickFix.createIgnoreFix(dependency, vulnerability)
 
         assertNotNull(fix)
+        assertEquals("OSV Vulnerability Fix", fix.familyName)
     }
+
+    @Test
+    fun `upgrade fix name includes dependency name`() {
+        val dependency = Dependency("com.example:lib", "1.0.0", "Maven", "compile", false)
+        val vulnerability = createTestVulnerability()
+        val fix = OsVQuickFix.createUpgradeFix(dependency, vulnerability)
+        assertEquals("Upgrade com.example:lib to fixed version", fix.name)
+    }
+
+    @Test
+    fun `suppress fix name includes vulnerability id`() {
+        val dependency = Dependency("com.example:lib", "1.0.0", "Maven", "compile", false)
+        val vulnerability = createTestVulnerability()
+        val fix = OsVQuickFix.createSuppressFix(dependency, vulnerability)
+        assertEquals("Suppress GHSA-1234", fix.name)
+    }
+
+    @Test
+    fun `fix family name is consistent across all types`() {
+        val dependency = Dependency("com.example:lib", "1.0.0", "Maven", "compile", false)
+        val vulnerability = createTestVulnerability()
+
+        val upgrade = OsVQuickFix.createUpgradeFix(dependency, vulnerability)
+        val suppress = OsVQuickFix.createSuppressFix(dependency, vulnerability)
+        val ignore = OsVQuickFix.createIgnoreFix(dependency, vulnerability)
+
+        assertEquals("OSV Vulnerability Fix", upgrade.familyName)
+        assertEquals("OSV Vulnerability Fix", suppress.familyName)
+        assertEquals("OSV Vulnerability Fix", ignore.familyName)
+    }
+
+    /** Helper to create a consistent test vulnerability. */
+    private fun createTestVulnerability(): Vulnerability =
+        Vulnerability(
+            id = "GHSA-1234",
+            cveIds = emptyList(),
+            summary = "Test vulnerability",
+            details = "Test details",
+            severity = OsVSeverity.MEDIUM,
+            cvssScore = 7.5,
+            affectedVersions = listOf("1.0.0"),
+            fixedVersions = listOf("2.0.0"),
+            references = emptyList(),
+            cweIds = emptyList(),
+        )
 }
