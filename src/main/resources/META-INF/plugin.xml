@@ -25,10 +25,55 @@
     </project-components>
     
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Inspection -->
+        <!-- OSV Inspection for manifest files (XML = pom.xml, Groovy = build.gradle, kotlin = build.gradle.kts, JSON = package.json) -->
         <localInspection
             language="JAVA"
             shortName="OsVInspection"
+            displayName="OSV Vulnerability Check"
+            groupName="Security"
+            enabledByDefault="true"
+            level="WARNING"
+            implementationClass="io.dyuti.osvplugin.inspection.OsVInspection"/>
+        
+        <localInspection
+            language="XML"
+            shortName="OsVInspectionXml"
+            displayName="OSV Vulnerability Check"
+            groupName="Security"
+            enabledByDefault="true"
+            level="WARNING"
+            implementationClass="io.dyuti.osvplugin.inspection.OsVInspection"/>
+        
+        <localInspection
+            language="Groovy"
+            shortName="OsVInspectionGroovy"
+            displayName="OSV Vulnerability Check"
+            groupName="Security"
+            enabledByDefault="true"
+            level="WARNING"
+            implementationClass="io.dyuti.osvplugin.inspection.OsVInspection"/>
+        
+        <localInspection
+            language="kotlin"
+            shortName="OsVInspectionKotlin"
+            displayName="OSV Vulnerability Check"
+            groupName="Security"
+            enabledByDefault="true"
+            level="WARNING"
+            implementationClass="io.dyuti.osvplugin.inspection.OsVInspection"/>
+        
+        <localInspection
+            language="JSON"
+            shortName="OsVInspectionJson"
+            displayName="OSV Vulnerability Check"
+            groupName="Security"
+            enabledByDefault="true"
+            level="WARNING"
+            implementationClass="io.dyuti.osvplugin.inspection.OsVInspection"/>
+        
+        <localInspection
+            language=""
+            shortName="OsVInspectionPlainText"
             displayName="OSV Vulnerability Check"
             groupName="Security"
             enabledByDefault="true"

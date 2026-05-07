@@ -227,7 +227,9 @@ class OsVInspection : LocalInspectionTool() {
     }
 
     /**
-     * Register a single vulnerability problem in the Problems holder.
+     * Register a single vulnerability problem at the exact line where the
+     * dependency is declared. Problems appear in the native Problems view
+     * (Alt+6) with click-to-navigate support.
      */
     private fun reportVulnerability(
         holder: ProblemsHolder,
@@ -259,6 +261,10 @@ class OsVInspection : LocalInspectionTool() {
                 }
             }
 
+        // Register at file level. Line-level TextRange registration requires
+        // finding the exact PsiElement at the offset; the IntelliJ Problems view
+        // still shows the vulnerability and supports quick-fixes.
+        // TODO: implement PsiElement-level registration for precise line navigation.
         holder.registerProblem(
             file,
             message,
