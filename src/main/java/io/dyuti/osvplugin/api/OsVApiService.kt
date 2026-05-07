@@ -4,6 +4,7 @@ package io.dyuti.osvplugin.api
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import io.dyuti.osvplugin.api.model.AffectedFunction
 import io.dyuti.osvplugin.api.model.Dependency
 import io.dyuti.osvplugin.api.model.OsVSeverity
 import io.dyuti.osvplugin.api.model.Package
@@ -233,6 +234,9 @@ class OsVApiService {
         }
 
         // Parse CVSS severity from severity array
+        // Parse affected functions from database_specific.functions (Phase 8: vulnerable API detection)
+        val affectedFunctions = parseAffectedFunctions(vuln)
+
         val (severity, cvssScore) = parseCvssSeverity(vuln)
 
         return Vulnerability(
@@ -246,6 +250,7 @@ class OsVApiService {
             fixedVersions = fixedVersions,
             references = references,
             cweIds = mutableListOf(),
+            affectedFunctions = affectedFunctions,
         )
     }
 
@@ -293,6 +298,79 @@ class OsVApiService {
         }
 
         return Pair(mapCvssToSeverity(bestScore), bestScore)
+    }
+
+    /**
+     * Parse affected function signatures from OSV vulnerability JSON.
+     *
+     * OSV stores vulnerable method names in `affected[].database_specific.functions`:
+     * ```json
+     * "affected": [{
+     *   "database_specific": {
+     *     "functions": [
+     *       "org.apache.logging.log4j.Logger.debug",
+     *       "org.apache.logging.log4j.Logger.error"
+     *     ]
+     *   }
+     * }]
+     * ```
+     *
+     * @param vuln The OSV vulnerability JSON object
+     * @return List of affected function signatures, or empty list if none present
+     */
+    private fun parseAffectedFunctions(vuln: JsonObject): List<AffectedFunction> {
+        val functions = mutableListOf<AffectedFunction>()
+
+        val affectedArray =
+            try {
+                vuln.getAsJsonArray("affected")
+            } catch (_: Exception) {
+                null
+            }
+                ?: return emptyList()
+
+        affectedArray.forEach { affected ->
+            val affectedObj =
+                try {
+                    affected.asJsonObject
+                } catch (_: Exception) {
+                    return@forEach
+                }
+
+            val dbSpecific =
+                try {
+                    affectedObj.getAsJsonObject("database_specific")
+                } catch (_: Exception) {
+                    null
+                }
+                    ?: return@forEach
+
+            val functionsArray =
+                try {
+                    dbSpecific.getAsJsonArray("functions")
+                } catch (_: Exception) {
+                    null
+                }
+                    ?: return@forEach
+
+            functionsArray.forEach { func ->
+                val signature =
+                    try {
+                        func.asString
+                    } catch (_: Exception) {
+                        return@forEach
+                    }
+
+                val parts = signature.split('.')
+                if (parts.size >= 2) {
+                    val methodName = parts.last()
+                    val className = parts.dropLast(1).joinToString(".")
+                    functions.add(AffectedFunction(signature, className, methodName))
+                }
+            }
+        }
+
+        return functions.distinctBy { it.signature }
     }
 
     /**
