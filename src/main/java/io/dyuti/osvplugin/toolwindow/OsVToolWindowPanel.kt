@@ -14,6 +14,7 @@ import io.dyuti.osvplugin.api.OsVApiService
 import io.dyuti.osvplugin.api.model.Dependency
 import io.dyuti.osvplugin.api.model.OsVSeverity
 import io.dyuti.osvplugin.api.model.Vulnerability
+import io.dyuti.osvplugin.fix.AutoFixService
 import io.dyuti.osvplugin.parser.GradleParser
 import io.dyuti.osvplugin.parser.MavenParser
 import io.dyuti.osvplugin.parser.NpmParser
@@ -141,7 +142,7 @@ class OsVToolWindowPanel
             autoFixItem.addActionListener { _ ->
                 val selectedNode = vulnerabilityTree.lastSelectedPathComponent as? VulnerabilityTreeNode
                 if (selectedNode != null) {
-                    autoFixVulnerability(selectedNode.vulnerability)
+                    performAutoFix(selectedNode)
                 }
             }
             popupMenu.add(autoFixItem)
@@ -379,202 +380,56 @@ class OsVToolWindowPanel
             }
         }
 
-        private fun autoFixVulnerability(vulnerability: Vulnerability) {
-            // Find the dependency that matches this vulnerability
-            val moduleFileWithDep =
-                parsedDependencies.entries.firstOrNull { (_, deps) ->
-                    deps.any { it.name == vulnerability.id || vulnerability.id.contains(it.name.split(":").last()) }
+        private fun performAutoFix(selectedNode: VulnerabilityTreeNode) {
+            val vuln = selectedNode.vulnerability
+            val moduleFile = selectedNode.moduleFile ?: return
+            val lineNumber = vuln.lineNumber
+
+            // Find the dependency that produced this vulnerability using line number
+            val depsForFile = parsedDependencies[moduleFile] ?: emptyList()
+            val matchingDep =
+                depsForFile.firstOrNull { dep ->
+                    // Match by line number (exact) or name (fallback)
+                    (lineNumber != null && dep.lineNumber == lineNumber) ||
+                        dep.name == vuln.id ||
+                        (dep.name.isNotEmpty() && vuln.id.contains(dep.name.split(":").lastOrNull() ?: ""))
                 }
 
-            if (moduleFileWithDep == null) {
-                updateStatus("Could not find dependency ${vulnerability.id} in any module")
+            if (matchingDep == null) {
+                updateStatus(
+                    "Could not locate dependency for ${vuln.id} in ${moduleFile.name}: " +
+                        "ensure the scan was run on this file",
+                )
                 return
             }
 
-            val (moduleFile, dependencies) = moduleFileWithDep
-            val fixVersion = vulnerability.fixedVersions.firstOrNull() ?: "N/A"
-
-            if (fixVersion == "N/A") {
-                updateStatus("No fix version available for ${vulnerability.id}")
-                return
-            }
-
-            try {
-                val fileName = moduleFile.name
-                val content = moduleFile.inputStream.bufferedReader().use { it.readText() }
-                val updatedContent =
-                    when {
-                        fileName == "pom.xml" -> {
-                            updateMavenDependency(content, dependencies, vulnerability.id, fixVersion)
-                        }
-
-                        fileName == "build.gradle" || fileName == "build.gradle.kts" -> {
-                            updateGradleDependency(
-                                content,
-                                dependencies,
-                                vulnerability.id,
-                                fixVersion,
-                            )
-                        }
-
-                        fileName == "package.json" -> {
-                            updateNpmDependency(content, dependencies, vulnerability.id, fixVersion)
-                        }
-
-                        fileName == "requirements.txt" -> {
-                            updatePipDependency(content, dependencies, vulnerability.id, fixVersion)
-                        }
-
-                        else -> {
-                            content
-                        }
-                    }
-
-                if (updatedContent != content) {
-                    moduleFile.setBinaryContent(updatedContent.toByteArray())
-                    updateStatus("Auto-fixed ${vulnerability.id} to version $fixVersion in ${moduleFile.name}")
-                    // Refresh the scan
-                    performScan()
-                } else {
-                    updateStatus("Could not find dependency ${vulnerability.id} in ${moduleFile.name}")
-                }
-            } catch (e: Exception) {
-                updateStatus("Failed to auto-fix ${vulnerability.id}: ${e.message}")
-            }
+            autoFixVulnerability(matchingDep, vuln, moduleFile)
         }
 
-        private fun updateMavenDependency(
-            content: String,
-            dependencies: List<Dependency>,
-            vulnName: String,
-            fixVersion: String,
-        ): String {
-            var updatedContent = content
-
-            // Find the dependency and update version
-            val depPattern = """<dependency>.*?</dependency>""".toRegex(RegexOption.DOT_MATCHES_ALL)
-
-            depPattern.findAll(content).forEach { match ->
-                val fullMatch = match.value
-                val artifactIdMatch = """<artifactId>([^<]+)</artifactId>""".toRegex().find(fullMatch)
-                val versionMatch = """<version>([^<]+)</version>""".toRegex().find(fullMatch)
-
-                if (artifactIdMatch != null) {
-                    val artifactId = artifactIdMatch.groupValues[1]
-                    val groupIdMatch = """<groupId>([^<]+)</groupId>""".toRegex().find(fullMatch)
-                    val groupId = groupIdMatch?.groupValues?.get(1) ?: ""
-
-                    // Check if this matches our vulnerability
-                    val depName = "$groupId:$artifactId"
-                    if (vulnName == depName || vulnName.contains(artifactId, ignoreCase = true)) {
-                        val oldVersion = versionMatch?.groupValues?.get(1)
-                        if (oldVersion != null) {
-                            // Check if it's a property reference like ${property.name}
-                            if (oldVersion.contains("\${")) {
-                                val propertyName = oldVersion.replace("\${", "").replace("}", "")
-                                updatedContent = updateMavenProperty(updatedContent, propertyName, fixVersion)
-                            } else {
-                                updatedContent = updatedContent.replace(oldVersion, fixVersion)
-                            }
-                        }
-                    }
-                }
-            }
-
-            return updatedContent
-        }
-
-        private fun updateMavenProperty(
-            content: String,
-            propertyName: String,
-            newValue: String,
-        ): String {
-            // Update property value
-            val propPattern = """<$propertyName>([^<]+)</$propertyName>""".toRegex()
-            val match = propPattern.find(content)
-            if (match != null) {
-                val oldValue = match.groupValues[1]
-                return content.replace(oldValue, newValue)
-            }
-            return content
-        }
-
-        private fun updateGradleDependency(
-            content: String,
-            dependencies: List<Dependency>,
-            vulnName: String,
-            fixVersion: String,
-        ): String {
-            var updatedContent = content
-
-            val depPattern =
-                Regex(
-                    """(implementation|api|compileOnly|runtimeOnly|testImplementation|androidTestImplementation|debugImplementation|releaseImplementation)\s*\(\s*['"]([^:]+):([^:]+):([^'"]+)['"]\s*\)""",
+        private fun autoFixVulnerability(
+            dependency: Dependency,
+            vulnerability: Vulnerability,
+            moduleFile: VirtualFile,
+        ) {
+            val success =
+                AutoFixService.getInstance().applyFix(
+                    project = project,
+                    moduleFile = moduleFile,
+                    dependency = dependency,
+                    vulnerability = vulnerability,
                 )
 
-            depPattern.findAll(content).forEach { match ->
-                val group = match.groupValues[1]
-                val artifactId = match.groupValues[3]
-                val version = match.groupValues[4]
-
-                val depName = "$group:$artifactId"
-                if (vulnName == depName || vulnName.contains(artifactId, ignoreCase = true)) {
-                    updatedContent =
-                        updatedContent.replace(
-                            "'$group:$artifactId:$version'",
-                            "'$group:$artifactId:$fixVersion'",
-                        )
-                }
+            if (success) {
+                updateStatus(
+                    "Auto-fixed ${vulnerability.id} (${dependency.name}) in ${moduleFile.name}",
+                )
+                performScan()
+            } else {
+                updateStatus(
+                    "Could not auto-fix ${vulnerability.id} (${dependency.name}) — " +
+                        "try a manual fix",
+                )
             }
-
-            return updatedContent
-        }
-
-        private fun updateNpmDependency(
-            content: String,
-            dependencies: List<Dependency>,
-            vulnName: String,
-            fixVersion: String,
-        ): String {
-            var updatedContent = content
-
-            // Try to find the package name
-            val depName = vulnName.split(":").lastOrNull() ?: vulnName
-            val depPattern = """"$depName"\s*:\s*"[^"]+"""".toRegex()
-
-            depPattern.findAll(content).forEach { match ->
-                val oldLine = match.value
-                val oldVersionMatch = """"version"\s*:\s*"([^"]+)"""".toRegex().find(oldLine)
-                if (oldVersionMatch != null) {
-                    val oldVersion = oldVersionMatch.groupValues[1]
-                    updatedContent = updatedContent.replace(oldLine, oldLine.replace(oldVersion, fixVersion))
-                }
-            }
-
-            return updatedContent
-        }
-
-        private fun updatePipDependency(
-            content: String,
-            dependencies: List<Dependency>,
-            vulnName: String,
-            fixVersion: String,
-        ): String {
-            var updatedContent = content
-
-            // Try to find the package name
-            val depName = vulnName.split(":").lastOrNull() ?: vulnName
-            val depPattern = """^$depName==[^\s]+""".toRegex(RegexOption.MULTILINE)
-
-            depPattern.findAll(content).forEach { match ->
-                val oldLine = match.value
-                val parts = oldLine.split("==")
-                if (parts.size == 2) {
-                    updatedContent = updatedContent.replace(oldLine, "${parts[0]}==$fixVersion")
-                }
-            }
-
-            return updatedContent
         }
 
         /**
