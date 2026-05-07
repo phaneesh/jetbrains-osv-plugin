@@ -60,6 +60,7 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 **Research:** Competitive analysis completed 2026-05-06
 
 **Features:**
+
 - [ ] Fix CVSS severity parsing (currently defaults to MEDIUM)
 - [ ] Implement real license fetching from package registries
 - [ ] Convert inspections to async to prevent UI freezing
@@ -74,6 +75,7 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 **Rationale:** Mend.io and Qodana both use this pattern; custom tool windows feel foreign
 
 **Features:**
+
 - [ ] Add "OSV Vulnerabilities" tab to Problems view (Alt+6)
 - [ ] Line-level problem registration with exact navigation
 - [ ] Severity icons matching IntelliJ conventions
@@ -88,6 +90,7 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 **Rationale:** Mend.io and Qodana both offer this; OSV only checks versions
 
 **Features:**
+
 - [ ] Collect vulnerable function signatures from OSV API
 - [ ] Index library method calls via PSI
 - [ ] Cross-reference call sites with vulnerability data
@@ -101,6 +104,7 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 **Rationale:** Unique differentiator — only Mend.io offers this; no free tool does
 
 **Features:**
+
 - [ ] OpenSSF malicious packages feed integration
 - [ ] Typosquatting detection (Levenshtein distance)
 - [ ] Pre-commit hooks to block malware commits
@@ -114,6 +118,7 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 **Rationale:** Snyk and Qodana both offer SAST; positions OSV as full security suite
 
 **Features:**
+
 - [ ] SQL injection detection (source → sink tracking)
 - [ ] XSS detection (untrusted input to HTML output)
 - [ ] Path traversal detection
@@ -134,18 +139,18 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 
 ## Progress
 
-| Phase | Goal | Status | Complete |
-|-------|------|--------|----------|
-| 1 | Core Foundation | ✅ Complete | 2026-04-24 |
-| 2 | IntelliJ Integration | ✅ Complete | 2026-04-24 |
-| 3 | Advanced Features | ✅ Complete | 2026-04-24 |
-| 4 | Modern UI | ✅ Complete | 2026-04-28 |
-| 5 | Feature Completion | ✅ Plan Created | 2026-04-28 |
-| 6 | Foundation Fixes | 📋 Planned | — |
-| 7 | Problems Tab Integration | 📋 Planned | — |
-| 8 | Vulnerable API Detection | 📋 Planned | — |
-| 9 | Malicious Package Detection | 📋 Planned | — |
-| 10 | Basic SAST / Taint Analysis | 📋 Planned | — |
+| Phase | Goal                        | Status          | Complete   |
+| ----- | --------------------------- | --------------- | ---------- |
+| 1     | Core Foundation             | ✅ Complete     | 2026-04-24 |
+| 2     | IntelliJ Integration        | ✅ Complete     | 2026-04-24 |
+| 3     | Advanced Features           | ✅ Complete     | 2026-04-24 |
+| 4     | Modern UI                   | ✅ Complete     | 2026-04-28 |
+| 5     | Feature Completion          | ✅ Plan Created | 2026-04-28 |
+| 6     | Foundation Fixes            | 📋 Planned      | —          |
+| 7     | Problems Tab Integration    | 📋 Planned      | —          |
+| 8     | Vulnerable API Detection    | 📋 Planned      | —          |
+| 9     | Malicious Package Detection | 📋 Planned      | —          |
+| 10    | Basic SAST / Taint Analysis | 📋 Planned      | —          |
 
 ---
 

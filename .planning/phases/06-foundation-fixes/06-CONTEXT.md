@@ -14,22 +14,26 @@ This phase was identified during competitive research (see `.planning/research/C
 ## Current Broken Features
 
 ### Severity Parsing (OsVApiService.kt)
+
 - OSV API returns `severity: [{"type": "CVSS_V3", "score": "9.8"}]`
 - Plugin code always defaults to `OsVSeverity.MEDIUM`
 - No parsing of CVSS vector strings or scores
 
 ### License Scanning (LicenseScannerService.kt)
+
 - `LicenseParser.parseLicense()` only checks if package name contains "mit", "apache", etc.
 - Never queries actual package metadata from registries
 - LicenseConflictDetector has a full compatibility matrix but no real data to feed it
 - Creates false confidence for users
 
 ### Inspection Performance (OsVInspection.kt)
+
 - Runs synchronously on file open with network calls
 - No debouncing — every keystroke in pom.xml triggers a rescan
 - No caching — queries API every time file is inspected
 
 ### Auto-Fix (OsVQuickFix.kt)
+
 - Reads entire file as string, does regex replacement
 - No PSI awareness — breaks XML/JSON structure if version string appears elsewhere
 - No undo support
