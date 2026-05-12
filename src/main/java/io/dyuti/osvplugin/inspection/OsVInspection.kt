@@ -5,6 +5,7 @@ import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task.Backgroundable
@@ -62,6 +63,10 @@ internal data class VulnerabilityResult(
  * - Background scanning via ProgressManager.Task.Backgroundable
  */
 class OsVInspection : LocalInspectionTool() {
+    companion object {
+        private val LOG = Logger.getInstance(OsVInspection::class.java)
+    }
+
     private val parsers: List<DependencyParser> =
         listOf(
             MavenParser(),
@@ -195,7 +200,7 @@ class OsVInspection : LocalInspectionTool() {
                             }
                         } catch (e: Exception) {
                             // Log but don't fail — other parsers may succeed
-                            System.err.println("OSV: Error scanning file $fileName: ${e.message}")
+                            LOG.error("OSV: Error scanning file $fileName", e)
                         }
                     }
 

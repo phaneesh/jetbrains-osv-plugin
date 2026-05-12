@@ -1,6 +1,7 @@
 // OSV Vulnerability Scanner Tool Window Panel
 package io.dyuti.osvplugin.toolwindow
 
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
@@ -37,6 +38,10 @@ class OsVToolWindowPanel
     constructor(
         project: Project,
     ) : JBPanel<OsVToolWindowPanel>(BorderLayout()) {
+        companion object {
+            private val LOG = Logger.getInstance(OsVToolWindowPanel::class.java)
+        }
+
         private val apiService = OsVApiService.getInstance()
         private val cacheManager = CacheManager.getInstance()
         private val project: Project = project
@@ -492,7 +497,7 @@ class OsVToolWindowPanel
                         val parsed = parser.parse(fileName, content)
                         dependencies.addAll(parsed)
                     } catch (e: Exception) {
-                        System.err.println("Error parsing dependencies from $fileName: ${e.message}")
+                        LOG.error("Error parsing dependencies from $fileName", e)
                     }
                 }
             }
@@ -520,7 +525,7 @@ class OsVToolWindowPanel
                         depVulns.map { vuln -> vuln.copy(lineNumber = dep.lineNumber) },
                     )
                 } catch (e: Exception) {
-                    System.err.println("Error querying vulnerabilities for ${dep.name}: ${e.message}")
+                    LOG.error("Error querying vulnerabilities for ${dep.name}", e)
                 }
             }
             return vulnerabilities

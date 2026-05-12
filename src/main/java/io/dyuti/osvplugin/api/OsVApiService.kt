@@ -4,6 +4,7 @@ package io.dyuti.osvplugin.api
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.intellij.openapi.diagnostic.Logger
 import io.dyuti.osvplugin.api.model.AffectedFunction
 import io.dyuti.osvplugin.api.model.Dependency
 import io.dyuti.osvplugin.api.model.OsVSeverity
@@ -32,6 +33,10 @@ import java.util.concurrent.TimeUnit
 class OsVApiService(
     httpClient: HttpClient? = null,
 ) {
+    companion object {
+        private val LOG = Logger.getInstance(OsVApiService::class.java)
+    }
+
     private val httpClient: HttpClient =
         httpClient
             ?: HttpClient
@@ -92,7 +97,7 @@ class OsVApiService(
                 .build()
 
         return executeRequest(request, cacheKey) { response ->
-            parseVulnerabilities(response)
+            parseVulnerabilities(response, packageName)
         }
     }
 
@@ -162,19 +167,25 @@ class OsVApiService(
         return pkg
     }
 
-    private fun parseVulnerabilities(responseBody: String): List<Vulnerability> {
+    private fun parseVulnerabilities(
+        responseBody: String,
+        packageName: String,
+    ): List<Vulnerability> {
         val vulnerabilities = mutableListOf<Vulnerability>()
         val json = JsonParser.parseString(responseBody).asJsonObject
         val vulnsArray = json.getAsJsonArray("vulns")
 
         vulnsArray?.forEach { vuln ->
-            vulnerabilities.add(parseVulnerability(vuln.asJsonObject))
+            vulnerabilities.add(parseVulnerability(vuln.asJsonObject, packageName))
         }
 
         return vulnerabilities
     }
 
-    private fun parseVulnerability(vuln: JsonObject): Vulnerability {
+    private fun parseVulnerability(
+        vuln: JsonObject,
+        packageName: String,
+    ): Vulnerability {
         val id = vuln.getAsJsonPrimitive("id")?.asString ?: ""
         val aliasesArray = vuln.getAsJsonArray("aliases")
         val aliases = aliasesArray?.mapNotNull { it.asString } ?: emptyList()
@@ -219,6 +230,7 @@ class OsVApiService(
             references = references,
             cweIds = mutableListOf(),
             affectedFunctions = affectedFunctions,
+            packageName = packageName,
         )
     }
 
@@ -402,7 +414,7 @@ class OsVApiService(
                                     results[dep] = emptyList()
                                 }
                             } else {
-                                val vulns = parseVulnerabilities(bodyStr)
+                                val vulns = parseVulnerabilities(bodyStr, dep.name)
                                 synchronized(results) {
                                     results[dep] = vulns
                                 }
@@ -432,7 +444,7 @@ class OsVApiService(
         }
 
         errors.forEach { err ->
-            System.err.println("Error querying dependency: $err")
+            LOG.error("Error querying dependency: $err")
         }
     }
 }

@@ -3,6 +3,7 @@ package io.dyuti.osvplugin.export
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.intellij.openapi.diagnostic.Logger
 import io.dyuti.osvplugin.api.model.Dependency
 import io.dyuti.osvplugin.api.model.OsVSeverity
 import io.dyuti.osvplugin.api.model.Vulnerability
@@ -14,6 +15,10 @@ import java.io.FileWriter
  * Export vulnerabilities to SARIF v2.1.0 format
  */
 class SarifExporter {
+    companion object {
+        private val LOG = Logger.getInstance(SarifExporter::class.java)
+    }
+
     private val gson: Gson =
         GsonBuilder()
             .setPrettyPrinting()
@@ -33,7 +38,7 @@ class SarifExporter {
             File(outputFile).writeText(json)
             true
         } catch (e: Exception) {
-            System.err.println("Error exporting SARIF: ${e.message}")
+            LOG.error("Error exporting SARIF", e)
             false
         }
 
