@@ -13,9 +13,9 @@ import io.dyuti.osvplugin.api.model.OsVSeverity
 class OsVConfig : PersistentStateComponent<OsVConfig> {
     var minimumSeverity: OsVSeverity = OsVSeverity.MEDIUM
     var inspectionEnabled: Boolean = true
-    var cacheTtl: Int = 1
+    var cacheTtl: Int = 24
     var rateLimitEnabled: Boolean = true
-    var rateLimitRequestsPerHour: Int = 100
+    var rateLimitRequestsPerHour: Int = 1000
     var scanDirectDependencies: Boolean = true
     var scanTransitiveDependencies: Boolean = true
     var githubAdvisoryEnabled: Boolean = false

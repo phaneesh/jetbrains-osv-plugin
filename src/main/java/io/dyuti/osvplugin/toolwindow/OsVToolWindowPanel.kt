@@ -526,28 +526,22 @@ class OsVToolWindowPanel
         }
 
         /**
-         * Query OSV API for vulnerabilities
+         * Query OSV API for vulnerabilities (uses batch API to minimize requests).
          */
         private fun queryVulnerabilities(dependencies: List<Dependency>): List<Vulnerability> {
+            if (dependencies.isEmpty()) return emptyList()
+
+            val results = apiService.batchQueryVulnerabilities(dependencies)
             val vulnerabilities = mutableListOf<Vulnerability>()
-            for (dep in dependencies) {
-                try {
-                    val depVulns =
-                        apiService.queryVulnerabilities(
-                            dep.name,
-                            dep.ecosystem,
-                            dep.version,
-                        )
-                    // Preserve the source dependency's line number so tree double-click
-                    // navigates to the exact line where the dependency is declared.
-                    // TODO: for transitive deps, navigate to parent dep line.
-                    vulnerabilities.addAll(
-                        depVulns.map { vuln -> vuln.copy(lineNumber = dep.lineNumber) },
-                    )
-                } catch (e: Exception) {
-                    LOG.error("Error querying vulnerabilities for ${dep.name}", e)
-                }
+
+            for ((dep, depVulns) in results) {
+                vulnerabilities.addAll(
+                    depVulns.map { vuln ->
+                        vuln.copy(lineNumber = dep.lineNumber)
+                    },
+                )
             }
+
             return vulnerabilities
         }
     }

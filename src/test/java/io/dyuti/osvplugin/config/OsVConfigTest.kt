@@ -16,9 +16,9 @@ class OsVConfigTest {
 
         assertEquals(OsVSeverity.MEDIUM, config.minimumSeverity)
         assertEquals(true, config.inspectionEnabled)
-        assertEquals(1, config.cacheTtl)
+        assertEquals(24, config.cacheTtl)
         assertEquals(true, config.rateLimitEnabled)
-        assertEquals(100, config.rateLimitRequestsPerHour)
+        assertEquals(1000, config.rateLimitRequestsPerHour)
         assertEquals(true, config.scanDirectDependencies)
         assertEquals(true, config.scanTransitiveDependencies)
         assertEquals(false, config.githubAdvisoryEnabled)

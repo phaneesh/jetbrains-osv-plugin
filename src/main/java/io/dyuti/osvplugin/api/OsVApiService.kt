@@ -115,6 +115,11 @@ class OsVApiService(
         requestsThisHour += count
     }
 
+    /**
+     * Total request count for the current rate-limit window.
+     */
+    fun getRequestCount(): Int = requestsThisHour
+
     fun clearCache() {
         cacheManager.invalidateAll()
     }
@@ -164,6 +169,22 @@ class OsVApiService(
         pkg.addProperty("name", packageName)
         pkg.addProperty("ecosystem", ecosystem)
         return pkg
+    }
+
+    /**
+     * Build a batch query request for the OSV /querybatch endpoint.
+     */
+    private fun buildBatchQueryRequest(dependencies: List<Dependency>): String {
+        val queries = com.google.gson.JsonArray()
+        dependencies.forEach { dep ->
+            val request = JsonObject()
+            request.add("package", buildPackageObject(dep.name, dep.ecosystem))
+            request.addProperty("version", dep.version)
+            queries.add(request)
+        }
+        val batch = JsonObject()
+        batch.add("queries", queries)
+        return batch.toString()
     }
 
     private fun parseVulnerabilities(
@@ -342,6 +363,10 @@ class OsVApiService(
         }
     }
 
+    /**
+     * Query OSV API for vulnerabilities using the batch endpoint.
+     * Sends a single HTTP request for all uncached dependencies, minimizing API calls.
+     */
     @Throws(OsVApiException::class)
     fun batchQueryVulnerabilities(dependencies: List<Dependency>): Map<Dependency, List<Vulnerability>> {
         val results = mutableMapOf<Dependency, List<Vulnerability>>()
@@ -360,11 +385,73 @@ class OsVApiService(
             return results
         }
 
-        if (!checkRateLimit(uncachedDependencies.size)) {
-            throw OsVApiException("Rate limit exceeded")
+        if (!checkRateLimit(3)) {
+            LOG.warn("Rate limit approaching — skipping ${uncachedDependencies.size} uncached dependencies")
+            uncachedDependencies.forEach { results[it] = emptyList() }
+            return results
         }
 
-        executeParallelQueries(uncachedDependencies, results)
+        // Build batch query using OSV batch API
+        val batchJson = buildBatchQueryRequest(uncachedDependencies)
+        val batchUrl = osvApiUrl.replace("/query", "/querybatch")
+
+        val request =
+            HttpRequest
+                .newBuilder(URI(batchUrl))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(batchJson))
+                .build()
+
+        val response =
+            try {
+                httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+            } catch (e: java.io.IOException) {
+                throw OsVApiException("Network error during batch query: ${e.message}", e)
+            }
+
+        if (response.statusCode() != 200) {
+            throw OsVApiException("Batch API request failed: ${response.statusCode()}")
+        }
+
+        val body = response.body() ?: throw OsVApiException("Empty batch response body")
+
+        incrementRequestCount(3) // batch endpoint is cheaper
+
+        try {
+            val json = JsonParser.parseString(body).asJsonObject
+            val resultsArray = json.getAsJsonArray("results")
+
+            if (resultsArray == null || resultsArray.size() != uncachedDependencies.size) {
+                LOG.warn("Batch result count mismatch: expected ${uncachedDependencies.size}, got ${resultsArray?.size()}")
+                uncachedDependencies.forEach { results[it] = emptyList() }
+                return results
+            }
+
+            for (i in uncachedDependencies.indices) {
+                val dep = uncachedDependencies[i]
+                val resultObj = resultsArray[i].asJsonObject
+                val vulnsArray = resultObj.getAsJsonArray("vulns") ?: emptyList()
+
+                val vulns =
+                    vulnsArray.mapNotNull { element ->
+                        try {
+                            parseVulnerability(element.asJsonObject, dep.name)
+                        } catch (_: Exception) {
+                            null
+                        }
+                    }
+
+                val cacheKey = "${dep.name}:${dep.ecosystem}:${dep.version}"
+                cacheManager.cacheVulnerabilities(cacheKey, vulns)
+                results[dep] = vulns
+            }
+        } catch (e: OsVApiException) {
+            throw e
+        } catch (e: Exception) {
+            LOG.error("Failed to parse batch response: ${e.message}", e)
+            uncachedDependencies.forEach { results[it] = emptyList() }
+        }
+
         return results
     }
 
