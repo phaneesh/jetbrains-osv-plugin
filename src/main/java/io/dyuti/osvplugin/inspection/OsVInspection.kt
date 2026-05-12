@@ -220,8 +220,8 @@ class OsVInspection : LocalInspectionTool() {
      */
     private fun shouldReportVulnerability(vuln: Vulnerability): Boolean {
         val config =
-            @Suppress("DEPRECATION")
-            com.intellij.openapi.components.ServiceManager
+            com.intellij.openapi.application.ApplicationManager
+                .getApplication()
                 .getService(OsVConfig::class.java)
         return SeverityUtil.meetsThreshold(vuln.severity, config.minimumSeverity)
     }

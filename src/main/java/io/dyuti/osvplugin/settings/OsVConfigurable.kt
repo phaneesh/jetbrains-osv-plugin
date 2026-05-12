@@ -200,16 +200,16 @@ class OsVConfigurable : Configurable {
         config.jiraToken = jiraTokenField.text
 
         // Save configuration
-        @Suppress("DEPRECATION")
-        com.intellij.openapi.components.ServiceManager
+        com.intellij.openapi.application.ApplicationManager
+            .getApplication()
             .getService(OsVConfig::class.java)
             .loadState(config)
     }
 
     override fun reset() {
-        @Suppress("DEPRECATION")
         val savedConfig =
-            com.intellij.openapi.components.ServiceManager
+            com.intellij.openapi.application.ApplicationManager
+                .getApplication()
                 .getService(OsVConfig::class.java)
         config = savedConfig
 

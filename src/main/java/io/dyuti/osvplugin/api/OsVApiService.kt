@@ -7,16 +7,15 @@ import com.google.gson.JsonParser
 import io.dyuti.osvplugin.api.model.AffectedFunction
 import io.dyuti.osvplugin.api.model.Dependency
 import io.dyuti.osvplugin.api.model.OsVSeverity
-import io.dyuti.osvplugin.api.model.Package
-import io.dyuti.osvplugin.api.model.Version
 import io.dyuti.osvplugin.api.model.Vulnerability
 import io.dyuti.osvplugin.config.OsVConfig
 import io.dyuti.osvplugin.utils.CacheManager
-import io.dyuti.osvplugin.utils.SeverityUtil
-import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody
-import java.io.IOException
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.time.Duration
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
@@ -30,29 +29,26 @@ import java.util.concurrent.TimeUnit
  * - Caching with TTL
  * - Rate limiting
  */
-class OsVApiService {
-    private val httpClient: OkHttpClient =
-        OkHttpClient
-            .Builder()
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .build()
+class OsVApiService(
+    httpClient: HttpClient? = null,
+) {
+    private val httpClient: HttpClient =
+        httpClient
+            ?: HttpClient
+                .newBuilder()
+                .connectTimeout(Duration.ofSeconds(30))
+                .build()
 
     private val osvApiUrl = "https://api.osv.dev/v1/query"
-
     private val gson = Gson()
-
     private val cacheManager = CacheManager.getInstance()
 
-    // Use lazy initialization to avoid issues during test construction
     private val config by lazy {
         try {
-            @Suppress("DEPRECATION")
-            com.intellij.openapi.components.ServiceManager
+            com.intellij.openapi.application.ApplicationManager
+                .getApplication()
                 .getService(OsVConfig::class.java)
         } catch (e: Exception) {
-            // Return default config if running outside IntelliJ
             OsVConfig()
         }
     }
@@ -64,37 +60,25 @@ class OsVApiService {
         fun getInstance(): OsVApiService = OsVApiService()
     }
 
-    /**
-     * Query OSV API for vulnerabilities by package name and version
-     */
     @Throws(OsVApiException::class)
     fun queryVulnerabilities(
         packageName: String,
         ecosystem: String,
         version: String,
     ): List<Vulnerability> {
-        // Check cache first
         val cacheKey = "$packageName:$ecosystem:$version"
         cacheManager.getCachedVulnerabilities(cacheKey)?.let { return it }
 
-        // Check rate limit
         if (!checkRateLimit()) {
             throw OsVApiException("Rate limit exceeded")
         }
 
         val requestJson = buildQueryRequest(packageName, ecosystem, version)
-
-        // Create request body with proper OkHttp 4.12 API
-        val mediaType = "application/json".toMediaType()
-
-        @Suppress("DEPRECATION")
-        val body = RequestBody.create(mediaType, requestJson)
-
         val request =
-            Request
-                .Builder()
-                .url(osvApiUrl)
-                .post(body)
+            HttpRequest
+                .newBuilder(URI(osvApiUrl))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(requestJson))
                 .build()
 
         return executeRequest(request, cacheKey) { response ->
@@ -102,64 +86,49 @@ class OsVApiService {
         }
     }
 
-    /**
-     * Check rate limit before making API calls
-     */
     private fun checkRateLimit(requestsNeeded: Int = 1): Boolean {
-        if (!config.rateLimitEnabled) {
-            return true
-        }
+        if (!config.rateLimitEnabled) return true
 
         val now = System.currentTimeMillis()
-
-        // Reset window if expired
-        if (now - rateLimitWindowStart > 3600000) { // 1 hour
+        if (now - rateLimitWindowStart > 3600000) {
             rateLimitWindowStart = now
             requestsThisHour = 0
         }
-
-        // Check if we have enough quota
         return (requestsThisHour + requestsNeeded) <= config.rateLimitRequestsPerHour
     }
 
-    /**
-     * Increment request counter
-     */
     private fun incrementRequestCount(count: Int = 1) {
         requestsThisHour += count
     }
 
-    /**
-     * Clear the cache
-     */
     fun clearCache() {
         cacheManager.invalidateAll()
     }
 
     private inline fun <T> executeRequest(
-        request: Request,
+        request: HttpRequest,
         cacheKey: String,
         block: (String) -> T,
     ): T =
         try {
-            httpClient.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    throw OsVApiException("API request failed: ${response.code}")
-                }
-
-                val body = response.body?.string() ?: throw OsVApiException("Empty response body")
-
-                // Increment request counter
-                incrementRequestCount()
-
-                // Cache the result
-                val result = block(body)
-                @Suppress("UNCHECKED_CAST")
-                cacheManager.cacheVulnerabilities(cacheKey, result as List<Vulnerability>)
-                result
+            val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+            if (response.statusCode() != 200) {
+                throw OsVApiException("API request failed: ${response.statusCode()}")
             }
-        } catch (e: IOException) {
+
+            val body = response.body() ?: throw OsVApiException("Empty response body")
+
+            incrementRequestCount()
+
+            val result = block(body)
+            @Suppress("UNCHECKED_CAST")
+            cacheManager.cacheVulnerabilities(cacheKey, result as List<Vulnerability>)
+            result
+        } catch (e: java.io.IOException) {
             throw OsVApiException("Network error: ${e.message}", e)
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            throw OsVApiException("Request interrupted: ${e.message}", e)
         }
 
     private fun buildQueryRequest(
@@ -185,7 +154,6 @@ class OsVApiService {
 
     private fun parseVulnerabilities(responseBody: String): List<Vulnerability> {
         val vulnerabilities = mutableListOf<Vulnerability>()
-
         val json = JsonParser.parseString(responseBody).asJsonObject
         val vulnsArray = json.getAsJsonArray("vulns")
 
@@ -199,23 +167,17 @@ class OsVApiService {
     private fun parseVulnerability(vuln: JsonObject): Vulnerability {
         val id = vuln.getAsJsonPrimitive("id")?.asString ?: ""
         val aliasesArray = vuln.getAsJsonArray("aliases")
-        val aliases =
-            if (aliasesArray != null) {
-                aliasesArray.mapNotNull { it.asString }
-            } else {
-                emptyList()
-            }
+        val aliases = aliasesArray?.mapNotNull { it.asString } ?: emptyList()
 
         val summary = vuln.getAsJsonPrimitive("summary")?.asString ?: ""
         val details = vuln.getAsJsonPrimitive("details")?.asString ?: ""
 
-        // Parse fixed versions from affected range
         val fixedVersions = mutableListOf<String>()
         vuln.getAsJsonArray("affected")?.forEach { affected ->
             val ranges = affected.asJsonObject.getAsJsonArray("ranges")
-            ranges.forEach { range ->
+            ranges?.forEach { range ->
                 val events = range.asJsonObject.getAsJsonArray("events")
-                events.forEach { event ->
+                events?.forEach { event ->
                     val fixed = event.asJsonObject.get("fixed")
                     if (fixed != null) {
                         fixedVersions.add(fixed.asString)
@@ -224,7 +186,6 @@ class OsVApiService {
             }
         }
 
-        // Parse references
         val references = mutableListOf<String>()
         vuln.getAsJsonArray("references")?.forEach { ref ->
             val url = ref.asJsonObject.get("url")?.asString
@@ -233,10 +194,7 @@ class OsVApiService {
             }
         }
 
-        // Parse CVSS severity from severity array
-        // Parse affected functions from database_specific.functions (Phase 8: vulnerable API detection)
         val affectedFunctions = parseAffectedFunctions(vuln)
-
         val (severity, cvssScore) = parseCvssSeverity(vuln)
 
         return Vulnerability(
@@ -246,7 +204,7 @@ class OsVApiService {
             details = details,
             severity = severity,
             cvssScore = cvssScore,
-            affectedVersions = emptyList(), // Will be populated from affected ranges
+            affectedVersions = emptyList(),
             fixedVersions = fixedVersions,
             references = references,
             cweIds = mutableListOf(),
@@ -256,18 +214,16 @@ class OsVApiService {
 
     /**
      * Parse CVSS severity from OSV severity array.
-     * Priority: CVSS_V3 > CVSS_V2. Returns score and mapped severity.
+     * Priority: CVSS_V3 > CVSS_V2.
      */
     internal fun parseCvssSeverity(vuln: JsonObject): Pair<OsVSeverity, Double?> {
         val severityArray =
             vuln.getAsJsonArray("severity")
                 ?: return Pair(OsVSeverity.MEDIUM, null)
 
-        // Find the best score: prefer CVSS_V3, fallback to CVSS_V2
         var bestScore: Double? = null
         var foundType = false
 
-        // First pass: try CVSS_V3
         severityArray.forEach { sev ->
             val sevObj = sev.asJsonObject
             val type = sevObj.getAsJsonPrimitive("type")?.asString
@@ -281,7 +237,6 @@ class OsVApiService {
             }
         }
 
-        // Second pass: try CVSS_V2 if no V3 found
         if (!foundType) {
             severityArray.forEach { sev ->
                 val sevObj = sev.asJsonObject
@@ -302,21 +257,6 @@ class OsVApiService {
 
     /**
      * Parse affected function signatures from OSV vulnerability JSON.
-     *
-     * OSV stores vulnerable method names in `affected[].database_specific.functions`:
-     * ```json
-     * "affected": [{
-     *   "database_specific": {
-     *     "functions": [
-     *       "org.apache.logging.log4j.Logger.debug",
-     *       "org.apache.logging.log4j.Logger.error"
-     *     ]
-     *   }
-     * }]
-     * ```
-     *
-     * @param vuln The OSV vulnerability JSON object
-     * @return List of affected function signatures, or empty list if none present
      */
     private fun parseAffectedFunctions(vuln: JsonObject): List<AffectedFunction> {
         val functions = mutableListOf<AffectedFunction>()
@@ -326,8 +266,7 @@ class OsVApiService {
                 vuln.getAsJsonArray("affected")
             } catch (_: Exception) {
                 null
-            }
-                ?: return emptyList()
+            } ?: return emptyList()
 
         affectedArray.forEach { affected ->
             val affectedObj =
@@ -342,16 +281,14 @@ class OsVApiService {
                     affectedObj.getAsJsonObject("database_specific")
                 } catch (_: Exception) {
                     null
-                }
-                    ?: return@forEach
+                } ?: return@forEach
 
             val functionsArray =
                 try {
                     dbSpecific.getAsJsonArray("functions")
                 } catch (_: Exception) {
                     null
-                }
-                    ?: return@forEach
+                } ?: return@forEach
 
             functionsArray.forEach { func ->
                 val signature =
@@ -373,13 +310,6 @@ class OsVApiService {
         return functions.distinctBy { it.signature }
     }
 
-    /**
-     * Map a CVSS score to OsVSeverity enum.
-     * - 9.0–10.0 → CRITICAL
-     * - 7.0–8.9 → HIGH
-     * - 4.0–6.9 → MEDIUM
-     * - 0.1–3.9 → LOW
-     */
     internal fun mapCvssToSeverity(score: Double?): OsVSeverity {
         if (score == null) return OsVSeverity.MEDIUM
         return when {
@@ -391,15 +321,10 @@ class OsVApiService {
         }
     }
 
-    /**
-     * Batch query vulnerabilities for multiple dependencies using OSV API.
-     * Executes queries in parallel with max 10 concurrent requests for performance.
-     */
     @Throws(OsVApiException::class)
     fun batchQueryVulnerabilities(dependencies: List<Dependency>): Map<Dependency, List<Vulnerability>> {
         val results = mutableMapOf<Dependency, List<Vulnerability>>()
 
-        // Check cache first
         val uncachedDependencies = mutableListOf<Dependency>()
         dependencies.forEach { dep ->
             val cacheKey = "${dep.name}:${dep.ecosystem}:${dep.version}"
@@ -414,19 +339,17 @@ class OsVApiService {
             return results
         }
 
-        // Check rate limit before any async calls
         if (!checkRateLimit(uncachedDependencies.size)) {
             throw OsVApiException("Rate limit exceeded")
         }
 
-        // Execute parallel async queries with max 10 concurrent
         executeParallelQueries(uncachedDependencies, results)
         return results
     }
 
     /**
      * Execute parallel async queries with Semaphore-based concurrency control.
-     * Max 10 concurrent requests. Uses OkHttp Call.enqueue() for async execution.
+     * Max 10 concurrent requests. Uses HttpClient.sendAsync() for async execution.
      */
     private fun executeParallelQueries(
         dependencies: List<Dependency>,
@@ -440,98 +363,73 @@ class OsVApiService {
         dependencies.forEach { dep ->
             semaphore.acquire()
             val requestJson = buildQueryRequest(dep.name, dep.ecosystem, dep.version)
-            val mediaType = "application/json".toMediaType()
-
-            @Suppress("DEPRECATION")
-            val body = RequestBody.create(mediaType, requestJson)
             val request =
-                Request
-                    .Builder()
-                    .url(osvApiUrl)
-                    .post(body)
+                HttpRequest
+                    .newBuilder(URI(osvApiUrl))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(requestJson))
                     .build()
 
-            httpClient.newCall(request).enqueue(
-                object : Callback {
-                    override fun onFailure(
-                        call: Call,
-                        e: IOException,
-                    ) {
+            httpClient
+                .sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .handle { response, throwable ->
+                    try {
+                        if (throwable != null) {
+                            synchronized(errors) {
+                                errors.add("${dep.name}: ${throwable.message}")
+                            }
+                            synchronized(results) {
+                                results[dep] = emptyList()
+                            }
+                        } else if (response.statusCode() != 200) {
+                            synchronized(results) {
+                                results[dep] = emptyList()
+                            }
+                        } else {
+                            val bodyStr = response.body()
+                            if (bodyStr == null) {
+                                synchronized(results) {
+                                    results[dep] = emptyList()
+                                }
+                            } else {
+                                val vulns = parseVulnerabilities(bodyStr)
+                                synchronized(results) {
+                                    results[dep] = vulns
+                                }
+                                val cacheKey = "${dep.name}:${dep.ecosystem}:${dep.version}"
+                                cacheManager.cacheVulnerabilities(cacheKey, vulns)
+                                incrementRequestCount()
+                            }
+                        }
+                    } catch (e: Exception) {
                         synchronized(errors) {
                             errors.add("${dep.name}: ${e.message}")
                         }
                         synchronized(results) {
                             results[dep] = emptyList()
                         }
+                    } finally {
                         semaphore.release()
                         finishedLatch.countDown()
                     }
-
-                    override fun onResponse(
-                        call: Call,
-                        response: Response,
-                    ) {
-                        try {
-                            if (!response.isSuccessful) {
-                                synchronized(results) {
-                                    results[dep] = emptyList()
-                                }
-                            } else {
-                                val bodyStr = response.body?.string()
-                                if (bodyStr == null) {
-                                    synchronized(results) {
-                                        results[dep] = emptyList()
-                                    }
-                                } else {
-                                    val vulns = parseVulnerabilities(bodyStr)
-                                    synchronized(results) {
-                                        results[dep] = vulns
-                                    }
-                                    // Cache the result
-                                    val cacheKey = "${dep.name}:${dep.ecosystem}:${dep.version}"
-                                    cacheManager.cacheVulnerabilities(cacheKey, vulns)
-                                    incrementRequestCount()
-                                }
-                            }
-                        } catch (e: Exception) {
-                            synchronized(errors) {
-                                errors.add("${dep.name}: ${e.message}")
-                            }
-                            synchronized(results) {
-                                results[dep] = emptyList()
-                            }
-                        } finally {
-                            response.close()
-                            semaphore.release()
-                            finishedLatch.countDown()
-                        }
-                    }
-                },
-            )
+                    null
+                }
         }
 
-        // Wait for all requests to complete (with generous timeout)
         val allDone = finishedLatch.await(60, TimeUnit.SECONDS)
         if (!allDone) {
             throw OsVApiException("Batch query timed out waiting for responses")
         }
 
-        // Log any errors that occurred
         errors.forEach { err ->
             System.err.println("Error querying dependency: $err")
         }
     }
 }
 
-/**
- * Exception thrown when OSV API requests fail
- */
 class OsVApiException(
     message: String,
     cause: Throwable? = null,
 ) : Exception(message, cause)
 
-/**
- * Get AggregatedVulnerabilityService instance
- */
 fun getAggregatedService(): AggregatedVulnerabilityService = AggregatedVulnerabilityService()

@@ -1,9 +1,6 @@
 // Organization Management Service
-@file:Suppress("DEPRECATION")
-
 package io.dyuti.osvplugin.organization
 
-import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.project.Project
 import io.dyuti.osvplugin.api.model.Vulnerability
 import java.util.concurrent.ConcurrentHashMap
@@ -12,19 +9,19 @@ import java.util.concurrent.ConcurrentHashMap
  * Organization Manager for multi-tenant support
  * Manages multiple organizations and their configurations
  */
-class OrganizationManager(private val project: Project) {
-    
+class OrganizationManager(
+    private val project: Project,
+) {
     private val organizations = ConcurrentHashMap<String, Organization>()
     private var currentOrganization: Organization? = null
-    
+
     companion object {
         @JvmStatic
-        fun getInstance(project: Project): OrganizationManager {
-            return ServiceManager.getService(project, OrganizationManager::class.java)
+        fun getInstance(project: Project): OrganizationManager =
+            project.getService(OrganizationManager::class.java)
                 ?: OrganizationManager(project)
-        }
     }
-    
+
     /**
      * Add a new organization
      */
@@ -35,21 +32,17 @@ class OrganizationManager(private val project: Project) {
         }
         return org
     }
-    
+
     /**
      * Get organization by ID
      */
-    fun getOrganization(orgId: String): Organization? {
-        return organizations[orgId]
-    }
-    
+    fun getOrganization(orgId: String): Organization? = organizations[orgId]
+
     /**
      * Get current active organization
      */
-    fun getCurrentOrganization(): Organization? {
-        return currentOrganization ?: organizations.values.firstOrNull()
-    }
-    
+    fun getCurrentOrganization(): Organization? = currentOrganization ?: organizations.values.firstOrNull()
+
     /**
      * Set current organization
      */
@@ -58,7 +51,7 @@ class OrganizationManager(private val project: Project) {
         currentOrganization = org
         return true
     }
-    
+
     /**
      * Remove organization
      */
@@ -68,55 +61,51 @@ class OrganizationManager(private val project: Project) {
         }
         return organizations.remove(orgId) != null
     }
-    
+
     /**
      * Get all organizations
      */
-    fun getAllOrganizations(): List<Organization> {
-        return organizations.values.toList()
-    }
-    
+    fun getAllOrganizations(): List<Organization> = organizations.values.toList()
+
     /**
      * Check if organization exists
      */
-    fun hasOrganization(orgId: String): Boolean {
-        return organizations.containsKey(orgId)
-    }
-    
+    fun hasOrganization(orgId: String): Boolean = organizations.containsKey(orgId)
+
     /**
      * Filter vulnerabilities by organization
      */
     fun filterByOrganization(
         vulnerabilities: List<Vulnerability>,
-        orgId: String?
+        orgId: String?,
     ): List<Vulnerability> {
         val org = orgId?.let { getOrganization(it) } ?: return vulnerabilities
-        
+
         // Filter based on organization policies
         return vulnerabilities.filter { vuln ->
-            !org.isIgnored(vuln.id) && 
-            org.licensePolicy.isLicenseCompliant(vuln)
+            !org.isIgnored(vuln.id) &&
+                org.licensePolicy.isLicenseCompliant(vuln)
         }
     }
-    
+
     /**
      * Get organization teams
      */
-    fun getOrganizationTeams(orgId: String): List<Team> {
-        return getOrganization(orgId)?.teams ?: emptyList()
-    }
-    
+    fun getOrganizationTeams(orgId: String): List<Team> = getOrganization(orgId)?.teams ?: emptyList()
+
     /**
      * Get organization members
      */
-    fun getOrganizationMembers(orgId: String): List<Member> {
-        return getOrganization(orgId)?.members ?: emptyList()
-    }
-    
+    fun getOrganizationMembers(orgId: String): List<Member> = getOrganization(orgId)?.members ?: emptyList()
+
     /**
      * Check user permissions
      */
-    fun hasPermission(orgId: String, memberId: String, permission: Permission): Boolean {
+    fun hasPermission(
+        orgId: String,
+        memberId: String,
+        permission: Permission,
+    ): Boolean {
         val org = getOrganization(orgId) ?: return false
         val member = org.members.find { it.id == memberId } ?: return false
         return member.permissions.contains(permission)
@@ -133,11 +122,9 @@ data class Organization(
     val members: List<Member> = emptyList(),
     val teams: List<Team> = emptyList(),
     val licensePolicy: LicensePolicy = LicensePolicy(),
-    val ignoreRules: List<String> = emptyList()
+    val ignoreRules: List<String> = emptyList(),
 ) {
-    fun isIgnored(vulnId: String): Boolean {
-        return ignoreRules.any { vulnId.contains(it, ignoreCase = true) }
-    }
+    fun isIgnored(vulnId: String): Boolean = ignoreRules.any { vulnId.contains(it, ignoreCase = true) }
 }
 
 /**
@@ -148,7 +135,7 @@ data class Team(
     val name: String,
     val members: List<String> = emptyList(),
     val permissions: List<Permission> = emptyList(),
-    val scope: Scope = Scope.PROJECT
+    val scope: Scope = Scope.PROJECT,
 )
 
 /**
@@ -159,7 +146,7 @@ data class Member(
     val name: String,
     val email: String,
     val role: Role = Role.VIEWER,
-    val permissions: List<Permission> = emptyList()
+    val permissions: List<Permission> = emptyList(),
 )
 
 /**
@@ -169,7 +156,7 @@ data class LicensePolicy(
     val allowedLicenses: List<String> = listOf("MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause"),
     val deniedLicenses: List<String> = listOf("GPL-2.0", "GPL-3.0", "AGPL-3.0", "SSPL-1.0"),
     val requireLicenseApproval: Boolean = false,
-    val strictMode: Boolean = false
+    val strictMode: Boolean = false,
 ) {
     fun isLicenseCompliant(vuln: Vulnerability): Boolean {
         if (strictMode) {
@@ -179,11 +166,10 @@ data class LicensePolicy(
         // In normal mode, deny only explicitly denied licenses
         return !deniedLicenses.any { vuln.id.contains(it, ignoreCase = true) }
     }
-    
-    fun isLicenseAllowed(license: String): Boolean {
-        return allowedLicenses.any { license.contains(it, ignoreCase = true) } &&
+
+    fun isLicenseAllowed(license: String): Boolean =
+        allowedLicenses.any { license.contains(it, ignoreCase = true) } &&
             !deniedLicenses.any { license.contains(it, ignoreCase = true) }
-    }
 }
 
 /**
@@ -194,25 +180,25 @@ enum class Permission {
     ANALYZE,
     CONFIGURE,
     APPROVE,
-    ADMIN
+    ADMIN,
 }
 
 /**
  * Role enum
  */
 enum class Role {
-    VIEWER,      // Read-only access
-    ANALYST,     // Can view and analyze
-    MANAGER,     // Can configure and approve
-    ADMIN        // Full access
+    VIEWER, // Read-only access
+    ANALYST, // Can view and analyze
+    MANAGER, // Can configure and approve
+    ADMIN, // Full access
 }
 
 /**
  * Scope enum
  */
 enum class Scope {
-    PROJECT,     // Project-level access
-    MODULE,      // Module-level access
-    FILE,        // File-level access
-    GLOBAL       // Global access
+    PROJECT, // Project-level access
+    MODULE, // Module-level access
+    FILE, // File-level access
+    GLOBAL, // Global access
 }

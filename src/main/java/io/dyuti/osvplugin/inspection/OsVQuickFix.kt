@@ -399,9 +399,9 @@ class OsVQuickFix private constructor(
     // ───────────────────────────────────────────────────────────────────────────
 
     private fun ignorePackage(project: Project) {
-        @Suppress("DEPRECATION")
         val config =
-            com.intellij.openapi.components.ServiceManager
+            com.intellij.openapi.application.ApplicationManager
+                .getApplication()
                 .getService(OsVConfig::class.java)
         val ignoredPackages = config.ignoredPackages.toMutableList()
 

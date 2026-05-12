@@ -1,9 +1,7 @@
 // SPDX License Scanner Integration - Settings UI
-@file:Suppress("DEPRECATION")
-
 package io.dyuti.osvplugin.license
 
-import com.intellij.openapi.components.ServiceManager
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.Configurable
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBCheckBox
@@ -17,7 +15,7 @@ import javax.swing.ScrollPaneConstants
  * License policy configurable - Full UI implementation
  */
 class LicensePolicyConfigurable : Configurable {
-    private val policy = ServiceManager.getService(LicensePolicyConfig::class.java)
+    private val policy = ApplicationManager.getApplication().getService(LicensePolicyConfig::class.java)
 
     private val allowedLicensesField =
         com.intellij.ui.components

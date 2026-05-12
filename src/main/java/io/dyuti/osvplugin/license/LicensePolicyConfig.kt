@@ -20,9 +20,9 @@ class LicensePolicyConfig : PersistentStateComponent<LicensePolicyConfig> {
     var strictMode: Boolean = true
 
     companion object {
-        @Suppress("DEPRECATION")
         fun getInstance(): LicensePolicyConfig =
-            com.intellij.openapi.components.ServiceManager
+            com.intellij.openapi.application.ApplicationManager
+                .getApplication()
                 .getService(LicensePolicyConfig::class.java)
     }
 

@@ -12,8 +12,6 @@ repositories {
 }
 
 dependencies {
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.squareup.okio:okio:3.9.0") // OkHttp 4.x dependency
     implementation("com.google.code.gson:gson:2.11.0")
 
     // Maven model API for pom.xml parsing/writing
@@ -99,22 +97,16 @@ tasks.named("buildSearchableOptions") {
 }
 
 // Shadow plugin configuration to bundle dependencies
-// OkHttp 4.x requires Okio as a transitive dependency
-// Okio uses okio-jvm as the actual artifact for JVM target
-// Maven model API for pom.xml parsing/writing
 tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
     archiveClassifier.set("")
 
     dependencies {
-        include(dependency("com.squareup.okhttp3:okhttp"))
-        include(dependency("com.squareup.okio:okio-jvm"))
         include(dependency("com.google.code.gson:gson"))
         include(dependency("org.apache.maven:maven-model"))
         include(dependency("org.apache.maven:maven-model-builder"))
     }
 
     minimize {
-        // Exclude unused classes to reduce size
         exclude(dependency("org.jetbrains.kotlin:.*"))
         exclude(dependency("org.jetbrains:.*"))
     }
