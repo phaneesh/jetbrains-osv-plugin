@@ -50,7 +50,9 @@ class OsVToolWindowPanel
         private val parsedDependencies = mutableMapOf<VirtualFile, List<Dependency>>()
         private var onScanCompleted: ((List<Vulnerability>, List<Dependency>) -> Unit)? = null
 
-        /** Set callback invoked when scan completes. */
+        /** Expose parsed dependencies for SBOM export. */
+        fun getParsedDependencies(): Map<VirtualFile, List<Dependency>> = parsedDependencies.toMap()
+
         fun setOnScanCompleted(callback: (List<Vulnerability>, List<Dependency>) -> Unit) {
             onScanCompleted = callback
         }
