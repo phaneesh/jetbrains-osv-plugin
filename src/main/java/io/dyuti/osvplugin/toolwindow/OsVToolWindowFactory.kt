@@ -8,6 +8,9 @@ import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.content.Content
 import com.intellij.ui.content.ContentFactory
 import io.dyuti.osvplugin.OsVPlugin
+import io.dyuti.osvplugin.action.ClearResultsAction
+import io.dyuti.osvplugin.action.ExportAction
+import io.dyuti.osvplugin.action.ScanAction
 import io.dyuti.osvplugin.historical.HistoricalTrendPanel
 
 /**
@@ -42,6 +45,12 @@ class OsVToolWindowFactory : ToolWindowFactory {
             trendPanel.onScanCompleted(vulns, deps)
             sbomPanel.setDependencies(scanPanel.getParsedDependencies())
         }
+
+        // Add toolbar actions
+        val scanAction = ScanAction(scanPanel)
+        val clearAction = ClearResultsAction(scanPanel)
+        val exportAction = ExportAction(scanPanel)
+        toolWindow.setTitleActions(listOf(scanAction, clearAction, exportAction))
 
         contentManager.addContent(
             contentFactory.createContent(scanPanel, "Vulnerabilities", false),

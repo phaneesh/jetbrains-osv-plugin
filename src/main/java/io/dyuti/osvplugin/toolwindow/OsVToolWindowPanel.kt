@@ -5,6 +5,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
+import com.intellij.ui.AnimatedIcon
 import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.JBColor
 import com.intellij.ui.SimpleTextAttributes
@@ -49,6 +50,7 @@ class OsVToolWindowPanel
         private val scanButton = JButton("Scan Dependencies")
         private val filterTextField = JBTextField()
         private val vulnerabilityTree = Tree()
+        private val scanStatusIcon = JLabel()
         private val statusLabel = JLabel("Ready")
 
         private val treeModelBuilder = OsVTreeModelBuilder()
@@ -57,6 +59,27 @@ class OsVToolWindowPanel
 
         /** Expose parsed dependencies for SBOM export. */
         fun getParsedDependencies(): Map<VirtualFile, List<Dependency>> = parsedDependencies.toMap()
+
+        /** Public entry points for toolbar actions. */
+        fun scanDependencies() = performScan()
+
+        fun clearResults() {
+            treeModelBuilder.buildModel(emptyMap())
+            vulnerabilityTree.repaint()
+            updateStatus("Results cleared")
+        }
+
+        fun exportResults() {
+            val results = treeModelBuilder.getTreeModel()
+            javax.swing.SwingUtilities.invokeLater {
+                javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "SARIF export from toolbar is coming in a future update.\nUse the Export button in the tool window for now.",
+                    "Export",
+                    javax.swing.JOptionPane.INFORMATION_MESSAGE,
+                )
+            }
+        }
 
         fun setOnScanCompleted(callback: (List<Vulnerability>, List<Dependency>) -> Unit) {
             onScanCompleted = callback
@@ -94,6 +117,7 @@ class OsVToolWindowPanel
 
             // Create status panel (without progress bar)
             val statusPanel = JBPanel<JBPanel<*>>(FlowLayout(FlowLayout.LEFT))
+            statusPanel.add(scanStatusIcon)
             statusPanel.add(statusLabel)
 
             // Add components to main panel
@@ -196,6 +220,7 @@ class OsVToolWindowPanel
         private fun performScan() {
             treeModelBuilder.buildModel(emptyMap())
             scanButton.isEnabled = false
+            scanStatusIcon.icon = AnimatedIcon.Default()
             updateStatus("Scanning dependencies...")
 
             com.intellij.openapi.progress.ProgressManager.getInstance().run(
@@ -248,6 +273,7 @@ class OsVToolWindowPanel
                     }
 
                     override fun onFinished() {
+                        scanStatusIcon.icon = null
                         scanButton.isEnabled = true
                     }
                 },
@@ -314,19 +340,14 @@ class OsVToolWindowPanel
 
         private fun updateStatus(message: String) {
             statusLabel.text = message
-            // Update tool window status bar
-            val toolWindow =
-                com.intellij.openapi.wm.ToolWindowManager
-                    .getInstance(project)
-                    .getToolWindow("OSV Vulnerability Scanner")
-            toolWindow?.let {
-                // Use status bar to show message
-                val statusBar =
-                    com.intellij.openapi.wm.WindowManager
-                        .getInstance()
-                        .getStatusBar(project)
-                statusBar?.setInfo(message)
-            }
+
+            // Update custom status bar widget via WindowManager
+            val statusBar =
+                com.intellij.openapi.wm.WindowManager
+                    .getInstance()
+                    .getStatusBar(project)
+            val widget = statusBar?.getWidget("osv.statusBar.widget")
+            (widget as? io.dyuti.osvplugin.statusbar.OsvStatusBarWidget)?.updateStatus("OSV: $message")
         }
 
         private fun openVulnerabilityLink(vulnerability: Vulnerability) {

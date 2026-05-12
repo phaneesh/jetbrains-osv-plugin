@@ -137,6 +137,11 @@
         <projectService
             serviceImplementation="io.dyuti.osvplugin.organization.TeamPermissionService"/>
         
+        <!-- Status Bar Widget -->
+        <statusBarWidgetFactory
+            implementation="io.dyuti.osvplugin.statusbar.OsvStatusBarWidgetFactory"
+            id="osv.statusBar"/>
+        
         <!-- Jira Integration -->
         <projectService
             serviceImplementation="io.dyuti.osvplugin.integration.JiraConnector"/>

@@ -35,6 +35,11 @@ class OsVApiService(
 ) {
     companion object {
         private val LOG = Logger.getInstance(OsVApiService::class.java)
+
+        fun getInstance(): OsVApiService =
+            com.intellij.openapi.application.ApplicationManager
+                .getApplication()
+                .getService(OsVApiService::class.java)
     }
 
     private val httpClient: HttpClient =
@@ -67,13 +72,6 @@ class OsVApiService(
 
     private var requestsThisHour = 0
     private var rateLimitWindowStart = System.currentTimeMillis()
-
-    companion object {
-        fun getInstance(): OsVApiService =
-            com.intellij.openapi.application.ApplicationManager
-                .getApplication()
-                .getService(OsVApiService::class.java)
-    }
 
     @Throws(OsVApiException::class)
     fun queryVulnerabilities(
