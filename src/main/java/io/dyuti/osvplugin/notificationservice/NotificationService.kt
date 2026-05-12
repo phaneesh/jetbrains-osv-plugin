@@ -45,7 +45,7 @@ object NotificationService {
         val title = buildNotificationTitle(vulnNotification)
         val content = buildNotificationContent(vulnNotification)
 
-        val notification = notificationGroup.createNotification(title, content, type, null)
+        val notification = notificationGroup.createNotification(title, content, type)
         Notifications.Bus.notify(notification, project)
     }
 
@@ -94,7 +94,7 @@ object NotificationService {
                 }
             }
 
-        val notification = notificationGroup.createNotification(title, content.trim(), type, null)
+        val notification = notificationGroup.createNotification(title, content.trim(), type)
         Notifications.Bus.notify(notification, project)
     }
 
@@ -107,7 +107,6 @@ object NotificationService {
                 "No Vulnerabilities Found",
                 "OSV scan completed. No known vulnerabilities detected in project dependencies.",
                 NotificationType.INFORMATION,
-                null,
             )
         Notifications.Bus.notify(notification, project)
     }
