@@ -41,7 +41,13 @@ class OsVApiService(
 
     private val osvApiUrl = "https://api.osv.dev/v1/query"
     private val gson = Gson()
-    private val cacheManager = CacheManager.getInstance()
+    private val cacheManager by lazy {
+        try {
+            CacheManager.getInstance()
+        } catch (e: Exception) {
+            CacheManager()
+        }
+    }
 
     private val config by lazy {
         try {
@@ -57,7 +63,10 @@ class OsVApiService(
     private var rateLimitWindowStart = System.currentTimeMillis()
 
     companion object {
-        fun getInstance(): OsVApiService = OsVApiService()
+        fun getInstance(): OsVApiService =
+            com.intellij.openapi.application.ApplicationManager
+                .getApplication()
+                .getService(OsVApiService::class.java)
     }
 
     @Throws(OsVApiException::class)
