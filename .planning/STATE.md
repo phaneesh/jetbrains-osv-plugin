@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 17 complete; ready for Phase 18
-last_updated: "2026-05-12T06:23:55.561Z"
+stopped_at: Phase 19+20 complete; ready for Phase 21
+last_updated: "2026-05-12T07:29:49.385Z"
 progress:
-  total_phases: 26
+  total_phases: 28
   completed_phases: 0
   total_plans: 16
   completed_plans: 1
@@ -22,10 +22,10 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 
 ## Current Position
 
-Phase: 01 of 26 (core foundation)
+Phase: 01 of 28 (core foundation)
 Status: Executing Phase 01
 
-Progress: [███████████████████░] 92% (Phases 6–17 all complete)
+Progress: [███████████████████░] 92% (Phases 6–20 all complete)
 
 - ✅ **Phase 6** – Foundation Fixes (COMPLETED)
 - ✅ **Phase 7** – Problems Tab Integration (COMPLETED)
@@ -40,8 +40,9 @@ Progress: [███████████████████░] 92% (Ph
 - ✅ **Phase 16** – Differential Analysis (COMPLETED)
 - ✅ **Phase 17** – Historical Trending (COMPLETED)
 - ✅ **Phase 18** – SBOM Generation (COMPLETED)
-- 📋 **Phase 19** – Configuration Audit (insecure framework configs)
-- 📋 **Phase 20** – IDE Notification Service (real-time CVE alerts)
+- ✅ **Phase 19** – Configuration Audit (COMPLETED)
+- ✅ **Phase 20** – IDE Notification Service (COMPLETED)
+- 📋 **Phase 21** – Final Polishing & Release (TBD)
 
 ## Competitive Position
 
@@ -60,29 +61,32 @@ Progress: [███████████████████░] 92% (Ph
 | **Team config sharing**   | **✅ Unique** | ✅ Premium | ✅ Premium | ❌     |
 | **Differential analysis** | **✅ Unique** | ✅         | ✅         | ❌     |
 | **Historical trends**     | **✅ Unique** | ✅         | ✅ Premium | ❌     |
+| **Config audit**          | **✅ Unique** | ❌         | ❌         | ❌     |
 | Tree-based UI             | ✅            | ✅         | ✅         | ✅     |
 
 ## Recent Significant Changes
 
-- 2026-05-12 – **Phase 17 Complete** — Historical Trending
-  - HistoricalScanRepository: JSON file-based persistence of lightweight scan summaries
-  - TrendDelta: per-scan change computation with % change and improvement indicator
-  - TrendWindow: rolling 7-day, 30-day, and all-time statistics
-  - HistoricalTrendPanel: IntelliJ tool window tab with ASCII spark-line + stat tables
-  - Auto-capture on scan completion via panel-level callback wiring
-  - Tests: HistoricalScanRepositoryTest (20 tests)
-- 2026-05-12 – **Phase 16 Complete** — Differential Analysis
-- 2026-05-07 – **Phase 15 Complete** — Team Collaboration & Notifications
-- 2026-05-07 – **Phase 14 Complete** — Policy Enforcement
-- 2026-05-07 – **Phase 13 Complete** — Risk Scoring Beyond Severity
+- 2026-05-12 – **Phase 20 Complete** — IDE Notification Service
+  - NotificationService: IntelliJ balloon notifications for vulnerability discovery
+  - Severity-based batch and individual notification display
+  - Threshold filtering (show only CRITICAL/HIGH etc.)
+  - Integration into plugin.xml notification group
+  - Tests: NotificationServiceTest (8 tests)
+- 2026-05-12 – **Phase 19 Complete** — Configuration Audit
+  - ConfigAuditService: scans application.properties/yml for 20 insecure patterns
+  - Covers: Spring Security, SSL/TLS, CSRF, Actuator, Hibernate DDL, Log4j, CORS, cookies, HSTS, CSP
+  - CWE mapping for all findings
+  - Tests: ConfigAuditServiceTest (25 tests)
+- 2026-05-12 – **Phase 18 Complete** — SBOM Generation
+- 2026-05-12 – **Compatibility fix** — Replaced OkHttp with java.net.http.HttpClient
 
 ## Metrics
 
 | Metric                 | Value            |
 | ---------------------- | ---------------- |
-| Total tests            | 229              |
-| Test classes           | 22               |
-| Source files           | ~55 Kotlin files |
+| Total tests            | 282              |
+| Test classes           | 25               |
+| Source files           | ~65 Kotlin files |
 | Plugin version         | 1.1.0            |
 | IntelliJ compatibility | 2023.3–2026.2    |
 | Build                  | ✅ SUCCESS       |
@@ -90,5 +94,5 @@ Progress: [███████████████████░] 92% (Ph
 ## Session Continuity
 
 Last session: 2026-05-12
-Stopped at: Phase 17 complete; ready for Phase 18
+Stopped at: Phase 19+20 complete; ready for Phase 21
 Resume: Continue in this conversation or invoke next phase

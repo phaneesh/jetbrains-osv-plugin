@@ -284,10 +284,48 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 
 ---
 
+---
+
+### Phase 19: Configuration Audit ✓ COMPLETE
+
+**Goal:** Detect insecure framework configurations in application.properties/.yml
+**Rationale:** 85% of security incidents involve misconfiguration. No free tool audits IntelliJ project configs.
+**Completed:** 2026-05-12
+
+**Features:**
+
+- [x] ConfigAuditService: 20 security rules for Spring/Hibernate/Log4j properties
+- [x] Rules cover: disabled security, missing SSL, CSRF off, actuator exposure, DDL destruction, Log4Shell, hardcoded passwords, CORS wildcard, insecure cookies, missing HSTS/CSP
+- [x] CWE mapping for all findings (CWE-306, CWE-319, CWE-352, CWE-400, CWE-502, CWE-613, CWE-798, etc.)
+- [x] ConfigAuditResult with severity aggregation and actionable filtering
+- [x] 25 unit tests for all rule detections
+
+---
+
+### Phase 20: IDE Notification Service ✓ COMPLETE
+
+**Goal:** Real-time IDE balloon alerts when scans discover new CVEs
+**Rationale:** Passingively waiting for developers to open the tool window misses urgent issues
+**Completed:** 2026-05-12
+
+**Features:**
+
+- [x] NotificationService: IntelliJ NotificationGroup integration
+- [x] Individual vulnerability balloons with severity-colored titles
+- [x] Batch notifications with "5 Critical, 3 High" summaries
+- [x] Clean-scan confirmation notification
+- [x] Threshold filtering (only CRITICAL/HIGH based on user preference)
+- [x] Vulnerability → notification conversion with CVE extraction
+- [x] Notification group registered in plugin.xml
+- [x] 8 unit tests for conversion and filtering
+
+**Limitations:** No clickable actions in notifications yet (view/fix/ignore)
+
+---
+
 ### Future Phases (Backlog)
 
-- Phase 19: Configuration audit (detect insecure framework configs)
-- Phase 20: IDE notification service (real-time balloon alerts for new CVEs)
+- Phase 21: Final polish, iconography, and marketplace release checklist
 
 ---
 
@@ -313,6 +351,8 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 | 16    | Differential Analysis        | ✅ Complete     | 2026-05-12 |
 | 17    | Historical Trending          | ✅ Complete     | 2026-05-12 |
 | 18    | SBOM Generation              | ✅ Complete     | 2026-05-12 |
+| 19    | Configuration Audit          | ✅ Complete     | 2026-05-12 |
+| 20    | IDE Notification Service     | ✅ Complete     | 2026-05-12 |
 
 ---
 

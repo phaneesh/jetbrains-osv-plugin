@@ -118,6 +118,9 @@
             anchor="bottom"
             icon="/icons/osv-icon-48.png"/>
         
+        <!-- Notification Group -->
+        <notificationGroup id="OSV Vulnerability Alerts" displayType="BALLOON" toolWindowId="OSV Vulnerability Scanner"/>
+        
         <!-- Configuration -->
         <applicationService
             serviceImplementation="io.dyuti.osvplugin.config.OsVConfig"/>
