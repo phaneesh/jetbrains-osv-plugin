@@ -32,7 +32,13 @@ class LicenseRegistryService(
                 .build()
 
     private val gson = Gson()
-    private val cacheManager = CacheManager.getInstance()
+    private val cacheManager by lazy {
+        try {
+            CacheManager.getInstance()
+        } catch (_: Exception) {
+            CacheManager()
+        }
+    }
 
     companion object {
         fun getInstance(): LicenseRegistryService = LicenseRegistryService()

@@ -77,7 +77,13 @@ data class TyposquatResult(
  * ```
  */
 class MaliciousPackageService {
-    private val apiService = OsVApiService.getInstance()
+    private val apiService by lazy {
+        try {
+            OsVApiService.getInstance()
+        } catch (_: Exception) {
+            OsVApiService()
+        }
+    }
 
     /**
      * Known malicious package patterns — package names that have been

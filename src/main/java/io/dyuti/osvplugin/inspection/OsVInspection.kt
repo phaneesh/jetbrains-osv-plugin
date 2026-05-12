@@ -75,7 +75,13 @@ class OsVInspection : LocalInspectionTool() {
             PipParser(),
         )
 
-    private val apiService = OsVApiService.getInstance()
+    private val apiService by lazy {
+        try {
+            OsVApiService.getInstance()
+        } catch (_: Exception) {
+            OsVApiService()
+        }
+    }
 
     // Per-file cache: filePath -> cached results
     private val fileCache = ConcurrentHashMap<String, VulnerabilityCacheEntry>()
@@ -225,9 +231,14 @@ class OsVInspection : LocalInspectionTool() {
      */
     private fun shouldReportVulnerability(vuln: Vulnerability): Boolean {
         val config =
-            com.intellij.openapi.application.ApplicationManager
-                .getApplication()
-                .getService(OsVConfig::class.java)
+            try {
+                val app =
+                    com.intellij.openapi.application.ApplicationManager
+                        .getApplication()
+                if (app != null) app.getService(OsVConfig::class.java) else OsVConfig()
+            } catch (_: Exception) {
+                OsVConfig()
+            }
         return SeverityUtil.meetsThreshold(vuln.severity, config.minimumSeverity)
     }
 
