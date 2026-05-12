@@ -1,174 +1,94 @@
 # OSV IntelliJ Plugin
 
-A free, open-source IntelliJ IDEA plugin that provides security vulnerability scanning for open-source dependencies using the OSV (Open Source Vulnerabilities) database.
+![Build](https://img.shields.io/badge/build-passing-brightgreen)
+![Version](https://img.shields.io/badge/jetbrains%20marketplace-v1.1.0-blue)
+![License](https://img.shields.io/badge/license-Apache%202.0-yellow)
+
+> A free, open-source IntelliJ IDEA plugin that provides security vulnerability scanning for open-source dependencies using the [OSV Database](https://osv.dev/).
 
 ## Features
 
-### Core Features
-- **Dependency File Parsing:** Parse Maven (pom.xml), Gradle (build.gradle), npm (package-lock.json), and pip (requirements.txt) files
-- **OSV API Integration:** Query the OSV database for vulnerabilities by package name and version
-- **Vulnerability Data Model:** Store and manage vulnerability information (severity, CVE IDs, descriptions)
-- **Tool Window:** Display all vulnerabilities with filtering and sorting options
-- **Local Inspection:** Highlight vulnerabilities inline in dependency files
+### Core
+- **Dependency Parsing** — Maven (`pom.xml`), Gradle (`build.gradle`, `build.gradle.kts`), npm (`package-lock.json`), pip (`requirements.txt`)
+- **OSV API Integration** — Real-time batch queries with TTL caching, rate limiting, and offline resilience
+- **Tool Window** — Tree-based vulnerability explorer with filtering, severity grouping, and hyperlinks
+- **Inline Inspections** — Highlight vulnerable dependencies directly in dependency files
+- **Quick Fixes** — Alt+Enter to upgrade to fixed versions or suppress false positives
+- **SARIF Export** — Export scan results for CI/CD ingestion (GitHub Advanced Security, Azure DevOps)
 
-### IntelliJ Integration
-- **Configuration UI:** Global and project-level configuration in IntelliJ settings
-- **Quick Fixes:** Suggest upgrading to fixed versions or suppress vulnerabilities
-- **Branch Comparison (Focus Mode):** Compare vulnerabilities between branches
-- **SARIF Export/Import:** Export scan results in SARIF format for CI/CD integration
+### Advanced (v1.1.0)
+- **Vulnerable API Detection** — Cross-references vulnerable function signatures with call sites
+- **Malicious Package Detection** — Typosquatting, homoglyph, and known-malware checks
+- **Basic SAST / Taint Analysis** — Pattern-based SQL injection, XSS, and path-traversal detection
+- **Privacy-Preserving Queries** — SHA-256 hash package names in UI, logs, and exports
+- **Risk Scoring** — Composite EPSS + CISA KEV + CVSS scoring for exploitability-based prioritization
+- **Policy Enforcement** — Organization-wide compliance rules (severity, CVSS, KEV, license)
+- **Team Collaboration** — Project-level config sharing via `.idea/osv-plugin-config.json`
+- **Differential Analysis** — Compare two scans to identify NEW, RESOLVED, and CHANGED vulnerabilities
+- **Historical Trending** — Track vulnerability counts over time with ASCII sparklines
+- **SBOM Generation** — Export CycloneDX 1.5 and SPDX 2.3 (JSON and Tag-Value)
+- **Configuration Audit** — Scan `application.properties` / `application.yml` for 20 insecure patterns
+- **IDE Notifications** — Severity-based balloon notifications for discovered vulnerabilities
+- **Status Bar Widget** — Persistent scan status and vulnerability count in the IDE status bar
+- **Dark Mode Support** — All UI colors use `JBColor` for Darcula / light theme adaptation
 
-### Advanced Features
-- **GitHub Advisory Integration:** Query GitHub Advisory Database as a secondary source
-- **License Scanning:** Check licenses against allowed lists with SPDX support
-- **Data Flow Analysis:** Show data flow to vulnerable sinks for critical vulnerabilities
+## Quick Start
+
+1. **Install** — Search "OSV Vulnerability Scanner" in **Settings → Plugins → Marketplace**
+2. **Open** a project with dependency files — the plugin auto-detects
+3. **Scan** — Click "Scan Dependencies" in the tool window (bottom)
+
+> Vulnerabilities appear grouped by severity. Double-click to navigate to the source line. Alt+Enter for quick fixes.
+
+## Screenshots
+
+> 📸 Screenshots will be captured during Wave 5 (Marketplace Packaging):
+> - Tool window tree view
+> - Inline vulnerability highlight
+> - Alt+Enter quick-fix popup
+
+## Feature Comparison
+
+| Feature | OSV Plugin | Snyk | Mend.io | Qodana |
+|--------|-----------|------|---------|--------|
+| Free SCA | ✅ | Free tier | Paid | Paid |
+| Problems tab integration | ✅ | ✅ | ✅ | ✅ |
+| Auto-fix via quick fix | ✅ | ✅ | ✅ | ❌ |
+| License scanning | ✅ | ✅ | ✅ | ❌ |
+| Reachability analysis | ✅ Basic | ✅ Premium | ✅ Premium | ✅ |
+| Malicious packages | ✅ **Unique** | ❌ | ✅ Premium | ❌ |
+| Basic SAST | ✅ **Unique** | ✅ | ✅ | ✅ |
+| Privacy exports | ✅ **Unique** | ❌ | ❌ | ❌ |
+| Risk scoring (EPSS+KEV) | ✅ **Unique** | ✅ Premium | ✅ Premium | ❌ |
+| Policy enforcement | ✅ **Unique** | ✅ Premium | ✅ Premium | ❌ |
+| Team config sharing | ✅ **Unique** | ✅ Premium | ✅ Premium | ❌ |
+| Differential analysis | ✅ **Unique** | ✅ | ✅ | ❌ |
+| Historical trends | ✅ **Unique** | ✅ | ✅ Premium | ❌ |
+| Config audit (properties/yml) | ✅ **Unique** | ❌ | ❌ | ❌ |
+| Tree-based UI | ✅ | ✅ | ✅ | ✅ |
 
 ## Installation
 
-### From JetBrains Marketplace
+### From JetBrains Marketplace (Recommended)
 1. Open IntelliJ IDEA
-2. Go to Settings/Preferences → Plugins
-3. Search for "OSV Vulnerability Scanner"
-4. Click Install
+2. Go to **Settings → Plugins → Marketplace**
+3. Search **"OSV Vulnerability Scanner"**
+4. Click **Install** and restart
 
 ### From Source
-1. Clone this repository
-2. Open the project in IntelliJ IDEA
-3. Build the plugin: `./gradlew buildPlugin`
-4. Install the plugin: Settings/Preferences → Plugins → Install Plugin from Disk
-5. Select the JAR file from `build/distributions/`
-
-## Usage
-
-### Basic Usage
-1. Open a project with dependency files (pom.xml, build.gradle, etc.)
-2. The plugin automatically scans for vulnerabilities
-3. Vulnerabilities appear as inline highlights in dependency files
-4. Open the OSV Vulnerability Scanner tool window to see all vulnerabilities
-
-### Focus Mode (Branch Comparison)
-1. Open the OSV Vulnerability Scanner tool window
-2. Click the Focus Mode toggle
-3. Select a base branch (usually main or master)
-4. Only vulnerabilities new in the current branch are shown
-
-### SARIF Export
-1. Open the OSV Vulnerability Scanner tool window
-2. Click the Export button
-3. Select SARIF format
-4. Save the file
-
-## Configuration
-
-### Global Settings
-1. Go to Settings/Preferences → Tools → OSV Vulnerability Scanner
-2. Configure:
-   - Minimum severity threshold
-   - Cache TTL
-   - OSV API endpoint
-
-### Project Settings
-1. Right-click on the project root
-2. Select OSV Vulnerability Scanner → Project Settings
-3. Configure project-specific settings
-
-## Development
-
-### Prerequisites
-- IntelliJ IDEA 2023.3+
-- JDK 17+
-- Gradle 8+
-
-### Building
 ```bash
+git clone https://github.com/dyuti/jetbrains-osv-plugin.git
+cd jetbrains-osv-plugin
 ./gradlew buildPlugin
+# Install from: build/distributions/*.zip
 ```
 
-### Running Tests
-```bash
-./gradlew test
-```
-
-### Debugging
-```bash
-./gradlew runIde
-```
-
-## Project Structure
-
-```
-src/
-├── main/
-│   └── java/io/dyuti/osvplugin/
-│       ├── api/               # OSV API client
-│       │   ├── OsVApiService.kt
-│       │   └── model/         # API models
-│       ├── parser/            # Dependency parsers
-│       │   ├── DependencyParser.kt
-│       │   ├── MavenParser.kt
-│       │   ├── GradleParser.kt
-│       │   ├── NpmParser.kt
-│       │   └── PipParser.kt
-│       ├── inspection/        # IntelliJ inspection
-│       │   ├── OsVInspection.kt
-│       │   └── OsVQuickFix.kt
-│       ├── toolwindow/        # Tool window UI
-│       │   ├── OsVToolWindowFactory.kt
-│       │   ├── OsVToolWindowPanel.kt
-│       │   └── OsVDetailsPanel.kt
-│       ├── config/            # Configuration
-│       │   ├── OsVConfig.java
-│       │   └── OsVConfigState.java
-│       ├── focus/             # Focus mode
-│       │   ├── OsVFocusModeService.kt
-│       │   └── OsVBranchManager.kt
-│       ├── github/            # GitHub integration
-│       │   └── OsVGithubAdvisor.kt
-│       ├── license/           # License scanning
-│       │   ├── OsVLicensedDatabase.kt
-│       │   └── OsVLicensedChecker.kt
-│       ├── model/             # Vulnerability models
-│       │   ├── Vulnerability.kt
-│       │   ├── Dependency.kt
-│       │   └── ScanResult.kt
-│       ├── utils/             # Utility classes
-│       │   ├── CacheManager.kt
-│       │   └── SeverityUtil.kt
-│       └── OsVPlugin.kt
-└── test/
-    └── java/io/dyuti/osvplugin/
-        ├── api/
-        ├── parser/
-        ├── inspection/
-        ├── toolwindow/
-        ├── config/
-        ├── focus/
-        ├── github/
-        ├── license/
-        └── utils/
-```
-
-## API Reference
-
-### OSV API
-- **Endpoint:** https://api.osv.dev/v1/query
-- **Method:** POST
-- **Rate Limit:** None (open API)
-
-### GitHub Advisory API
-- **Endpoint:** https://api.github.com/advisories
-- **Method:** GET
-- **Rate Limit:** 60 requests/hour (unauthenticated)
+## Requirements
+- IntelliJ IDEA 2023.3 or later
+- JDK 17+ (for development)
+- Internet connection (for OSV API queries)
 
 ## License
 
-This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
-
-## Acknowledgments
-
-- Uses data from the [OSV Database](https://osv.dev/)
-- Built on the [IntelliJ Platform SDK](https://plugins.jetbrains.com/docs/intellij/)
-- Inspired by [Mend Advise](https://docs.mend.io/renovate/latest/mend-advise-for-intellij-idea)
-
-## Contributing
-
-Contributions are welcome! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+Apache License 2.0 — see [LICENSE](LICENSE) for details.
+</content>

@@ -4,7 +4,25 @@ package io.dyuti.osvplugin.parser
 import io.dyuti.osvplugin.api.model.Dependency
 
 /**
- * Parser for Gradle build.gradle files
+ * Parses Gradle dependency declarations from build scripts.
+ *
+ * **Supported syntax:**
+ * - `implementation("group:artifact:version")`
+ * - `testImplementation("group:artifact:version")`
+ * - `api("group:artifact:version")`
+ * - `compileOnly("group:artifact:version")`
+ * - `runtimeOnly("group:artifact:version")`
+ * - `androidTestImplementation("group:artifact:version")`
+ * - `debugImplementation("group:artifact:version")`
+ * - `releaseImplementation("group:artifact:version")`
+ *
+ * **Not supported (known limitations):**
+ * - `platform()` / `enforcedPlatform()` wrapper dependencies
+ * - Gradle version catalogs (`libs.versions.toml`)
+ * - Kotlin DSL `implementation(group = "...", name = "...", version = "...")` map syntax
+ * - String interpolation / variable references for version numbers
+ *
+ * These patterns are parsed as best-effort; fallback to manual review if parsing appears incomplete.
  */
 class GradleParser : DependencyParser() {
     override fun getSupportedExtensions(): List<String> = listOf("build.gradle", "build.gradle.kts")

@@ -36,6 +36,16 @@ cd jetbrains-osv-plugin
 # Select the JAR from build/distributions/
 ```
 
+## What's New in v1.1.0
+
+The latest release introduces three major capabilities:
+
+1. **Risk Scoring** — vulnerabilities are now scored with a composite of EPSS + CISA KEV + CVSS so you can prioritize exploitability, not just severity.
+2. **Policy Enforcement** — define organization-wide rules (e.g., "no CRITICAL with CVSS ≥ 9.0" or "no GPL-3.0 in production") and the plugin flags violations automatically.
+3. **SBOM Generation** — export CycloneDX or SPDX SBOMs directly from the tool window for compliance and supply-chain transparency.
+
+Other highlights include: Malicious Package Detection, Basic SAST, Privacy-Preserving Queries, Differential Analysis, Historical Trending, Configuration Audit, IDE Notifications, and Dark Mode support.
+
 ## First Scans
 
 ### Opening the Tool Window
@@ -60,9 +70,15 @@ The plugin automatically detects and scans:
 
 ## Understanding the Tool Window
 
+The tool window provides **three tabs** for different views of your project security:
+
+- **Vulnerabilities** — real-time scan results grouped by module and severity  
+- **Trends** — historical vulnerability count tracking with ASCII sparklines
+- **SBOM** — CycloneDX / SPDX export for your current dependencies
+
 ### Tree Structure
 
-The vulnerability tree follows this hierarchy:
+The **Vulnerabilities** tab tree follows this hierarchy:
 
 ```
 OSV Vulnerability Scanner (root)
@@ -154,6 +170,7 @@ Type in the **Filter** field to search by:
 | **Cache TTL** | How long to cache API responses (minutes) | 60 |
 | **OSV API Endpoint** | Custom OSV API URL | https://api.osv.dev/v1/query |
 | **GitHub Advisory** | Enable GitHub Advisory scanning | Enabled |
+| **Privacy Mode** | Hash package names in exports and UI | Disabled |
 
 ### License Policy Configuration
 
@@ -162,6 +179,16 @@ Type in the **Filter** field to search by:
    - **Allowed Licenses:** Comma-separated list of SPDX license identifiers
    - **Strict Mode:** Reject all licenses not explicitly allowed
    - **Warning Licenses:** Licenses that trigger warnings but don't block
+
+### Privacy Mode
+
+Enable **Privacy Mode** to replace human-readable package names with SHA-256 hashes in UI, logs, and all exports:
+
+1. Go to **Settings/Preferences** → **Tools** → **OSV Scanner**
+2. Check **Privacy Mode**
+3. Restart the IDE for full effect
+
+This is useful when sharing screenshots, SARIF exports, or SBOMs in public or customer-facing contexts.
 
 ## Tips & Best Practices
 

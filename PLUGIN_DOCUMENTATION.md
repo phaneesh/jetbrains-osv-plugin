@@ -166,10 +166,33 @@ Vulnerabilities are highlighted directly in dependency files:
 
 Context actions for each vulnerability:
 
-- **Auto-Fix:** Update to a fixed version
+- **Auto-Fix:** Update to a fixed version via PSI-based refactoring
 - **Suppress:** Temporarily ignore the vulnerability
 - **Navigate:** Jump to the dependency in the file
 - **Export:** Save results to SARIF format
+
+### Security Features
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Malicious Package Detection | Typosquatting, homoglyph, and known-malware checks | ✅ v1.1.0 |
+| Basic SAST / Taint Analysis | Pattern-based SQL injection, XSS, path-traversal detection | ✅ v1.1.0 |
+| Config Audit | Scan `application.properties`/`application.yml` for 20 insecure patterns | ✅ v1.1.0 |
+| Risk Scoring | Composite EPSS + CISA KEV + CVSS prioritization | ✅ v1.1.0 |
+| Policy Enforcement | Org-wide rules for severity, CVSS, KEV, and license compliance | ✅ v1.1.0 |
+| Privacy-Preserving Queries | SHA-256 hash package names in UI / logs / exports | ✅ v1.1.0 |
+| Vulnerable API Detection | Cross-reference vulnerable function signatures with call sites | ✅ v1.1.0 |
+
+### Team Features
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Team Config Sharing | `.idea/osv-plugin-config.json` for project-level policies | ✅ v1.1.0 |
+| Differential Analysis | Compare scans for NEW / RESOLVED / CHANGED findings | ✅ v1.1.0 |
+| Historical Trending | ASCII sparklines tracking vulnerability counts over time | ✅ v1.1.0 |
+| IDE Notifications | Severity-based balloon notifications | ✅ v1.1.0 |
+| SARIF Export | CI/CD-ready SARIF format for security gates | ✅ v1.0.0 |
+| SBOM Generation | CycloneDX 1.5 and SPDX 2.3 export | ✅ v1.1.0 |
 
 ---
 
@@ -782,9 +805,13 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## Roadmap
 
+- [x] ~~Team collaboration features~~ — ✅ v1.1.0 (config sharing via JSON)
+- [x] ~~Vulnerability remediation suggestions~~ — ✅ v1.1.0 (auto-fix via PSI)
+- [x] ~~Advanced filtering and sorting~~ — ✅ v1.1.0 (tree filtering + severity groups)
+- [x] ~~Historical trends and differential analysis~~ — ✅ v1.1.0
+- [x] ~~SBOM generation~~ — ✅ v1.1.0
 - [ ] Additional dependency formats (Cargo, Go modules)
-- [ ] Vulnerability remediation suggestions
-- [ ] Integration with Jira and other issue trackers
-- [ ] Team collaboration features
-- [ ] Advanced filtering and sorting
-- [ ] Custom rule definitions
+- [ ] Integration with Jira and other issue trackers (stub exists)
+- [ ] Line-level problem markers in Problems tool window
+- [ ] Chart library for historical trends (replace ASCII sparklines)
+- [ ] Gradle version catalog support (`libs.versions.toml`)
