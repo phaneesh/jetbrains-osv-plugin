@@ -67,7 +67,7 @@
             groupName="Security"
             enabledByDefault="true"
             level="WARNING"
-            implementationClass="io.dyuti.osvplugin.inspection.OsVInspection"/>
+            implementationClass="io.dyuti.osvplugin.inspection.OsVInspectionXml"/>
         
         <localInspection
             language="Groovy"
@@ -76,7 +76,7 @@
             groupName="Security"
             enabledByDefault="true"
             level="WARNING"
-            implementationClass="io.dyuti.osvplugin.inspection.OsVInspection"/>
+            implementationClass="io.dyuti.osvplugin.inspection.OsVInspectionGroovy"/>
         
         <localInspection
             language="kotlin"
@@ -85,7 +85,7 @@
             groupName="Security"
             enabledByDefault="true"
             level="WARNING"
-            implementationClass="io.dyuti.osvplugin.inspection.OsVInspection"/>
+            implementationClass="io.dyuti.osvplugin.inspection.OsVInspectionKotlin"/>
         
         <localInspection
             language="JSON"
@@ -94,7 +94,7 @@
             groupName="Security"
             enabledByDefault="true"
             level="WARNING"
-            implementationClass="io.dyuti.osvplugin.inspection.OsVInspection"/>
+            implementationClass="io.dyuti.osvplugin.inspection.OsVInspectionJson"/>
         
         <localInspection
             language=""
@@ -103,7 +103,7 @@
             groupName="Security"
             enabledByDefault="true"
             level="WARNING"
-            implementationClass="io.dyuti.osvplugin.inspection.OsVInspection"/>
+            implementationClass="io.dyuti.osvplugin.inspection.OsVInspectionPlainText"/>
         
         <!-- License Inspection -->
         <localInspection

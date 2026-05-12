@@ -117,3 +117,6 @@ PRODUCTION_READINESS.md
 FIX_IMPLEMENTATION.md
 NAVIGATION_FIX.md
 SONARLINT_UI_CHANGES.md
+
+# Graphify cache
+graphify-out/cache/

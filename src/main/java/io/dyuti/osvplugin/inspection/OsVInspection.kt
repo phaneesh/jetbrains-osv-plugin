@@ -62,7 +62,7 @@ internal data class VulnerabilityResult(
  * - "Scanning..." placeholder shown while async query runs
  * - Background scanning via ProgressManager.Task.Backgroundable
  */
-class OsVInspection : LocalInspectionTool() {
+open class OsVInspection : LocalInspectionTool() {
     companion object {
         private val LOG = Logger.getInstance(OsVInspection::class.java)
     }
@@ -313,4 +313,29 @@ class OsVInspection : LocalInspectionTool() {
 
         return results
     }
+}
+
+/**
+ * Language-specific subclasses to satisfy IntelliJ's shortName enforcement
+ * (getShortName() must match the ep.shortName in plugin.xml).
+ * Each extends the core [OsVInspection] logic with the correct short name.
+ */
+class OsVInspectionXml : OsVInspection() {
+    override fun getShortName(): String = "OsVInspectionXml"
+}
+
+class OsVInspectionGroovy : OsVInspection() {
+    override fun getShortName(): String = "OsVInspectionGroovy"
+}
+
+class OsVInspectionKotlin : OsVInspection() {
+    override fun getShortName(): String = "OsVInspectionKotlin"
+}
+
+class OsVInspectionJson : OsVInspection() {
+    override fun getShortName(): String = "OsVInspectionJson"
+}
+
+class OsVInspectionPlainText : OsVInspection() {
+    override fun getShortName(): String = "OsVInspectionPlainText"
 }
