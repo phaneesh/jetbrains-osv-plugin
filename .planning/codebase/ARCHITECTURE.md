@@ -24,21 +24,25 @@ The plugin follows the **IntelliJ Platform Plugin Architecture** with a layered 
 ## Entry Points
 
 ### 1. Plugin Entry Point
+
 - **`OsVPlugin.kt`** — `PersistentStateComponent<OsVConfig>` for plugin-level state management
 
 ### 2. Inspection Entry Point
+
 - **`OsVInspection.kt`** — `LocalInspectionTool` registered for multiple languages:
   - JAVA, XML, Groovy, Kotlin, JSON, PlainText
   - Asynchronous non-blocking scanning with 500ms debounce
   - Per-file vulnerability cache with modification stamp invalidation
 
 ### 3. Tool Window Entry Point
+
 - **`OsVToolWindowFactory.kt`** — `ToolWindowFactory` creating 3-tab panel:
   1. Vulnerabilities — real-time scan results tree
   2. Trends — historical vulnerability tracking
   3. SBOM — CycloneDX/SPDX export
 
 ### 4. Settings Entry Points
+
 - **`OsVConfigurable.kt`** — Main settings under Tools → OSV Scanner
 - **`LicensePolicyConfigurable.kt`** — License policy sub-page
 - **`PrivacyConfigurable.kt`** — Privacy settings sub-page
@@ -46,6 +50,7 @@ The plugin follows the **IntelliJ Platform Plugin Architecture** with a layered 
 ## Data Flow
 
 ### Inspection Flow (Real-time)
+
 ```
 PSI File Change → OsVInspection.buildVisitor()
     → Check file cache (modification stamp)
@@ -60,6 +65,7 @@ PSI File Change → OsVInspection.buildVisitor()
 ```
 
 ### Tool Window Scan Flow
+
 ```
 Click "Scan Dependencies" → Backgroundable Task:
     → Recursively find manifest files (VFS)
@@ -70,6 +76,7 @@ Click "Scan Dependencies" → Backgroundable Task:
 ```
 
 ### Quick Fix Flow
+
 ```
 User clicks quick fix → OsVQuickFix.applyFix()
     → Determine fix type (Upgrade/Suppress/Ignore)
@@ -83,6 +90,7 @@ User clicks quick fix → OsVQuickFix.applyFix()
 ## Core Abstractions
 
 ### Dependency Parsing
+
 - **`DependencyParser`** — Abstract base with `canHandle()`, `parse()`, `detectEcosystem()`
 - Concrete parsers:
   - `MavenParser` — Regex-based `pom.xml` parsing (property resolution, scope extraction, line calculation)
@@ -91,16 +99,19 @@ User clicks quick fix → OsVQuickFix.applyFix()
   - `PipParser` — `requirements.txt` / `pyproject.toml` parsing
 
 ### API Service Layer
+
 - **`OsVApiService`** — OSV API client (single + batch queries, caching, rate limiting)
 - **`GitHubAdvisoryApiService`** — GitHub Advisory Database client
 - **`NvdApiService`** — NVD/CVE scoring client
 - **`AggregatedVulnerabilityService`** — Aggregator across multiple sources
 
 ### Configuration System
+
 - **`OsVConfig`** — `PersistentStateComponent` with XML persistence (`osv-config.xml`)
 - 20+ configurable fields: severity threshold, caching, rate limits, integrations, privacy mode
 
 ### Cache System
+
 - **`CacheManager`** — `PersistentStateComponent` with in-memory + disk cache
 - Vulnerability cache with TTL (hours)
 - String cache with TTL (milliseconds)
@@ -108,18 +119,18 @@ User clicks quick fix → OsVQuickFix.applyFix()
 
 ## Plugin Extension Points (from plugin.xml)
 
-| Extension Point | Implementation | Purpose |
-|-----------------|----------------|---------|
-| `localInspection` (×6 languages) | `OsVInspection` | Inline vulnerability highlighting |
-| `localInspection` | `LicenseInspection` | License compliance checking |
-| `applicationConfigurable` | `OsVConfigurable` | Settings UI |
-| `applicationConfigurable` | `LicensePolicyConfigurable` | License policy UI |
-| `applicationConfigurable` | `PrivacyConfigurable` | Privacy settings UI |
-| `toolWindow` | `OsVToolWindowFactory` | Bottom tool window |
-| `notificationGroup` | — | Alert notifications |
-| `applicationService` | `OsVConfig`, `LicensePolicyConfig` | App-level services |
-| `projectService` | `OrganizationManager`, `TeamPermissionService` | Project-level services |
-| `projectService` | `JiraConnector`, `JiraIssueCreator` | Jira integration |
+| Extension Point                  | Implementation                                 | Purpose                           |
+| -------------------------------- | ---------------------------------------------- | --------------------------------- |
+| `localInspection` (×6 languages) | `OsVInspection`                                | Inline vulnerability highlighting |
+| `localInspection`                | `LicenseInspection`                            | License compliance checking       |
+| `applicationConfigurable`        | `OsVConfigurable`                              | Settings UI                       |
+| `applicationConfigurable`        | `LicensePolicyConfigurable`                    | License policy UI                 |
+| `applicationConfigurable`        | `PrivacyConfigurable`                          | Privacy settings UI               |
+| `toolWindow`                     | `OsVToolWindowFactory`                         | Bottom tool window                |
+| `notificationGroup`              | —                                              | Alert notifications               |
+| `applicationService`             | `OsVConfig`, `LicensePolicyConfig`             | App-level services                |
+| `projectService`                 | `OrganizationManager`, `TeamPermissionService` | Project-level services            |
+| `projectService`                 | `JiraConnector`, `JiraIssueCreator`            | Jira integration                  |
 
 ## Key Design Patterns
 

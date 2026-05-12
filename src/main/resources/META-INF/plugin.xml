@@ -123,6 +123,10 @@
         
         <!-- Configuration -->
         <applicationService
+            serviceImplementation="io.dyuti.osvplugin.utils.CacheManager"/>
+        <applicationService
+            serviceImplementation="io.dyuti.osvplugin.api.OsVApiService"/>
+        <applicationService
             serviceImplementation="io.dyuti.osvplugin.config.OsVConfig"/>
         <applicationService
             serviceImplementation="io.dyuti.osvplugin.license.LicensePolicyConfig"/>

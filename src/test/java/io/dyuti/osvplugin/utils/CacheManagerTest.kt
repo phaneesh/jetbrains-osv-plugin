@@ -14,7 +14,7 @@ class CacheManagerTest {
 
     @BeforeEach
     fun setUp() {
-        cacheManager = CacheManager.getInstance()
+        cacheManager = CacheManager()
         cacheManager.invalidateAll()
     }
 

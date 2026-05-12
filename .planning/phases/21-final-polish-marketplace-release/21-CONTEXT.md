@@ -14,6 +14,7 @@ Final polish, branding, and marketplace readiness for the OSV IntelliJ Plugin v1
 ## Implementation Decisions
 
 ### Iconography & Visual Polish
+
 - **D-01:** Keep IntelliJ `AllIcons` for severity icons (consistent with IDE) — custom icons only for plugin branding
 - **D-02:** Add dark mode support via `JBColor` — replace all hardcoded AWT `Color` objects in `SeverityUtil.kt`
 - **D-03:** Add animated scanning indicator via `AnimatedIcon` during active scans (replaces static "Scanning..." text)
@@ -22,6 +23,7 @@ Final polish, branding, and marketplace readiness for the OSV IntelliJ Plugin v1
 - **D-06:** Add status bar widget showing scan status and vulnerability count (reuses existing `statusLabel` pattern)
 
 ### Known Issue Resolution
+
 - **D-07:** Fix CacheManager singleton bug — convert `CacheManager.getInstance()` from `new instance` to true `ApplicationManager.getService()` singleton
 - **D-08:** Add configurable OSV API URL to `OsVConfig` (remove hardcoded `https://api.osv.dev/v1/query`)
 - **D-09:** Extend regex parser coverage patterns for Maven/Gradle; document known parsing limitations
@@ -34,6 +36,7 @@ Final polish, branding, and marketplace readiness for the OSV IntelliJ Plugin v1
 - **D-16:** Add file-level problem markers via `ProblemDescriptor` at dependency text offset (line-level requires PsiElement resolution, deferred)
 
 ### Marketplace Packaging
+
 - **D-17:** Polish `plugin.xml` description and change notes for marketplace listing
 - **D-18:** Verify `sinceBuild="233.0"` and `untilBuild="262.*"` against actual API usage in codebase
 - **D-19:** Generate 3 annotated screenshots: tool window, inline inspection highlight, quick-fix popup
@@ -44,6 +47,7 @@ Final polish, branding, and marketplace readiness for the OSV IntelliJ Plugin v1
 - **D-24:** Use JetBrains Marketplace built-in auto-update (no custom update site URL needed)
 
 ### Testing & Quality Gates
+
 - **D-25:** Add integration tests via `HeavyPlatformTestCase` for PSI inspection + tool window pipeline
 - **D-26:** Create `TESTING-CHECKLIST.md` with manual smoke-test steps per feature
 - **D-27:** Add performance benchmark (JMH or `RepeatablePerformanceTest`) for large dependency lists
@@ -53,6 +57,7 @@ Final polish, branding, and marketplace readiness for the OSV IntelliJ Plugin v1
 - **D-31:** Add UI regression tests via `PlatformTestUtil.assertTreeStructure()` and light UI test
 
 ### Documentation & Onboarding
+
 - **D-32:** Update README.md with all current features, accurate screenshots, and feature matrix
 - **D-33:** Create `CHANGELOG.md` for versions 1.0.0 and 1.1.0
 - **D-34:** Verify and update `GETTING_STARTED.md` build/run/debug instructions
@@ -61,6 +66,7 @@ Final polish, branding, and marketplace readiness for the OSV IntelliJ Plugin v1
 - **D-37:** Add FAQ/Troubleshooting section documenting proxy, rate limit, and false positive handling
 
 ### Build & Distribution
+
 - **D-38:** Audit shadow JAR for unused transitive deps; remove bloat
 - **D-39:** Review shadow `minimize` exclusions; ensure no runtime `NoClassDefFoundError`
 - **D-40:** Configure multi-version builds against IntelliJ platform 233 and 241+
@@ -70,6 +76,7 @@ Final polish, branding, and marketplace readiness for the OSV IntelliJ Plugin v1
 - **D-44:** Add GitHub Actions workflow for automated build → sign → publish to JetBrains Marketplace
 
 ### the agent's Discretion
+
 - Exact icon SVG/PNG design for marketplace listing
 - Specific benchmark thresholds (document what's reasonable)
 - Exact wording of documentation copy
@@ -79,16 +86,19 @@ Final polish, branding, and marketplace readiness for the OSV IntelliJ Plugin v1
 </decisions>
 
 <canonical_refs>
+
 ## Canonical References
 
 **Downstream agents MUST read these before planning or implementing.**
 
 ### Plugin Manifest & Build
+
 - `src/main/resources/META-INF/plugin.xml` — Extension points, inspections, tool windows, services
 - `build.gradle.kts` — Build configuration, shadow JAR, platform versions, dependencies
 - `META-INF/plugin.xml` — Alternative manifest location in project root
 
 ### Codebase Mapping
+
 - `.planning/codebase/STACK.md` — Technology stack and dependencies
 - `.planning/codebase/ARCHITECTURE.md` — System design, data flow, plugin extension points
 - `.planning/codebase/CONVENTIONS.md` — Coding patterns, error handling, threading model
@@ -96,6 +106,7 @@ Final polish, branding, and marketplace readiness for the OSV IntelliJ Plugin v1
 - `.planning/codebase/CONCERNS.md` — Complete issue list (19 items) with file paths and context
 
 ### Existing Documentation
+
 - `README.md` — User-facing documentation
 - `PLUGIN_DOCUMENTATION.md` — Detailed plugin docs
 - `GETTING_STARTED.md` — Developer onboarding
@@ -103,15 +114,18 @@ Final polish, branding, and marketplace readiness for the OSV IntelliJ Plugin v1
 - `ENTERPRISE_GAP_ANALYSIS.md` — Enterprise feature gaps
 
 ### Prior Phase Contexts
+
 - `.planning/phases/06-foundation-fixes/06-CONTEXT.md` — Foundation fix decisions and patterns
 - `.planning/phases/05-add-not-yet-implemented-features-as-phase-2/05-CONTEXT.md` — Feature completion context
 
 </canonical_refs>
 
 <code_context>
+
 ## Existing Code Insights
 
 ### Reusable Assets
+
 - **SeverityUtil** (`src/main/java/io/dyuti/osvplugin/utils/SeverityUtil.kt`) — Severity-to-color/icon mapping; needs `JBColor` migration
 - **OsVToolWindowFactory** — 3-tab tool window; needs toolbar actions wired
 - **OsVInspection** — Multi-language inspection; needs PSI-level problem registration enhancement
@@ -120,6 +134,7 @@ Final polish, branding, and marketplace readiness for the OSV IntelliJ Plugin v1
 - **OsVConfig** — Persistent state component; extensible for new config fields (API URL, encrypted tokens)
 
 ### Established Patterns
+
 - **PersistentStateComponent** — Plugin config via `@State` + `Storage` annotations (XML persistence)
 - **Backgroundable Task** — All long-running ops wrapped in `ProgressManager.run(Backgroundable(...))`
 - **WriteCommandAction** — Document mutations with undo support
@@ -127,6 +142,7 @@ Final polish, branding, and marketplace readiness for the OSV IntelliJ Plugin v1
 - **Regex-based parsing** — All dependency parsers use regex on raw text (Maven, Gradle, Npm, Pip)
 
 ### Integration Points
+
 - **plugin.xml** — All new extensions (inspections, actions, tool windows, status bar widgets) register here
 - **OsVConfig** — New config fields automatically persisted via `PersistentStateComponent`
 - **NotificationGroup** — Already registered in plugin.xml for balloon notifications
@@ -162,5 +178,5 @@ Final polish, branding, and marketplace readiness for the OSV IntelliJ Plugin v1
 
 ---
 
-*Phase: 21-final-polish-marketplace-release*
-*Context gathered: 2026-05-12*
+_Phase: 21-final-polish-marketplace-release_
+_Context gathered: 2026-05-12_

@@ -48,7 +48,10 @@ class CacheManager : PersistentStateComponent<CacheManager.CacheState> {
     }
 
     companion object {
-        fun getInstance(): CacheManager = CacheManager()
+        fun getInstance(): CacheManager =
+            com.intellij.openapi.application.ApplicationManager
+                .getApplication()
+                .getService(CacheManager::class.java)
     }
 
     /**
