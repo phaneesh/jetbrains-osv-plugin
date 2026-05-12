@@ -238,6 +238,7 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 - [x] Unchanged vulnerability count tracking
 
 **Use cases:**
+
 - PR review: "Did this PR introduce any new vulnerabilities?"
 - Release gates: "Any new critical issues blocking release?"
 - Dependency update validation: "Did upgrade fix any CVEs?"
@@ -246,9 +247,29 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 
 ---
 
+### Phase 17: Historical Trending ✓ COMPLETE
+
+**Goal:** Track vulnerability counts over time with visual trends
+**Rationale:** Teams need to see whether their security posture is improving or degrading over days/weeks
+**Completed:** 2026-05-12
+
+**Features:**
+
+- [x] HistoricalScanRecord: lightweight scan summary (severity counts only, no individual vuln details)
+- [x] HistoricalScanRepository: JSON file-based persistence in `{project}/scan-history/`
+- [x] TrendDelta: per-scan change computation with % change and improvement indicator
+- [x] TrendWindow: rolling 7-day, 30-day, and all-time statistics
+- [x] TrendSummary: aggregated view with direction, latest delta, averages
+- [x] HistoricalTrendPanel: IntelliJ tool window tab with ASCII spark-line + stat tables
+- [x] Auto-capture on scan completion via scan-to-trend wiring
+- [x] Keyword API for downstream consumers: `computeSummary()`, `computeLatestDelta()`, `loadLatest(N)`
+
+**Limitations:** No proper chart library (ASCII sparkline only); no persistent storage limits enforcement other than trim-to-N
+
+---
+
 ### Future Phases (Backlog)
 
-- Phase 17: Historical trending (vulnerability counts over time charts)
 - Phase 18: SBOM generation (CycloneDX/SPDX export)
 - Phase 19: Configuration audit (detect insecure framework configs)
 - Phase 20: IDE notification service (real-time balloon alerts for new CVEs)
@@ -275,6 +296,7 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 | 14    | Policy Enforcement           | ✅ Complete     | 2026-05-07 |
 | 15    | Team Collaboration           | ✅ Complete     | 2026-05-07 |
 | 16    | Differential Analysis        | ✅ Complete     | 2026-05-12 |
+| 17    | Historical Trending          | ✅ Complete     | 2026-05-12 |
 
 ---
 

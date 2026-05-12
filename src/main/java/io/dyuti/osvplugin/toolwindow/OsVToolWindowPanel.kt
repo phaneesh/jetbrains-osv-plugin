@@ -48,6 +48,12 @@ class OsVToolWindowPanel
 
         private val treeModelBuilder = OsVTreeModelBuilder()
         private val parsedDependencies = mutableMapOf<VirtualFile, List<Dependency>>()
+        private var onScanCompleted: ((List<Vulnerability>, List<Dependency>) -> Unit)? = null
+
+        /** Set callback invoked when scan completes. */
+        fun setOnScanCompleted(callback: (List<Vulnerability>, List<Dependency>) -> Unit) {
+            onScanCompleted = callback
+        }
 
         init {
             setupUI()
@@ -224,6 +230,11 @@ class OsVToolWindowPanel
                         }
 
                         treeModelBuilder.buildModel(vulnerabilitiesByModule)
+
+                        // Notify trend panel of scan completion
+                        val allVulns = vulnerabilitiesByModule.values.flatten()
+                        val allDeps = parsedDependencies.values.flatten()
+                        onScanCompleted?.invoke(allVulns, allDeps)
 
                         val totalCount = treeModelBuilder.getVulnerabilityCount()
                         updateStatus("Scan complete: $totalCount vulnerabilities found")

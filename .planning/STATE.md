@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 16 complete; ready for Phase 17
-last_updated: "2026-05-12T03:40:00.741Z"
+stopped_at: Phase 17 complete; ready for Phase 18
+last_updated: "2026-05-12T04:24:23.164Z"
 progress:
-  total_phases: 24
+  total_phases: 25
   completed_phases: 0
   total_plans: 16
   completed_plans: 1
-  percent: 90
+  percent: 92
 ---
 
 # Project State
@@ -22,10 +22,10 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 
 ## Current Position
 
-Phase: 01 of 24 (core foundation)
+Phase: 01 of 25 (core foundation)
 Status: Executing Phase 01
 
-Progress: [██████████████████░░] 90% (Phases 6–16 all complete)
+Progress: [███████████████████░] 92% (Phases 6–17 all complete)
 
 - ✅ **Phase 6** – Foundation Fixes (COMPLETED)
 - ✅ **Phase 7** – Problems Tab Integration (COMPLETED)
@@ -38,54 +38,57 @@ Progress: [██████████████████░░] 90% (Ph
 - ✅ **Phase 14** – Policy Enforcement (COMPLETED)
 - ✅ **Phase 15** – Team Collaboration & Notifications (COMPLETED)
 - ✅ **Phase 16** – Differential Analysis (COMPLETED)
-- 📋 **Phase 17** – Historical Trending (vulnerability charts over time)
+- ✅ **Phase 17** – Historical Trending (COMPLETED)
 - 📋 **Phase 18** – SBOM Generation (CycloneDX/SPDX export)
 - 📋 **Phase 19** – Configuration Audit (insecure framework configs)
 - 📋 **Phase 20** – IDE Notification Service (real-time CVE alerts)
 
 ## Competitive Position
 
-| Feature | OSV Plugin | Snyk | Mend.io | Qodana |
-|---------|-----------|------|---------|--------|
-| Free SCA | ✅ | Free tier | Paid | Paid |
-| Problems tab | ✅ | ✅ | ✅ | ✅ |
-| Auto-fix | ✅ | ✅ | ✅ | ❌ |
-| License scanning | ✅ | ✅ | ✅ | ❌ |
-| Reachability | ✅ Basic | ✅ Premium | ✅ Premium | ✅ |
-| **Malicious packages** | **✅ Unique** | ❌ | ✅ Premium | ❌ |
-| **Basic SAST** | **✅ Unique** | ✅ | ✅ | ✅ |
-| **Privacy exports** | **✅ Unique** | ❌ | ❌ | ❌ |
-| **Risk scoring** | **✅ Unique** | ✅ Premium | ✅ Premium | ❌ |
-| **Policy enforcement** | **✅ Unique** | ✅ Premium | ✅ Premium | ❌ |
-| **Team config sharing** | **✅ Unique** | ✅ Premium | ✅ Premium | ❌ |
-| **Differential analysis** | **✅ Unique** | ✅ | ✅ | ❌ |
-| Tree-based UI | ✅ | ✅ | ✅ | ✅ |
+| Feature                   | OSV Plugin    | Snyk       | Mend.io    | Qodana |
+| ------------------------- | ------------- | ---------- | ---------- | ------ |
+| Free SCA                  | ✅            | Free tier  | Paid       | Paid   |
+| Problems tab              | ✅            | ✅         | ✅         | ✅     |
+| Auto-fix                  | ✅            | ✅         | ✅         | ❌     |
+| License scanning          | ✅            | ✅         | ✅         | ❌     |
+| Reachability              | ✅ Basic      | ✅ Premium | ✅ Premium | ✅     |
+| **Malicious packages**    | **✅ Unique** | ❌         | ✅ Premium | ❌     |
+| **Basic SAST**            | **✅ Unique** | ✅         | ✅         | ✅     |
+| **Privacy exports**       | **✅ Unique** | ❌         | ❌         | ❌     |
+| **Risk scoring**          | **✅ Unique** | ✅ Premium | ✅ Premium | ❌     |
+| **Policy enforcement**    | **✅ Unique** | ✅ Premium | ✅ Premium | ❌     |
+| **Team config sharing**   | **✅ Unique** | ✅ Premium | ✅ Premium | ❌     |
+| **Differential analysis** | **✅ Unique** | ✅         | ✅         | ❌     |
+| **Historical trends**     | **✅ Unique** | ✅         | ✅ Premium | ❌     |
+| Tree-based UI             | ✅            | ✅         | ✅         | ✅     |
 
 ## Recent Significant Changes
 
+- 2026-05-12 – **Phase 17 Complete** — Historical Trending
+  - HistoricalScanRepository: JSON file-based persistence of lightweight scan summaries
+  - TrendDelta: per-scan change computation with % change and improvement indicator
+  - TrendWindow: rolling 7-day, 30-day, and all-time statistics
+  - HistoricalTrendPanel: IntelliJ tool window tab with ASCII spark-line + stat tables
+  - Auto-capture on scan completion via panel-level callback wiring
+  - Tests: HistoricalScanRepositoryTest (20 tests)
 - 2026-05-12 – **Phase 16 Complete** — Differential Analysis
-  - DiffAnalyzer.compare(): bidirectional comparison of two scan snapshots
-  - Detects: NEW vulnerabilities, RESOLVED vulnerabilities, severity escalations/deescalations, new/removed packages
-  - ScanSnapshot model: JSON-serializable snapshot for historical persistence
-  - DiffResult with actionable filtering (filterByMinSeverity) and summary generation
-  - Tests: DiffAnalyzerTest (12 tests) covering all change types + edge cases
 - 2026-05-07 – **Phase 15 Complete** — Team Collaboration & Notifications
 - 2026-05-07 – **Phase 14 Complete** — Policy Enforcement
 - 2026-05-07 – **Phase 13 Complete** — Risk Scoring Beyond Severity
 
 ## Metrics
 
-| Metric | Value |
-|--------|-------|
-| Total tests | 209 |
-| Test classes | 21 |
-| Source files | ~48 Kotlin files |
-| Plugin version | 1.1.0 |
-| IntelliJ compatibility | 2023.3–2026.2 |
-| Build | ✅ SUCCESS |
+| Metric                 | Value            |
+| ---------------------- | ---------------- |
+| Total tests            | 229              |
+| Test classes           | 22               |
+| Source files           | ~55 Kotlin files |
+| Plugin version         | 1.1.0            |
+| IntelliJ compatibility | 2023.3–2026.2    |
+| Build                  | ✅ SUCCESS       |
 
 ## Session Continuity
 
 Last session: 2026-05-12
-Stopped at: Phase 16 complete; ready for Phase 17
+Stopped at: Phase 17 complete; ready for Phase 18
 Resume: Continue in this conversation or invoke next phase
