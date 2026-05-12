@@ -2,17 +2,18 @@ package io.dyuti.osvplugin.utils
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.util.IconLoader
+import com.intellij.ui.JBColor
 import io.dyuti.osvplugin.api.model.OsVSeverity
 import java.awt.Color
 import javax.swing.Icon
 
 object SeverityUtil {
-    fun getColor(severity: OsVSeverity): Color =
+    fun getColor(severity: OsVSeverity): JBColor =
         when (severity) {
-            OsVSeverity.CRITICAL -> Color(220, 53, 69)
-            OsVSeverity.HIGH -> Color(255, 193, 7)
-            OsVSeverity.MEDIUM -> Color(255, 165, 0)
-            OsVSeverity.LOW -> Color(108, 117, 125)
+            OsVSeverity.CRITICAL -> JBColor(Color(220, 53, 69), Color(255, 100, 100))
+            OsVSeverity.HIGH -> JBColor(Color(255, 193, 7), Color(255, 220, 80))
+            OsVSeverity.MEDIUM -> JBColor(Color(255, 165, 0), Color(255, 180, 40))
+            OsVSeverity.LOW -> JBColor(Color(108, 117, 125), Color(150, 160, 170))
         }
 
     fun getPriority(severity: OsVSeverity): Int =

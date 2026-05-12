@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.ColoredTreeCellRenderer
+import com.intellij.ui.JBColor
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
@@ -23,7 +24,6 @@ import io.dyuti.osvplugin.parser.PipParser
 import io.dyuti.osvplugin.utils.CacheManager
 import io.dyuti.osvplugin.utils.SeverityUtil
 import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.FlowLayout
 import javax.swing.*
 import javax.swing.tree.DefaultMutableTreeNode
@@ -81,7 +81,7 @@ class OsVToolWindowPanel
             filterTextField.text = "Filter vulnerabilities..."
 
             // Setup status label
-            statusLabel.foreground = Color.GRAY
+            statusLabel.foreground = JBColor.GRAY
 
             // Create tree scroll pane
             val scrollPane = JBScrollPane(vulnerabilityTree)
