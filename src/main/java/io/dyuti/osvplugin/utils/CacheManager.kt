@@ -57,6 +57,7 @@ class CacheManager : PersistentStateComponent<CacheManager.CacheState> {
     /**
      * Get cached vulnerabilities
      */
+    @Synchronized
     fun getCachedVulnerabilities(key: String): List<Vulnerability>? {
         val entry = cache[key]
         return if (entry != null && !entry.isExpired()) {
@@ -70,6 +71,7 @@ class CacheManager : PersistentStateComponent<CacheManager.CacheState> {
     /**
      * Cache vulnerabilities
      */
+    @Synchronized
     fun cacheVulnerabilities(
         key: String,
         vulnerabilities: List<Vulnerability>,
@@ -81,6 +83,7 @@ class CacheManager : PersistentStateComponent<CacheManager.CacheState> {
     /**
      * Invalidate cache for a specific key
      */
+    @Synchronized
     fun invalidate(key: String) {
         cache.remove(key)
     }
@@ -88,6 +91,7 @@ class CacheManager : PersistentStateComponent<CacheManager.CacheState> {
     /**
      * Invalidate all cache entries
      */
+    @Synchronized
     fun invalidateAll() {
         cache.clear()
         stringCache.clear()
@@ -96,6 +100,7 @@ class CacheManager : PersistentStateComponent<CacheManager.CacheState> {
     /**
      * Remove expired entries
      */
+    @Synchronized
     fun cleanupExpired() {
         val keysToRemove =
             cache.keys.filter { key ->
@@ -108,11 +113,13 @@ class CacheManager : PersistentStateComponent<CacheManager.CacheState> {
     /**
      * Get cache size
      */
+    @Synchronized
     fun size(): Int = cache.size
 
     /**
      * Get cache stats
      */
+    @Synchronized
     fun getStats(): Map<String, Any> =
         mapOf(
             "size" to size(),
@@ -122,6 +129,7 @@ class CacheManager : PersistentStateComponent<CacheManager.CacheState> {
     /**
      * Get cached string value
      */
+    @Synchronized
     fun getString(key: String): String? {
         val entry = stringCache[key]
         return if (entry != null && !entry.isExpired()) {
@@ -135,6 +143,7 @@ class CacheManager : PersistentStateComponent<CacheManager.CacheState> {
     /**
      * Cache a string value with TTL in milliseconds
      */
+    @Synchronized
     fun cacheString(
         key: String,
         value: String,

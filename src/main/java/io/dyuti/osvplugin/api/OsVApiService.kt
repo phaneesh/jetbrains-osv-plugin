@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit
  */
 class OsVApiService(
     httpClient: HttpClient? = null,
+    private val baseUrl: String? = null,
 ) {
     companion object {
         private val LOG = Logger.getInstance(OsVApiService::class.java)
@@ -50,7 +51,7 @@ class OsVApiService(
                 .build()
 
     private val osvApiUrl: String
-        get() = config.osvApiUrl
+        get() = baseUrl ?: config.osvApiUrl
     private val gson = Gson()
     private val cacheManager by lazy {
         try {

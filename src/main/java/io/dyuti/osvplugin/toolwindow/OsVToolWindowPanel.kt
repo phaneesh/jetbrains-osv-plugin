@@ -690,6 +690,45 @@ class OsVTreeModelBuilder {
     }
 
     /**
+     * Build tree from string-keyed map (used for unit testing without VirtualFile)
+     */
+    fun buildModelStringKey(vulnerabilitiesByFile: Map<String, List<Vulnerability>>): DefaultTreeModel {
+        root.removeAllChildren()
+        model.reload(root)
+
+        for ((fileName, vulnerabilities) in vulnerabilitiesByFile) {
+            val moduleNode = DefaultMutableTreeNode(fileName)
+            val vulnerabilitiesBySeverity = vulnerabilities.groupBy { it.severity }
+            val severityOrder =
+                listOf(
+                    OsVSeverity.CRITICAL to "Critical",
+                    OsVSeverity.HIGH to "High",
+                    OsVSeverity.MEDIUM to "Medium",
+                    OsVSeverity.LOW to "Low",
+                )
+
+            for ((severity, groupName) in severityOrder) {
+                val sevVulns = vulnerabilitiesBySeverity[severity] ?: continue
+                if (sevVulns.isEmpty()) continue
+
+                val severityNode = SeverityGroupTreeNode(severity, groupName)
+                for (vuln in sevVulns) {
+                    val vulnNode = VulnerabilityTreeNode(vuln, null)
+                    severityNode.add(vulnNode)
+                }
+                moduleNode.add(severityNode)
+            }
+
+            if (moduleNode.childCount > 0) {
+                root.add(moduleNode)
+            }
+        }
+
+        model.reload(root)
+        return model
+    }
+
+    /**
      * Get total number of vulnerabilities
      */
     fun getVulnerabilityCount(): Int {
