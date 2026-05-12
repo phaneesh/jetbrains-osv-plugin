@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 15 complete; ready for Phase 16
-last_updated: "2026-05-07T08:11:09.328Z"
+stopped_at: Phase 16 complete; ready for Phase 17
+last_updated: "2026-05-12T03:40:00.741Z"
 progress:
-  total_phases: 23
+  total_phases: 24
   completed_phases: 0
   total_plans: 16
   completed_plans: 1
-  percent: 88
+  percent: 90
 ---
 
 # Project State
@@ -22,10 +22,10 @@ See: .planning/PROJECT.md (updated 2026-04-28)
 
 ## Current Position
 
-Phase: 01 of 23 (core foundation)
+Phase: 01 of 24 (core foundation)
 Status: Executing Phase 01
 
-Progress: [█████████████████░░░] 88% (Phases 6–15 all complete)
+Progress: [██████████████████░░] 90% (Phases 6–16 all complete)
 
 - ✅ **Phase 6** – Foundation Fixes (COMPLETED)
 - ✅ **Phase 7** – Problems Tab Integration (COMPLETED)
@@ -37,11 +37,11 @@ Progress: [█████████████████░░░] 88% (Ph
 - ✅ **Phase 13** – Risk Scoring Beyond Severity (COMPLETED)
 - ✅ **Phase 14** – Policy Enforcement (COMPLETED)
 - ✅ **Phase 15** – Team Collaboration & Notifications (COMPLETED)
-- 📋 **Phase 16** – Differential Analysis (compare two scans)
-- 📋 **Phase 17** – Historical Trending (vulnerability charts)
-- 📋 **Phase 18** – SBOM Generation (CycloneDX/SPDX)
+- ✅ **Phase 16** – Differential Analysis (COMPLETED)
+- 📋 **Phase 17** – Historical Trending (vulnerability charts over time)
+- 📋 **Phase 18** – SBOM Generation (CycloneDX/SPDX export)
 - 📋 **Phase 19** – Configuration Audit (insecure framework configs)
-- 📋 **Phase 20** – IDE Notification Service (real-time alerts)
+- 📋 **Phase 20** – IDE Notification Service (real-time CVE alerts)
 
 ## Competitive Position
 
@@ -58,33 +58,34 @@ Progress: [█████████████████░░░] 88% (Ph
 | **Risk scoring** | **✅ Unique** | ✅ Premium | ✅ Premium | ❌ |
 | **Policy enforcement** | **✅ Unique** | ✅ Premium | ✅ Premium | ❌ |
 | **Team config sharing** | **✅ Unique** | ✅ Premium | ✅ Premium | ❌ |
+| **Differential analysis** | **✅ Unique** | ✅ | ✅ | ❌ |
 | Tree-based UI | ✅ | ✅ | ✅ | ✅ |
 
 ## Recent Significant Changes
 
-- 2026-05-07 – **Phase 15 Complete** — Team Collaboration
-  - TeamConfig: project-level scan settings, notification thresholds, auto-fix toggle
-  - TeamPolicyOverrides: project policy overrides merged with user/global settings
-  - TeamConfigManager: `.idea/osv-plugin-config.json` persistence (version-controllable via git)
-  - VulnerabilityNotification: IDE balloon data model with emoji severity and CISA KEV flag
-  - ScanMetrics: per-scan aggregation for team reporting
-  - Tests: TeamConfigManagerTest (12 tests) + NotificationModelsTest (8 tests)
-- 2026-05-07 – **Phase 14 Complete** — Policy Enforcement (17 tests)
-- 2026-05-07 – **Phase 13 Complete** — Risk Scoring (14 tests)
+- 2026-05-12 – **Phase 16 Complete** — Differential Analysis
+  - DiffAnalyzer.compare(): bidirectional comparison of two scan snapshots
+  - Detects: NEW vulnerabilities, RESOLVED vulnerabilities, severity escalations/deescalations, new/removed packages
+  - ScanSnapshot model: JSON-serializable snapshot for historical persistence
+  - DiffResult with actionable filtering (filterByMinSeverity) and summary generation
+  - Tests: DiffAnalyzerTest (12 tests) covering all change types + edge cases
+- 2026-05-07 – **Phase 15 Complete** — Team Collaboration & Notifications
+- 2026-05-07 – **Phase 14 Complete** — Policy Enforcement
+- 2026-05-07 – **Phase 13 Complete** — Risk Scoring Beyond Severity
 
 ## Metrics
 
 | Metric | Value |
 |--------|-------|
-| Total tests | 197 |
-| Test classes | 19 |
-| Source files | ~45 Kotlin files |
+| Total tests | 209 |
+| Test classes | 21 |
+| Source files | ~48 Kotlin files |
 | Plugin version | 1.1.0 |
 | IntelliJ compatibility | 2023.3–2026.2 |
 | Build | ✅ SUCCESS |
 
 ## Session Continuity
 
-Last session: 2026-05-07
-Stopped at: Phase 15 complete; ready for Phase 16
-Resume: Continue in this conversation or plan Phase 16
+Last session: 2026-05-12
+Stopped at: Phase 16 complete; ready for Phase 17
+Resume: Continue in this conversation or invoke next phase

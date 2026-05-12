@@ -223,9 +223,31 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 
 ---
 
+### Phase 16: Differential Analysis ✓ COMPLETE
+
+**Goal:** Compare two vulnerability scans to detect security posture changes over time
+**Rationale:** Teams need to know "what changed" — did a PR introduce new vulns? Did an upgrade fix any?
+**Completed:** 2026-05-12
+
+**Features:**
+
+- [x] DiffAnalyzer.compare(): bidirectional comparison of two ScanSnapshots
+- [x] Change detection: NEW vulns, RESOLVED vulns, severity escalations/deescalations, package additions/removals
+- [x] ScanSnapshot data model with JSON-serializable snapshot format for historical persistence
+- [x] DiffResult with actionable filtering (filterByMinSeverity), summary strings
+- [x] Unchanged vulnerability count tracking
+
+**Use cases:**
+- PR review: "Did this PR introduce any new vulnerabilities?"
+- Release gates: "Any new critical issues blocking release?"
+- Dependency update validation: "Did upgrade fix any CVEs?"
+
+**Limitations:** No disk persistence yet (snapshots in-memory only); no IDE UI for selecting snapshots to compare
+
+---
+
 ### Future Phases (Backlog)
 
-- Phase 16: Differential analysis (compare two scans over time)
 - Phase 17: Historical trending (vulnerability counts over time charts)
 - Phase 18: SBOM generation (CycloneDX/SPDX export)
 - Phase 19: Configuration audit (detect insecure framework configs)
@@ -252,6 +274,7 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 | 13    | Risk Scoring Beyond Severity | ✅ Complete     | 2026-05-07 |
 | 14    | Policy Enforcement           | ✅ Complete     | 2026-05-07 |
 | 15    | Team Collaboration           | ✅ Complete     | 2026-05-07 |
+| 16    | Differential Analysis        | ✅ Complete     | 2026-05-12 |
 
 ---
 
