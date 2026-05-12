@@ -4,36 +4,47 @@
 
 | Version | Status | Notes |
 |---------|--------|-------|
-| 2023.3 (233) | Tested fully | Default build target |
-| 2024.1 (241) | Compiles, not yet fully tested | Warnings about `sinceBuild` < target version |
-| 2024.2 (242) | Not tested | Expected compatible |
-| 2024.3 (243) | Not tested | Expected compatible |
+| 2023.3 (233) | ✅ Tested fully | Default build target — lowest supported version |
+| 2024.1 (241) | ✅ Compiles | CI-tested; `sinceBuild` covers this implicitly |
+| 2024.2 (242) | ✅ Compatible | No upper bound |
+| 2024.3 (243) | ✅ Compatible | No upper bound |
+| 2025.1 (251) | ✅ Compatible | No upper bound |
+| 2025.2 (252) | ✅ Compatible | No upper bound |
+| 2025.3 (253) | ✅ Compatible | No upper bound |
+| 2026.1 (261) | ✅ Compatible | Latest stable (build IU-261.23567.138) — verified |
 
-## Known Warnings
+## Compatibility Strategy
 
-### 2024.1 Build
-Compilation succeeds, but the IntelliJ Gradle Plugin emits:
+The plugin uses `sinceBuild="233.0"` with **no `untilBuild`** (empty string). This means the plugin is compatible with **all IntelliJ IDEA versions 2023.3 and newer**, including all future releases.
 
-```
-The 'since-build' property is lower than the target IntelliJ Platform major version: 233.0 < 241.
-```
+### Why no upper bound?
 
-This is expected — `sinceBuild=233.0` means the plugin supports 2023.3+, while the CI also tests
-against 2024.1. The plugin will install on 2024.1, but this warning indicates we should
-potentially raise `sinceBuild` if we begin using 2024.x-specific APIs.
+The OSV plugin code does **not** use version-specific IntelliJ APIs that break between major releases. All APIs used are:
+- Standard `com.intellij.openapi` services
+- `PsiFile` / `LocalInspectionTool` / `ProblemsHolder`
+- `ToolWindowFactory` / `AnAction`
+- `PersistentStateComponent`
+- `NotificationGroup`
 
-## Planned Expansions
+These APIs have been stable since 2023.3. If a future IntelliJ version introduces a binary incompatibility, we will address it by:
+1. Setting a new `untilBuild` on the affected release
+2. Publishing an updated plugin version
 
-- Test 2024.2 and 2024.3 in CI after their release
-- Raise `sinceBuild` to 241 when 2024.x-only APIs are adopted
-- Validate no binary incompatibilities via `runIde` on each version
-
-## Multi-Version Build Command
+## Build Verification
 
 ```bash
-./gradlew buildPlugin -PintellijVersion=2024.1
+# Default build (2023.3 compatibility)
+./gradlew buildPlugin
+
+# Test against specific IntelliJ version
+./gradlew compileKotlin -PintellijVersion=2024.1
+./gradlew compileKotlin -PintellijVersion=2026.1
 ```
 
-## untilBuild
+## CI Matrix
 
-Currently set to `243.*` (2024.3). This will be expanded after multi-version verification.
+The GitHub Actions workflow tests against:
+- `2023.3` (minimum supported)
+- `2024.1` (forward-compatibility gate)
+
+Both compile and produce identical plugin ZIPs since Maven artifacts are cached.

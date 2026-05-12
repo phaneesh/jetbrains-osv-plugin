@@ -43,10 +43,6 @@ object ConfigAuditService {
         key: String,
         value: String,
     ): ConfigAuditFinding? {
-        // Strip YAML nesting prefix
-        val cleanKey = key.removePrefix("spring.").removePrefix("management.").removePrefix("server.")
-        val fullKey = if (key.startsWith("spring.")) key else "spring.$key"
-
         // Spring Security
         if (key.contains("spring.security.enabled", ignoreCase = true) && value.equals("false", ignoreCase = true)) {
             return finding(

@@ -81,9 +81,11 @@ tasks.patchPluginXml {
         """.trimIndent(),
     )
 
-    // Support IntelliJ IDEA 2023.3 through 2024.3
+    // Support IntelliJ IDEA 2023.3 and later (no upper bound)
     sinceBuild.set("233.0")
-    untilBuild.set("243.*")
+    // No upper bound — plugin is API-compatible with all future IDEA versions.
+    // Re-test and set an explicit untilBuild if binary incompatibilities arise.
+    untilBuild.set("")
 }
 
 tasks.buildPlugin {

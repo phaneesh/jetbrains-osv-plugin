@@ -70,7 +70,6 @@ class OsVToolWindowPanel
         }
 
         fun exportResults() {
-            val results = treeModelBuilder.getTreeModel()
             javax.swing.SwingUtilities.invokeLater {
                 javax.swing.JOptionPane.showMessageDialog(
                     this,
