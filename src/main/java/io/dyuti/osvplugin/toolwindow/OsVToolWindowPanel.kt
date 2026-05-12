@@ -17,6 +17,8 @@ import io.dyuti.osvplugin.api.OsVApiService
 import io.dyuti.osvplugin.api.model.Dependency
 import io.dyuti.osvplugin.api.model.OsVSeverity
 import io.dyuti.osvplugin.api.model.Vulnerability
+import io.dyuti.osvplugin.api.model.displayId
+import io.dyuti.osvplugin.api.model.formatFixVersions
 import io.dyuti.osvplugin.fix.AutoFixService
 import io.dyuti.osvplugin.parser.GradleParser
 import io.dyuti.osvplugin.parser.MavenParser
@@ -297,12 +299,7 @@ class OsVToolWindowPanel
                     val severityNode = moduleNode.getChildAt(j) as SeverityGroupTreeNode
                     for (k in 0 until severityNode.childCount) {
                         val vulnNode = severityNode.getChildAt(k) as VulnerabilityTreeNode
-                        val displayId =
-                            if (vulnNode.vulnerability.cveIds.isNotEmpty()) {
-                                vulnNode.vulnerability.cveIds.first()
-                            } else {
-                                vulnNode.vulnerability.id
-                            }
+                        val displayId = vulnNode.vulnerability.displayId()
                         val matches =
                             displayId.contains(filterText, ignoreCase = true) ||
                                 vulnNode.vulnerability.summary.contains(filterText, ignoreCase = true)
@@ -350,7 +347,7 @@ class OsVToolWindowPanel
         }
 
         private fun openVulnerabilityLink(vulnerability: Vulnerability) {
-            val id = if (vulnerability.cveIds.isNotEmpty()) vulnerability.cveIds.first() else vulnerability.id
+            val id = vulnerability.displayId()
             val url = "https://osv.dev/vulnerability/$id"
 
             try {
@@ -578,17 +575,12 @@ class VulnerabilityTreeNode(
     val moduleFile: VirtualFile?,
     val ecosystem: String = "Maven",
 ) : DefaultMutableTreeNode(vulnerability) {
-    private val displayId =
-        if (vulnerability.cveIds.isNotEmpty()) {
-            vulnerability.cveIds.first()
-        } else {
-            vulnerability.id
-        }
+    private val displayId = vulnerability.displayId()
 
     val lineNumber: Int? = vulnerability.lineNumber
 
     override fun toString(): String {
-        val fixVersion = vulnerability.fixedVersions.firstOrNull() ?: "N/A"
+        val fixVersion = vulnerability.formatFixVersions()
         return "$displayId - ${vulnerability.summary} (Fix: $fixVersion)"
     }
 }
@@ -746,13 +738,7 @@ class OsVTreeModelBuilder {
                 val severityNode = moduleNode.getChildAt(j) as SeverityGroupTreeNode
                 for (k in 0 until severityNode.childCount) {
                     val vulnNode = severityNode.getChildAt(k) as VulnerabilityTreeNode
-                    val displayId =
-                        if (vulnNode.vulnerability.cveIds.isNotEmpty()) {
-                            vulnNode.vulnerability.cveIds.first()
-                        } else {
-                            vulnNode.vulnerability.id
-                        }
-                    if (displayId == id) {
+                    if (vulnNode.vulnerability.displayId() == id) {
                         return vulnNode
                     }
                 }
@@ -801,12 +787,7 @@ class SeverityTreeCellRenderer : ColoredTreeCellRenderer() {
                     io.dyuti.osvplugin.utils.SeverityUtil
                         .getSeverityIcon(vulnerability.severity)
 
-                val displayId =
-                    if (vulnerability.cveIds.isNotEmpty()) {
-                        vulnerability.cveIds.first()
-                    } else {
-                        vulnerability.id
-                    }
+                val displayId = vulnerability.displayId()
 
                 // Add severity prefix to tooltip
                 tooltipText = "${vulnerability.severity} severity - $displayId"
@@ -817,7 +798,7 @@ class SeverityTreeCellRenderer : ColoredTreeCellRenderer() {
                 append(vulnerability.summary, SimpleTextAttributes.REGULAR_ATTRIBUTES)
 
                 // Add fix version
-                val fixVersion = vulnerability.fixedVersions.firstOrNull() ?: "N/A"
+                val fixVersion = vulnerability.formatFixVersions()
                 append(" ", SimpleTextAttributes.GRAY_ATTRIBUTES)
                 append("(Fix: $fixVersion)", SimpleTextAttributes.GRAY_ATTRIBUTES)
 

@@ -215,17 +215,38 @@ class OsVApiService(
 
         val fixedVersions = mutableListOf<String>()
         vuln.getAsJsonArray("affected")?.forEach { affected ->
-            val ranges = affected.asJsonObject.getAsJsonArray("ranges")
-            ranges?.forEach { range ->
-                val events = range.asJsonObject.getAsJsonArray("events")
+            val affectedObj = affected.asJsonObject
+
+            // 1. Extract fixed versions from range events (GIT type has commit hashes, skip them)
+            affectedObj.getAsJsonArray("ranges")?.forEach { range ->
+                val rangeObj = range.asJsonObject
+                val rangeType = rangeObj.getAsJsonPrimitive("type")?.asString ?: ""
+                val events = rangeObj.getAsJsonArray("events")
                 events?.forEach { event ->
-                    val fixed = event.asJsonObject.get("fixed")
+                    val eventObj = event.asJsonObject
+                    val fixed = eventObj.get("fixed")
                     if (fixed != null) {
-                        fixedVersions.add(fixed.asString)
+                        val v = fixed.asString
+                        if (looksLikeVersion(v, rangeType)) fixedVersions.add(v)
+                    }
+                    val lastAffected = eventObj.get("last_affected")
+                    if (lastAffected != null && eventObj.get("fixed") == null) {
+                        val v = lastAffected.asString
+                        if (looksLikeVersion(v, rangeType)) fixedVersions.add(v)
                     }
                 }
             }
+
+            // 2. Extract from explicit versions array
+            affectedObj.getAsJsonArray("versions")?.forEach { v ->
+                val vStr = v.asString
+                if (looksLikeVersion(vStr, "")) fixedVersions.add(vStr)
+            }
         }
+
+        // Deduplicate while preserving order
+        val seen = mutableSetOf<String>()
+        val dedupedFixed = fixedVersions.filter { seen.add(it) }
 
         val references = mutableListOf<String>()
         vuln.getAsJsonArray("references")?.forEach { ref ->
@@ -240,13 +261,14 @@ class OsVApiService(
 
         return Vulnerability(
             id = id,
-            cveIds = aliases.filter { it.startsWith("CVE-") || it.startsWith("GHSA-") },
+            cveIds = aliases.filter { it.startsWith("CVE-") },
+            ghsaIds = aliases.filter { it.startsWith("GHSA-") },
             summary = summary,
             details = details,
             severity = severity,
             cvssScore = cvssScore,
             affectedVersions = emptyList(),
-            fixedVersions = fixedVersions,
+            fixedVersions = dedupedFixed,
             references = references,
             cweIds = mutableListOf(),
             affectedFunctions = affectedFunctions,
@@ -350,6 +372,28 @@ class OsVApiService(
         }
 
         return functions.distinctBy { it.signature }
+    }
+
+    /**
+     * Determine if a string from an OSV range event looks like a semantic version
+     * rather than a git commit hash. GIT-typed ranges use commit hashes which are
+     * not useful for display. ECOSYSTEM and SEMVER ranges contain actual versions.
+     */
+    internal fun looksLikeVersion(
+        v: String,
+        rangeType: String,
+    ): Boolean {
+        // GIT ranges contain commit hashes which are 40-char hex strings
+        if (rangeType.equals("GIT", ignoreCase = true) &&
+            v.matches(Regex("^[a-f0-9]{40}\$"))
+        ) {
+            return false
+        }
+        // Skip if it looks like a partial hash (>= 7 hex chars, no dots or digits only)
+        if (v.matches(Regex("^[a-f0-9]{7,40}\$"))) return false
+        // Must contain at least one digit and one dot or start with known version prefix
+        if (!v.matches(Regex(".*[0-9].*"))) return false
+        return true
     }
 
     internal fun mapCvssToSeverity(score: Double?): OsVSeverity {
