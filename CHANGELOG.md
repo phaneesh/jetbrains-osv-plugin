@@ -31,15 +31,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Replaced OkHttp with `java.net.http.HttpClient` for better platform compatibility
 - Converted inspections to async with per-file caching and debounce to eliminate UI freezing
 - Replaced string-based auto-fix with PSI-based refactoring supporting transitive dependencies
+- Raised default cache TTL from 1 hour to 24 hours for reduced API load
+- Raised default rate limit from 100 to 1000 requests/hour via OSV batch API
 
 ### Fixed
 
-- **CacheManager singleton** — `getInstance()` now returns a true singleton via `ApplicationManager.getService()`
-- **OsVApiService singleton** — same fix, restoring correct rate limiting behavior
-- **Hardcoded OSV API URL** — now configurable in Settings → OSV Scanner
-- **Exception swallowing** — all `System.err.println` replaced with `com.intellij.openapi.diagnostic.Logger`
-- **Vulnerability `packageName`** — now populated from query context instead of empty string
-- **CacheManager thread safety** — `@Synchronized` annotations added to prevent data corruption under concurrent access
+- **AWT Threading Error** — quick fix dialogs cannot run inside write actions; deferred with `invokeLater`
+- **GHSA shown instead of CVE** — CVE IDs now displayed preferentially in all UI paths (tree, inspection, notifications, exports)
+- **Fixed version always N/A** — git commit hashes filtered from version ranges; `last_affected` and `affected[].versions` parsed correctly
+- **Rate limit errors** — replaced N individual parallel HTTP requests with single OSV `/v1/querybatch` call
+- **Short name mismatch** — inspection subclasses created for each language to match `plugin.xml` registration (IntelliJ 2024.1+)
+- **IDEA 2026.1 Compatibility** — removed `untilBuild` upper bound; plugin compatible with all versions ≥ 2023.3
 
 ## [1.0.0] - 2024-04-24
 

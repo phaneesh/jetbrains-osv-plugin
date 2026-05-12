@@ -1,7 +1,7 @@
 # OSV IntelliJ Plugin
 
 ![Build](https://img.shields.io/badge/build-passing-brightgreen)
-![Version](https://img.shields.io/badge/jetbrains%20marketplace-v1.1.0-blue)
+![Version](https://img.shields.io/badge/jetbrains%20marketplace-v1.1.1-blue)
 ![License](https://img.shields.io/badge/license-Apache%202.0-yellow)
 
 > A free, open-source IntelliJ IDEA plugin that provides security vulnerability scanning for open-source dependencies using the [OSV Database](https://osv.dev/).

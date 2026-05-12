@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "io.dyuti"
-version = project.findProperty("pluginVersion")?.toString() ?: "1.1.0-SNAPSHOT"
+version = project.findProperty("pluginVersion")?.toString() ?: "1.1.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -63,6 +63,15 @@ tasks.patchPluginXml {
 
     changeNotes.set(
         """
+        Version 1.1.1
+        - Fixed AWT threading error when applying quick fix (IntelliJ 2026.1)
+        - Fixed GHSA ID shown instead of CVE ID in scan results
+        - Fixed fixed version showing as N/A (git commit hash filtering)
+        - Fixed rate limit errors via OSV batch API
+        - Fixed shortName mismatch for IntelliJ 2024.1+ compatibility
+        - Fixed plugin compatibility with IntelliJ IDEA 2026.1
+        - Test suite: 312 tests, zero failures
+
         Version 1.1.0
         - Added Vulnerable API Detection, Malicious Package Detection, Basic SAST
         - Added Privacy-Preserving Queries, Risk Scoring, Policy Enforcement
@@ -74,7 +83,7 @@ tasks.patchPluginXml {
         - Added dark mode support via JBColor
         - Added animated scanning indicator and status bar widget
         - Encrypted sensitive tokens via PasswordSafe
-        - Compatible with IntelliJ IDEA 2023.3 – 2024.3
+        - Compatible with IntelliJ IDEA 2023.3+
 
         Version 1.0.0
         - Initial release with dependency parsing, OSV API integration, tool window, inline inspection, and quick fixes
