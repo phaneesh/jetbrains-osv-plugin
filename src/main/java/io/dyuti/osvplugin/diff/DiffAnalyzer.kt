@@ -49,7 +49,7 @@ class DiffAnalyzer {
             val newVulns =
                 currentVulns
                     .filterKeys { it !in baselineVulns }
-                    .map { (key, vuln) ->
+                    .map { (_, vuln) ->
                         VulnerabilityChange(
                             packageName = vuln.packageName,
                             packageVersion = current.dependencies.find { it.name == vuln.packageName }?.version ?: "?",
@@ -62,7 +62,7 @@ class DiffAnalyzer {
             val resolvedVulns =
                 baselineVulns
                     .filterKeys { it !in currentVulns }
-                    .map { (key, vuln) ->
+                    .map { (_, vuln) ->
                         VulnerabilityChange(
                             packageName = vuln.packageName,
                             packageVersion = baseline.dependencies.find { it.name == vuln.packageName }?.version ?: "?",

@@ -369,19 +369,15 @@ class OsVToolWindowPanel
                     if (textEditor != null) {
                         val editor = textEditor.editor
                         val document = editor.document
-                        if (document != null) {
-                            val lineOffset = document.getLineStartOffset(lineNumber - 1) // 0-based index
-                            val lineEndOffset = document.getLineEndOffset(lineNumber - 1)
+                        val lineOffset = document.getLineStartOffset(lineNumber - 1) // 0-based index
+                        val lineEndOffset = document.getLineEndOffset(lineNumber - 1)
 
-                            // Find the best caret position (start of line or end of line)
-                            val caretOffset = if (lineOffset < lineEndOffset) lineOffset else lineOffset - 1
+                        // Find the best caret position (start of line or end of line)
+                        val caretOffset = if (lineOffset < lineEndOffset) lineOffset else lineOffset - 1
 
-                            editor.caretModel.moveToOffset(caretOffset)
-                            editor.scrollingModel.scrollToCaret(com.intellij.openapi.editor.ScrollType.CENTER)
-                            updateStatus("Navigated to line $lineNumber")
-                        } else {
-                            updateStatus("Could not get document for file")
-                        }
+                        editor.caretModel.moveToOffset(caretOffset)
+                        editor.scrollingModel.scrollToCaret(com.intellij.openapi.editor.ScrollType.CENTER)
+                        updateStatus("Navigated to line $lineNumber")
                     } else {
                         updateStatus("Could not open text editor for file")
                     }

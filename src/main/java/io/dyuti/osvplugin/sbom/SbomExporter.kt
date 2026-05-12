@@ -44,7 +44,7 @@ class SbomExporter(
         file.writeText(content)
 
         // Refresh VFS so file appears in Project view immediately
-        LocalFileSystem.getInstance()?.refreshAndFindFileByIoFile(file)
+        LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
 
         return file
     }

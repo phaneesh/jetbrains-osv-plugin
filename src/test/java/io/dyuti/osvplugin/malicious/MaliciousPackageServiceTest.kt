@@ -39,7 +39,9 @@ class MaliciousPackageServiceTest {
         val result = service.checkPackage(dep)
 
         // Should detect typosquat or be flagged by OSV API check
-        // Note: actual result depends on network, but typosquat layer should catch it
+        assert(
+            result.isMalicious || result.maliciousType == MaliciousType.TYPOSQUAT,
+        ) { "Expected malicious or typosquat result for lodashs" }
     }
 
     @Test

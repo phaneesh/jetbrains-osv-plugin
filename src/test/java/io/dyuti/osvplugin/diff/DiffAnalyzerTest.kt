@@ -16,7 +16,7 @@ class DiffAnalyzerTest {
 
     private fun vuln(
         id: String,
-        pkg: String,
+        _pkg: String,
         severity: OsVSeverity,
         cveId: String? = null,
     ) = Vulnerability(

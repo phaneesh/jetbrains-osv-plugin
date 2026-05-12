@@ -66,6 +66,7 @@ class SastAnalyzer {
     /**
      * Collect all Java source files in the project.
      */
+    @Suppress("DEPRECATION")
     private fun collectJavaSourceFiles(project: Project): List<VirtualFile> {
         val files = mutableListOf<VirtualFile>()
         val projectBase = project.baseDir ?: return emptyList()

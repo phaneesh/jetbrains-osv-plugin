@@ -268,12 +268,12 @@ class OsVApiService(
                 null
             } ?: return emptyList()
 
-        affectedArray.forEach { affected ->
+        affectedArray.forEach outer@{ affected ->
             val affectedObj =
                 try {
                     affected.asJsonObject
                 } catch (_: Exception) {
-                    return@forEach
+                    return@outer
                 }
 
             val dbSpecific =
@@ -281,14 +281,14 @@ class OsVApiService(
                     affectedObj.getAsJsonObject("database_specific")
                 } catch (_: Exception) {
                     null
-                } ?: return@forEach
+                } ?: return@outer
 
             val functionsArray =
                 try {
                     dbSpecific.getAsJsonArray("functions")
                 } catch (_: Exception) {
                     null
-                } ?: return@forEach
+                } ?: return@outer
 
             functionsArray.forEach { func ->
                 val signature =

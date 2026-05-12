@@ -164,7 +164,6 @@ class HistoricalTrendPanel(
         summary: TrendSummary,
         sb: StringBuilder,
     ) {
-        val w = summary.allTimeWindow
         sb.appendLine("  ┌────────────┬───────┬─────────────┬─────────────┬───────────┐")
         sb.appendLine("  │ Window     │ N     │ Avg Total   │ Avg Critical│ Avg High  │")
         sb.appendLine("  ├────────────┼───────┼─────────────┼─────────────┼───────────┤")

@@ -191,17 +191,17 @@ class AutoFixService private constructor() {
         }
 
         // Always create / update constraints.txt
-        val constraintsFile = findOrCreateConstraintsFile(project, file)
+        val constraintsFile = findOrCreateConstraintsFile(file)
         val constraintsDoc = getDocument(constraintsFile) ?: return reqChanged
         val newConstraints = PipFixer.applyConstraintsTxt(constraintsDoc.text, dependency, fixVersion)
-        val constraintsChanged = newConstraints != null && newConstraints != constraintsDoc.text
+        val constraintsChanged = newConstraints != constraintsDoc.text
         if (constraintsChanged) {
             WriteCommandAction.runWriteCommandAction(
                 project,
                 "Add constraints for ${dependency.name}",
                 null,
                 Runnable {
-                    constraintsDoc.setText(newConstraints!!)
+                    constraintsDoc.setText(newConstraints)
                     FileDocumentManager.getInstance().saveDocument(constraintsDoc)
                 },
             )
@@ -210,10 +210,8 @@ class AutoFixService private constructor() {
         return reqChanged || constraintsChanged
     }
 
-    private fun findOrCreateConstraintsFile(
-        project: Project,
-        requirementsFile: VirtualFile,
-    ): VirtualFile {
+    @Suppress("unused_parameter")
+    private fun findOrCreateConstraintsFile(requirementsFile: VirtualFile): VirtualFile {
         val parent = requirementsFile.parent
         var constraints = parent?.findChild("constraints.txt")
         if (constraints == null) {
@@ -565,10 +563,11 @@ object NpmFixer {
         }
     }
 
+    @Suppress("unused_parameter")
     private fun updateDirectDependency(
         json: JsonObject,
         depName: String,
-        oldVersion: String,
+        _oldVersion: String,
         newVersion: String,
     ): Boolean {
         for (section in listOf("dependencies", "devDependencies", "peerDependencies")) {
