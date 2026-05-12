@@ -217,7 +217,7 @@ class OsVApiService(
         vuln.getAsJsonArray("affected")?.forEach { affected ->
             val affectedObj = affected.asJsonObject
 
-            // 1. Extract fixed versions from range events (GIT type has commit hashes, skip them)
+            // Extract fixed versions from range events
             affectedObj.getAsJsonArray("ranges")?.forEach { range ->
                 val rangeObj = range.asJsonObject
                 val rangeType = rangeObj.getAsJsonPrimitive("type")?.asString ?: ""
@@ -229,18 +229,7 @@ class OsVApiService(
                         val v = fixed.asString
                         if (looksLikeVersion(v, rangeType)) fixedVersions.add(v)
                     }
-                    val lastAffected = eventObj.get("last_affected")
-                    if (lastAffected != null && eventObj.get("fixed") == null) {
-                        val v = lastAffected.asString
-                        if (looksLikeVersion(v, rangeType)) fixedVersions.add(v)
-                    }
                 }
-            }
-
-            // 2. Extract from explicit versions array
-            affectedObj.getAsJsonArray("versions")?.forEach { v ->
-                val vStr = v.asString
-                if (looksLikeVersion(vStr, "")) fixedVersions.add(vStr)
             }
         }
 

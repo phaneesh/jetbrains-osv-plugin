@@ -9,6 +9,7 @@
 ## Features
 
 ### Core
+
 - **Dependency Parsing** — Maven (`pom.xml`), Gradle (`build.gradle`, `build.gradle.kts`), npm (`package-lock.json`), pip (`requirements.txt`)
 - **OSV API Integration** — Real-time batch queries with TTL caching, rate limiting, and offline resilience
 - **Tool Window** — Tree-based vulnerability explorer with filtering, severity grouping, and hyperlinks
@@ -17,6 +18,7 @@
 - **SARIF Export** — Export scan results for CI/CD ingestion (GitHub Advanced Security, Azure DevOps)
 
 ### Advanced (v1.1.0)
+
 - **Vulnerable API Detection** — Cross-references vulnerable function signatures with call sites
 - **Malicious Package Detection** — Typosquatting, homoglyph, and known-malware checks
 - **Basic SAST / Taint Analysis** — Pattern-based SQL injection, XSS, and path-traversal detection
@@ -43,39 +45,42 @@
 ## Screenshots
 
 > 📸 Screenshots will be captured during Wave 5 (Marketplace Packaging):
+>
 > - Tool window tree view
 > - Inline vulnerability highlight
 > - Alt+Enter quick-fix popup
 
 ## Feature Comparison
 
-| Feature | OSV Plugin | Snyk | Mend.io | Qodana |
-|--------|-----------|------|---------|--------|
-| Free SCA | ✅ | Free tier | Paid | Paid |
-| Problems tab integration | ✅ | ✅ | ✅ | ✅ |
-| Auto-fix via quick fix | ✅ | ✅ | ✅ | ❌ |
-| License scanning | ✅ | ✅ | ✅ | ❌ |
-| Reachability analysis | ✅ Basic | ✅ Premium | ✅ Premium | ✅ |
-| Malicious packages | ✅ **Unique** | ❌ | ✅ Premium | ❌ |
-| Basic SAST | ✅ **Unique** | ✅ | ✅ | ✅ |
-| Privacy exports | ✅ **Unique** | ❌ | ❌ | ❌ |
-| Risk scoring (EPSS+KEV) | ✅ **Unique** | ✅ Premium | ✅ Premium | ❌ |
-| Policy enforcement | ✅ **Unique** | ✅ Premium | ✅ Premium | ❌ |
-| Team config sharing | ✅ **Unique** | ✅ Premium | ✅ Premium | ❌ |
-| Differential analysis | ✅ **Unique** | ✅ | ✅ | ❌ |
-| Historical trends | ✅ **Unique** | ✅ | ✅ Premium | ❌ |
-| Config audit (properties/yml) | ✅ **Unique** | ❌ | ❌ | ❌ |
-| Tree-based UI | ✅ | ✅ | ✅ | ✅ |
+| Feature                       | OSV Plugin    | Snyk       | Mend.io    | Qodana |
+| ----------------------------- | ------------- | ---------- | ---------- | ------ |
+| Free SCA                      | ✅            | Free tier  | Paid       | Paid   |
+| Problems tab integration      | ✅            | ✅         | ✅         | ✅     |
+| Auto-fix via quick fix        | ✅            | ✅         | ✅         | ❌     |
+| License scanning              | ✅            | ✅         | ✅         | ❌     |
+| Reachability analysis         | ✅ Basic      | ✅ Premium | ✅ Premium | ✅     |
+| Malicious packages            | ✅ **Unique** | ❌         | ✅ Premium | ❌     |
+| Basic SAST                    | ✅ **Unique** | ✅         | ✅         | ✅     |
+| Privacy exports               | ✅ **Unique** | ❌         | ❌         | ❌     |
+| Risk scoring (EPSS+KEV)       | ✅ **Unique** | ✅ Premium | ✅ Premium | ❌     |
+| Policy enforcement            | ✅ **Unique** | ✅ Premium | ✅ Premium | ❌     |
+| Team config sharing           | ✅ **Unique** | ✅ Premium | ✅ Premium | ❌     |
+| Differential analysis         | ✅ **Unique** | ✅         | ✅         | ❌     |
+| Historical trends             | ✅ **Unique** | ✅         | ✅ Premium | ❌     |
+| Config audit (properties/yml) | ✅ **Unique** | ❌         | ❌         | ❌     |
+| Tree-based UI                 | ✅            | ✅         | ✅         | ✅     |
 
 ## Installation
 
 ### From JetBrains Marketplace (Recommended)
+
 1. Open IntelliJ IDEA
 2. Go to **Settings → Plugins → Marketplace**
 3. Search **"OSV Vulnerability Scanner"**
 4. Click **Install** and restart
 
 ### From Source
+
 ```bash
 git clone https://github.com/dyuti/jetbrains-osv-plugin.git
 cd jetbrains-osv-plugin
@@ -84,6 +89,7 @@ cd jetbrains-osv-plugin
 ```
 
 ## Requirements
+
 - IntelliJ IDEA 2023.3 or later
 - JDK 17+ (for development)
 - Internet connection (for OSV API queries)

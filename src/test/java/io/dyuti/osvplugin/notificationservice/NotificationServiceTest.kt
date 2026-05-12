@@ -16,9 +16,12 @@ class NotificationServiceTest {
         severity: OsVSeverity,
         summary: String,
         fixedVersions: List<String> = emptyList(),
+        cveIds: List<String> = emptyList(),
+        ghsaIds: List<String> = emptyList(),
     ) = Vulnerability(
         id = id,
-        cveIds = emptyList(),
+        cveIds = cveIds,
+        ghsaIds = ghsaIds,
         summary = summary,
         details = "",
         severity = severity,
@@ -31,7 +34,14 @@ class NotificationServiceTest {
 
     @Test
     fun `vulnerability to notification conversion works`() {
-        val v = vuln("CVE-2023-1234", OsVSeverity.CRITICAL, "RCE", listOf("2.0.0"))
+        val v =
+            vuln(
+                id = "CVE-2023-1234",
+                severity = OsVSeverity.CRITICAL,
+                summary = "RCE",
+                fixedVersions = listOf("2.0.0"),
+                cveIds = listOf("CVE-2023-1234"),
+            )
 
         val notification =
             NotificationService.vulnerabilityToNotification(
@@ -40,23 +50,27 @@ class NotificationServiceTest {
                 "1.0.0",
             )
 
-        assertEquals("CVE-2023-1234", notification.id)
+        assertEquals("CVE-2023-1234", notification.cveId)
         assertEquals("com.example:example-lib", notification.packageName)
         assertEquals("1.0.0", notification.currentVersion)
         assertEquals(OsVSeverity.CRITICAL, notification.severity)
         assertEquals("2.0.0", notification.fixVersion)
-        assertEquals("CVE-2023-1234", notification.cveId)
     }
 
     @Test
-    fun `extracts null cve for non-cve ids`() {
-        val v = vuln("GHSA-abcd-1234", OsVSeverity.HIGH, "XSS")
+    fun `falls back to GHSA when no CVE`() {
+        val v =
+            vuln(
+                id = "GHSA-abcd-1234",
+                severity = OsVSeverity.HIGH,
+                summary = "XSS",
+                ghsaIds = listOf("GHSA-abcd-1234"),
+            )
 
         val notification =
             NotificationService.vulnerabilityToNotification(v, "lodash", "4.17.20")
 
-        assertNull(notification.cveId)
-        assertEquals("GHSA-abcd-1234", notification.id)
+        assertEquals("GHSA-abcd-1234", notification.cveId)
     }
 
     @Test

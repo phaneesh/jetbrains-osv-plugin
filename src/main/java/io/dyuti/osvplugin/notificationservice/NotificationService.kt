@@ -154,7 +154,7 @@ object NotificationService {
         val fixVersion = vuln.fixedVersions.firstOrNull()
         return VulnerabilityNotification(
             id = vuln.id,
-            cveId = extractCveId(vuln.id),
+            cveId = vuln.cveIds.firstOrNull() ?: vuln.ghsaIds.firstOrNull(),
             packageName = depName,
             currentVersion = depVersion,
             severity = vuln.severity,
@@ -197,12 +197,5 @@ object NotificationService {
                 appendLine()
                 append("Actively exploited in the wild (CISA KEV)")
             }
-        }
-
-    private fun extractCveId(osvId: String): String? =
-        when {
-            osvId.startsWith("CVE-", ignoreCase = true) -> osvId
-            osvId.startsWith("GHSA-", ignoreCase = true) -> null
-            else -> null
         }
 }

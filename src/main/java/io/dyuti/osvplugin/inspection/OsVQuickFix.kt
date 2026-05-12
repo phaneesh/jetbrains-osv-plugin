@@ -12,6 +12,8 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.psi.PsiFile
 import io.dyuti.osvplugin.api.model.Dependency
 import io.dyuti.osvplugin.api.model.Vulnerability
+import io.dyuti.osvplugin.api.model.displayId
+import io.dyuti.osvplugin.api.model.formatFixVersions
 import io.dyuti.osvplugin.config.OsVConfig
 
 /**
@@ -62,7 +64,7 @@ class OsVQuickFix private constructor(
     override fun getName(): String =
         when (fixType) {
             FixType.UPGRADE -> "Upgrade ${dependency.name} to fixed version"
-            FixType.SUPPRESS -> "Suppress ${vulnerability.id}"
+            FixType.SUPPRESS -> "Suppress ${vulnerability.displayId()}"
             FixType.IGNORE -> "Ignore ${dependency.name}"
         }
 
@@ -383,25 +385,25 @@ class OsVQuickFix private constructor(
 
         WriteCommandAction.runWriteCommandAction(
             project,
-            "Suppress ${vulnerability.id}",
+            "Suppress ${vulnerability.displayId()}",
             null,
             Runnable {
                 val commentText =
                     when {
                         file.name == "pom.xml" -> {
-                            "<!-- OSV Suppressed: ${vulnerability.id} - ${vulnerability.summary} -->\n"
+                            "<!-- OSV Suppressed: ${vulnerability.displayId()} - ${vulnerability.summary} -->\n"
                         }
 
                         file.name.endsWith(".gradle") || file.name.endsWith(".gradle.kts") -> {
-                            "// OSV Suppressed: ${vulnerability.id} - ${vulnerability.summary}\n"
+                            "// OSV Suppressed: ${vulnerability.displayId()} - ${vulnerability.summary}\n"
                         }
 
                         file.name == "package.json" -> {
-                            "// OSV Suppressed: ${vulnerability.id} - ${vulnerability.summary}\n"
+                            "// OSV Suppressed: ${vulnerability.displayId()} - ${vulnerability.summary}\n"
                         }
 
                         else -> {
-                            "# OSV Suppressed: ${vulnerability.id} - ${vulnerability.summary}\n"
+                            "# OSV Suppressed: ${vulnerability.displayId()} - ${vulnerability.summary}\n"
                         }
                     }
 
@@ -412,7 +414,7 @@ class OsVQuickFix private constructor(
                 showDialogLater {
                     Messages.showInfoMessage(
                         project,
-                        "Suppressed ${vulnerability.id} for ${dependency.name}",
+                        "Suppressed ${vulnerability.displayId()} for ${dependency.name}",
                         "OSV Vulnerability Fix",
                     )
                 }

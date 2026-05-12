@@ -166,7 +166,7 @@ class OsVToolWindowPanel
             copyIdItem.addActionListener { _ ->
                 val selectedNode = vulnerabilityTree.lastSelectedPathComponent as? VulnerabilityTreeNode
                 if (selectedNode != null) {
-                    val id = selectedNode.vulnerability.id
+                    val id = selectedNode.vulnerability.displayId()
                     val clipboard =
                         java.awt.Toolkit
                             .getDefaultToolkit()
@@ -428,7 +428,7 @@ class OsVToolWindowPanel
 
             if (matchingDep == null) {
                 updateStatus(
-                    "Could not locate dependency for ${vuln.id} in ${moduleFile.name}: " +
+                    "Could not locate dependency for ${vuln.displayId()} in ${moduleFile.name}: " +
                         "ensure the scan was run on this file",
                 )
                 return
@@ -452,12 +452,12 @@ class OsVToolWindowPanel
 
             if (success) {
                 updateStatus(
-                    "Auto-fixed ${vulnerability.id} (${dependency.name}) in ${moduleFile.name}",
+                    "Auto-fixed ${vulnerability.displayId()} (${dependency.name}) in ${moduleFile.name}",
                 )
                 performScan()
             } else {
                 updateStatus(
-                    "Could not auto-fix ${vulnerability.id} (${dependency.name}) — " +
+                    "Could not auto-fix ${vulnerability.displayId()} (${dependency.name}) — " +
                         "try a manual fix",
                 )
             }
