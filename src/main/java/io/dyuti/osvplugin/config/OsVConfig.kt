@@ -25,6 +25,7 @@ class OsVConfig : PersistentStateComponent<OsVConfig> {
     var focusModeEnabled: Boolean = false
     var baseBranch: String = "main"
     var sarifExportPath: String? = null
+    var osvApiUrl: String = "https://api.osv.dev/v1/query"
 
     var ignoredPackages: List<String> = listOf()
 
@@ -60,6 +61,7 @@ class OsVConfig : PersistentStateComponent<OsVConfig> {
         focusModeEnabled = state.focusModeEnabled
         baseBranch = state.baseBranch
         sarifExportPath = state.sarifExportPath
+        osvApiUrl = state.osvApiUrl
         ignoredPackages = state.ignoredPackages
         orgManagementEnabled = state.orgManagementEnabled
         currentOrganization = state.currentOrganization

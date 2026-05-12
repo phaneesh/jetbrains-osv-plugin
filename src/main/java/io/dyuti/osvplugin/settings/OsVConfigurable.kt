@@ -31,6 +31,7 @@ class OsVConfigurable : Configurable {
     private lateinit var focusModeEnabledCheckbox: JCheckBox
     private lateinit var baseBranchField: JTextField
     private lateinit var sarifExportPathField: JTextField
+    private lateinit var osvApiUrlField: JTextField
     private lateinit var ignoredPackagesField: JTextField
 
     // Organization Management
@@ -110,6 +111,11 @@ class OsVConfigurable : Configurable {
         sarifExportPathField = JTextField(20)
         panel.add(sarifExportPathField)
 
+        // OSV API URL
+        panel.add(JLabel("OSV API URL:"))
+        osvApiUrlField = JTextField("https://api.osv.dev/v1/query", 30)
+        panel.add(osvApiUrlField)
+
         // Ignored Packages
         panel.add(JLabel("Ignored Packages:"))
         ignoredPackagesField = JTextField(20)
@@ -167,6 +173,7 @@ class OsVConfigurable : Configurable {
             config.focusModeEnabled != focusModeEnabledCheckbox.isSelected ||
             config.baseBranch != baseBranchField.text ||
             config.sarifExportPath != sarifExportPathField.text ||
+            config.osvApiUrl != osvApiUrlField.text ||
             config.ignoredPackages != parseIgnoredPackages(ignoredPackagesField.text) ||
             config.orgManagementEnabled != orgManagementEnabledCheckbox.isSelected ||
             config.currentOrganization != currentOrgField.text ||
@@ -190,6 +197,7 @@ class OsVConfigurable : Configurable {
         config.focusModeEnabled = focusModeEnabledCheckbox.isSelected
         config.baseBranch = baseBranchField.text
         config.sarifExportPath = sarifExportPathField.text
+        config.osvApiUrl = osvApiUrlField.text
         config.ignoredPackages = parseIgnoredPackages(ignoredPackagesField.text)
         config.orgManagementEnabled = orgManagementEnabledCheckbox.isSelected
         config.currentOrganization = currentOrgField.text
@@ -226,6 +234,7 @@ class OsVConfigurable : Configurable {
         focusModeEnabledCheckbox.isSelected = config.focusModeEnabled
         baseBranchField.text = config.baseBranch
         sarifExportPathField.text = config.sarifExportPath ?: ""
+        osvApiUrlField.text = config.osvApiUrl
         ignoredPackagesField.text = config.ignoredPackages.joinToString(", ")
         orgManagementEnabledCheckbox.isSelected = config.orgManagementEnabled
         currentOrgField.text = config.currentOrganization ?: ""

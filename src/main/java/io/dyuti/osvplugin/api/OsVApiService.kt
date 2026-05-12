@@ -39,7 +39,8 @@ class OsVApiService(
                 .connectTimeout(Duration.ofSeconds(30))
                 .build()
 
-    private val osvApiUrl = "https://api.osv.dev/v1/query"
+    private val osvApiUrl: String
+        get() = config.osvApiUrl
     private val gson = Gson()
     private val cacheManager by lazy {
         try {
