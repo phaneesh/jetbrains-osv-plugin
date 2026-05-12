@@ -49,6 +49,14 @@ class OsVQuickFix private constructor(
         ): OsVQuickFix = OsVQuickFix(dependency, vulnerability, FixType.IGNORE)
     }
 
+    /**
+     * Show a modal dialog on the EDT. Must be called from a write action via
+     * invokeLater because AWT events are not allowed inside write actions.
+     */
+    private fun showDialogLater(action: () -> Unit) {
+        ApplicationManager.getApplication().invokeLater { action() }
+    }
+
     override fun getFamilyName(): String = "OSV Vulnerability Fix"
 
     override fun getName(): String =
@@ -82,11 +90,13 @@ class OsVQuickFix private constructor(
         val latestFixedVersion = findLatestFixedVersion()
 
         if (latestFixedVersion == null) {
-            Messages.showWarningDialog(
-                project,
-                "No fixed version available for ${dependency.name}",
-                "OSV Vulnerability Fix",
-            )
+            showDialogLater {
+                Messages.showWarningDialog(
+                    project,
+                    "No fixed version available for ${dependency.name}",
+                    "OSV Vulnerability Fix",
+                )
+            }
             return
         }
 
@@ -109,19 +119,23 @@ class OsVQuickFix private constructor(
                 }
 
                 else -> {
-                    Messages.showWarningDialog(
-                        project,
-                        "Unsupported file type: ${file.name}",
-                        "OSV Vulnerability Fix",
-                    )
+                    showDialogLater {
+                        Messages.showWarningDialog(
+                            project,
+                            "Unsupported file type: ${file.name}",
+                            "OSV Vulnerability Fix",
+                        )
+                    }
                 }
             }
         } catch (e: Exception) {
-            Messages.showErrorDialog(
-                project,
-                "Failed to upgrade: ${e.message}",
-                "OSV Vulnerability Fix",
-            )
+            showDialogLater {
+                Messages.showErrorDialog(
+                    project,
+                    "Failed to upgrade: ${e.message}",
+                    "OSV Vulnerability Fix",
+                )
+            }
         }
     }
 
@@ -167,11 +181,13 @@ class OsVQuickFix private constructor(
                     document.replaceString(match.range.first, match.range.last + 1, updatedBlock)
                     FileDocumentManager.getInstance().saveDocument(document)
 
-                    Messages.showInfoMessage(
+                                        showDialogLater {
+                        Messages.showInfoMessage(
                         project,
                         "Upgraded $depName to $newVersion",
                         "OSV Vulnerability Fix",
                     )
+                    }
                 } else {
                     // Fallback: try broader search for <version> near the artifactId
                     val versionPattern =
@@ -189,11 +205,13 @@ class OsVQuickFix private constructor(
                         document.replaceString(start, end, newText)
                         FileDocumentManager.getInstance().saveDocument(document)
 
-                        Messages.showInfoMessage(
+                                                showDialogLater {
+                            Messages.showInfoMessage(
                             project,
                             "Upgraded $depName to $newVersion",
                             "OSV Vulnerability Fix",
                         )
+                        }
                     } else {
                         Messages.showWarningDialog(
                             project,
@@ -240,11 +258,13 @@ class OsVQuickFix private constructor(
                     document.replaceString(match.range.first, match.range.last + 1, fullNew)
                     FileDocumentManager.getInstance().saveDocument(document)
 
-                    Messages.showInfoMessage(
+                                        showDialogLater {
+                        Messages.showInfoMessage(
                         project,
                         "Upgraded $depName to $newVersion",
                         "OSV Vulnerability Fix",
                     )
+                    }
                 } else {
                     Messages.showWarningDialog(
                         project,
@@ -285,11 +305,13 @@ class OsVQuickFix private constructor(
                     document.replaceString(match.range.first, match.range.last + 1, "$1$newVersion\"")
                     FileDocumentManager.getInstance().saveDocument(document)
 
-                    Messages.showInfoMessage(
+                                        showDialogLater {
+                        Messages.showInfoMessage(
                         project,
                         "Upgraded $depName to $newVersion in package.json",
                         "OSV Vulnerability Fix",
                     )
+                    }
                 } else {
                     Messages.showWarningDialog(
                         project,
@@ -331,11 +353,13 @@ class OsVQuickFix private constructor(
                     document.replaceString(match.range.first, match.range.last + 1, "$1$newVersion")
                     FileDocumentManager.getInstance().saveDocument(document)
 
-                    Messages.showInfoMessage(
+                                        showDialogLater {
+                        Messages.showInfoMessage(
                         project,
                         "Upgraded $depName to $newVersion in requirements.txt",
                         "OSV Vulnerability Fix",
                     )
+                    }
                 } else {
                     Messages.showWarningDialog(
                         project,
@@ -385,11 +409,13 @@ class OsVQuickFix private constructor(
                 document.insertString(0, commentText)
                 FileDocumentManager.getInstance().saveDocument(document)
 
-                Messages.showInfoMessage(
+                                showDialogLater {
+                    Messages.showInfoMessage(
                     project,
                     "Suppressed ${vulnerability.id} for ${dependency.name}",
                     "OSV Vulnerability Fix",
                 )
+                }
             },
         )
     }
@@ -409,11 +435,13 @@ class OsVQuickFix private constructor(
             ignoredPackages.add(dependency.name)
             config.ignoredPackages = ignoredPackages
 
-            Messages.showInfoMessage(
+                        showDialogLater {
+                Messages.showInfoMessage(
                 project,
                 "Added ${dependency.name} to ignored packages list",
                 "OSV Vulnerability Fix",
             )
+            }
         }
     }
 
