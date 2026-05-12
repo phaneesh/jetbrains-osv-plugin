@@ -106,6 +106,7 @@ bin/
 
 # OSV Plugin - Custom directories
 .planning/
+!.planning/codebase/
 
 # Spec documents
 ENTERPRISE_GAP_ANALYSIS.md
