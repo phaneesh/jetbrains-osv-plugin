@@ -268,9 +268,24 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 
 ---
 
+### Phase 18: SBOM Generation ✓ COMPLETE
+
+**Goal:** Generate CycloneDX/SPDX format software bills of materials for compliance and visibility
+**Completed:** 2026-05-12
+
+- [x] SBOM data models (CycloneDX 1.5, SPDX 2.3)
+- [x] PURL construction for all ecosystems (Maven, Gradle, npm, pip)
+- [x] JSON + Tag-Value format generators
+- [x] IDE file export service
+- [x] Third tool window tab (Vulnerabilities, Trends, SBOM)
+- [x] 20 unit tests for all formats and edge cases
+
+**Limitations:** No SPDX RDF/XML format; no CycloneDX XML format (JSON/Tag-Value only)
+
+---
+
 ### Future Phases (Backlog)
 
-- Phase 18: SBOM generation (CycloneDX/SPDX export)
 - Phase 19: Configuration audit (detect insecure framework configs)
 - Phase 20: IDE notification service (real-time balloon alerts for new CVEs)
 
@@ -297,6 +312,7 @@ This document outlines the phased implementation plan for the OSV IntelliJ Plugi
 | 15    | Team Collaboration           | ✅ Complete     | 2026-05-07 |
 | 16    | Differential Analysis        | ✅ Complete     | 2026-05-12 |
 | 17    | Historical Trending          | ✅ Complete     | 2026-05-12 |
+| 18    | SBOM Generation              | ✅ Complete     | 2026-05-12 |
 
 ---
 
