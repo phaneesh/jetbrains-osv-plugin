@@ -181,12 +181,12 @@ class OsVQuickFix private constructor(
                     document.replaceString(match.range.first, match.range.last + 1, updatedBlock)
                     FileDocumentManager.getInstance().saveDocument(document)
 
-                                        showDialogLater {
+                    showDialogLater {
                         Messages.showInfoMessage(
-                        project,
-                        "Upgraded $depName to $newVersion",
-                        "OSV Vulnerability Fix",
-                    )
+                            project,
+                            "Upgraded $depName to $newVersion",
+                            "OSV Vulnerability Fix",
+                        )
                     }
                 } else {
                     // Fallback: try broader search for <version> near the artifactId
@@ -205,12 +205,12 @@ class OsVQuickFix private constructor(
                         document.replaceString(start, end, newText)
                         FileDocumentManager.getInstance().saveDocument(document)
 
-                                                showDialogLater {
+                        showDialogLater {
                             Messages.showInfoMessage(
-                            project,
-                            "Upgraded $depName to $newVersion",
-                            "OSV Vulnerability Fix",
-                        )
+                                project,
+                                "Upgraded $depName to $newVersion",
+                                "OSV Vulnerability Fix",
+                            )
                         }
                     } else {
                         Messages.showWarningDialog(
@@ -258,12 +258,12 @@ class OsVQuickFix private constructor(
                     document.replaceString(match.range.first, match.range.last + 1, fullNew)
                     FileDocumentManager.getInstance().saveDocument(document)
 
-                                        showDialogLater {
+                    showDialogLater {
                         Messages.showInfoMessage(
-                        project,
-                        "Upgraded $depName to $newVersion",
-                        "OSV Vulnerability Fix",
-                    )
+                            project,
+                            "Upgraded $depName to $newVersion",
+                            "OSV Vulnerability Fix",
+                        )
                     }
                 } else {
                     Messages.showWarningDialog(
@@ -305,12 +305,12 @@ class OsVQuickFix private constructor(
                     document.replaceString(match.range.first, match.range.last + 1, "$1$newVersion\"")
                     FileDocumentManager.getInstance().saveDocument(document)
 
-                                        showDialogLater {
+                    showDialogLater {
                         Messages.showInfoMessage(
-                        project,
-                        "Upgraded $depName to $newVersion in package.json",
-                        "OSV Vulnerability Fix",
-                    )
+                            project,
+                            "Upgraded $depName to $newVersion in package.json",
+                            "OSV Vulnerability Fix",
+                        )
                     }
                 } else {
                     Messages.showWarningDialog(
@@ -353,12 +353,12 @@ class OsVQuickFix private constructor(
                     document.replaceString(match.range.first, match.range.last + 1, "$1$newVersion")
                     FileDocumentManager.getInstance().saveDocument(document)
 
-                                        showDialogLater {
+                    showDialogLater {
                         Messages.showInfoMessage(
-                        project,
-                        "Upgraded $depName to $newVersion in requirements.txt",
-                        "OSV Vulnerability Fix",
-                    )
+                            project,
+                            "Upgraded $depName to $newVersion in requirements.txt",
+                            "OSV Vulnerability Fix",
+                        )
                     }
                 } else {
                     Messages.showWarningDialog(
@@ -409,12 +409,12 @@ class OsVQuickFix private constructor(
                 document.insertString(0, commentText)
                 FileDocumentManager.getInstance().saveDocument(document)
 
-                                showDialogLater {
+                showDialogLater {
                     Messages.showInfoMessage(
-                    project,
-                    "Suppressed ${vulnerability.id} for ${dependency.name}",
-                    "OSV Vulnerability Fix",
-                )
+                        project,
+                        "Suppressed ${vulnerability.id} for ${dependency.name}",
+                        "OSV Vulnerability Fix",
+                    )
                 }
             },
         )
@@ -435,12 +435,12 @@ class OsVQuickFix private constructor(
             ignoredPackages.add(dependency.name)
             config.ignoredPackages = ignoredPackages
 
-                        showDialogLater {
+            showDialogLater {
                 Messages.showInfoMessage(
-                project,
-                "Added ${dependency.name} to ignored packages list",
-                "OSV Vulnerability Fix",
-            )
+                    project,
+                    "Added ${dependency.name} to ignored packages list",
+                    "OSV Vulnerability Fix",
+                )
             }
         }
     }

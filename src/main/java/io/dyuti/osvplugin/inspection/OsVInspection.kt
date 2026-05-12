@@ -15,6 +15,8 @@ import io.dyuti.osvplugin.api.OsVApiService
 import io.dyuti.osvplugin.api.model.Dependency
 import io.dyuti.osvplugin.api.model.OsVSeverity
 import io.dyuti.osvplugin.api.model.Vulnerability
+import io.dyuti.osvplugin.api.model.displayId
+import io.dyuti.osvplugin.api.model.formatFixVersions
 import io.dyuti.osvplugin.config.OsVConfig
 import io.dyuti.osvplugin.parser.DependencyParser
 import io.dyuti.osvplugin.parser.GradleParser
@@ -267,13 +269,13 @@ open class OsVInspection : LocalInspectionTool() {
 
         val message =
             buildString {
-                append("OSV: ${vuln.id}")
+                append("OSV: ${vuln.displayId()}")
                 if (vuln.cvssScore != null) {
                     append(" (CVSS: ${vuln.cvssScore})")
                 }
                 append(" — ${vuln.summary}")
                 if (vuln.fixedVersions.isNotEmpty()) {
-                    append(" [Fix: ${vuln.fixedVersions.first()}]")
+                    append(" [Fix: ${vuln.formatFixVersions()}]")
                 }
             }
 
