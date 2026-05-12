@@ -122,7 +122,7 @@ class PrivacyConfigurable : Configurable {
     }
 
     private fun updateStatusLabel() {
-        val saltPresent = config.privacySalt != null
+        val saltPresent = OsVConfig.getPrivacySalt() != null
         val mappingsCount =
             try {
                 PrivacyService.getInstance().let {

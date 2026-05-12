@@ -1,3 +1,6 @@
+import java.util.jar.JarEntry
+import java.util.jar.JarFile
+
 plugins {
     id("org.jetbrains.intellij") version "1.17.0"
     kotlin("jvm") version "1.9.20"
@@ -5,7 +8,7 @@ plugins {
 }
 
 group = "io.dyuti"
-version = "1.1.0"
+version = project.findProperty("pluginVersion")?.toString() ?: "1.1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -41,7 +44,7 @@ tasks.withType<JavaCompile> {
 
 // Configure IntelliJ Platform
 intellij {
-    version.set("2023.3")
+    version.set(project.findProperty("intellijVersion")?.toString() ?: "2023.3")
 
     plugins.set(
         listOf(
@@ -61,28 +64,26 @@ tasks.patchPluginXml {
     changeNotes.set(
         """
         Version 1.1.0
-        - Updated compatibility to support IntelliJ IDEA 2026.1.x and later
-        - Fixed plugin.xml compatibility constraints
-        - Added JSON module dependency for improved file parsing
-        - Improved tree view rendering
-        
+        - Added Vulnerable API Detection, Malicious Package Detection, Basic SAST
+        - Added Privacy-Preserving Queries, Risk Scoring, Policy Enforcement
+        - Added Team Collaboration, Differential Analysis, Historical Trending
+        - Added SBOM Generation, Configuration Audit, IDE Notifications
+        - Fixed CacheManager and OsVApiService singleton bugs
+        - Replaced all System.err logging with IntelliJ Logger
+        - Added configurable OSV API URL
+        - Added dark mode support via JBColor
+        - Added animated scanning indicator and status bar widget
+        - Encrypted sensitive tokens via PasswordSafe
+        - Compatible with IntelliJ IDEA 2023.3 – 2024.3
+
         Version 1.0.0
-        - Initial release
-        - Dependency parsing for Maven, Gradle, npm, and pip
-        - OSV API integration
-        - Tool window with vulnerability display
-        - Local inspection with inline highlighting
-        - Settings configuration
-        - Organization management
-        - Jira integration
-        - License detection
-        - SARIF export
+        - Initial release with dependency parsing, OSV API integration, tool window, inline inspection, and quick fixes
         """.trimIndent(),
     )
 
-    // Support IntelliJ IDEA 2023.3 and later (including 2026.x)
+    // Support IntelliJ IDEA 2023.3 through 2024.3
     sinceBuild.set("233.0")
-    untilBuild.set("262.*")
+    untilBuild.set("243.*")
 }
 
 tasks.buildPlugin {
@@ -110,6 +111,32 @@ tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJ
     minimize {
         exclude(dependency("org.jetbrains.kotlin:.*"))
         exclude(dependency("org.jetbrains:.*"))
+        exclude(dependency("com.google.code.gson:.*"))
+        exclude(dependency("org.apache.maven:.*"))
+    }
+
+    doLast {
+        val jarFile = archiveFile.get().asFile
+        println("=== Shadow JAR contents ===")
+        println("Size: ${jarFile.length() / 1024} KB")
+        val jar = JarFile(jarFile)
+        try {
+            val counts = mutableMapOf<String, Int>()
+            val entries = jar.entries()
+            while (entries.hasMoreElements()) {
+                val entry = entries.nextElement()
+                if (!entry.isDirectory) {
+                    val pkg = entry.name.substringBeforeLast('/')
+                    counts[pkg] = (counts[pkg] ?: 0) + 1
+                }
+            }
+            counts.toSortedMap().forEach { (pkg, count) ->
+                println("  $pkg/: $count files")
+            }
+        } finally {
+            jar.close()
+        }
+        println("=== Total JAR size: ${jarFile.length() / 1024} KB ===")
     }
 }
 
@@ -124,3 +151,19 @@ tasks.named<org.jetbrains.intellij.tasks.BuildPluginTask>("buildPlugin") {
         into("/")
     }
 }
+
+// Plugin signing — requires IntelliJ Gradle Plugin 1.17.3+ or 2.x.
+// For v1.17.0, signing must be done via the JetBrains Marketplace web UI after upload.
+// Upgrade to 1.17.4 or 2.x to enable automated signing in CI.
+//
+// When available, uncomment the following:
+//
+// import org.jetbrains.intellij.tasks.SignPluginTask
+//
+// tasks.register<SignPluginTask>("signPlugin") {
+//     dependsOn("buildPlugin")
+//     inputArchiveFile.set(tasks.buildPlugin.get().archiveFile)
+//     certificateChain.set(System.getenv("SIGN_CERTIFICATE_CHAIN"))
+//     privateKey.set(System.getenv("SIGN_PRIVATE_KEY"))
+//     password.set(System.getenv("SIGN_PRIVATE_KEY_PASSWORD"))
+// }

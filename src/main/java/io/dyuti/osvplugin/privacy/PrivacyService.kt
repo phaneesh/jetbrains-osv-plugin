@@ -61,7 +61,7 @@ class PrivacyService private constructor() {
     fun syncFromConfig() {
         val config = service<OsVConfig>()
         hasher.enabled = config.privacyPreservingEnabled
-        hasher.setSalt(config.privacySalt)
+        hasher.setSalt(OsVConfig.getPrivacySalt())
     }
 
     /**
@@ -69,9 +69,8 @@ class PrivacyService private constructor() {
      * Call once per IDE installation.
      */
     fun generateSalt() {
-        val config = service<OsVConfig>()
-        if (config.privacySalt == null || config.privacySalt!!.isBlank()) {
-            config.privacySalt = UUID.randomUUID().toString()
+        if (OsVConfig.getPrivacySalt() == null || OsVConfig.getPrivacySalt()!!.isBlank()) {
+            OsVConfig.setPrivacySalt(UUID.randomUUID().toString())
             syncFromConfig()
         }
     }
@@ -108,8 +107,7 @@ class PrivacyService private constructor() {
 
     /** Re-salt: generate new salt, invalidate existing mappings. */
     fun rotateSalt() {
-        val config = service<OsVConfig>()
-        config.privacySalt = UUID.randomUUID().toString()
+        OsVConfig.setPrivacySalt(UUID.randomUUID().toString())
         syncFromConfig()
     }
 

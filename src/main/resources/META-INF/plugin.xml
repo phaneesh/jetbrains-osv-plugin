@@ -1,11 +1,36 @@
 <idea-plugin>
     <id>io.dyuti.osvplugin</id>
     <name>OSV Vulnerability Scanner</name>
-    <vendor email="support@dyuti.io" url="https://github.com/dyuti/jetbrains-osv-plugin">Dyuti</vendor>
+    <vendor email="support@dyuti.io" url="https://github.com/dyuti/jetbrains-osv-plugin">Dyuti Open Source</vendor>
     
     <description><![CDATA[
-    A free, open-source IntelliJ IDEA plugin that provides security vulnerability scanning for open-source dependencies using the OSV (Open Source Vulnerabilities) database.
+<p>A free, open-source security vulnerability scanner for open-source dependencies, powered by the OSV (Open Source Vulnerabilities) database.</p>
+<p><b>Features:</b></p>
+<ul>
+  <li>Real-time vulnerability scanning for Maven, Gradle, npm, and pip dependencies</li>
+  <li>Inline inspection highlights with Alt+Enter quick fixes</li>
+  <li>Risk scoring with EPSS + CISA KEV for exploitability-based prioritization</li>
+  <li>Malicious package detection (typosquatting, homoglyph, known malware)</li>
+  <li>Basic SAST for SQL injection, XSS, and path traversal</li>
+  <li>Privacy-preserving mode — hash package names in UI, logs, and exports</li>
+  <li>Policy enforcement with severity, CVSS, and license compliance rules</li>
+  <li>Team configuration sharing via version-controllable JSON</li>
+  <li>Differential analysis to compare scans between branches or snapshots</li>
+  <li>Historical trending with ASCII sparklines</li>
+  <li>SBOM generation in CycloneDX 1.5 and SPDX 2.3 formats</li>
+  <li>Configuration audit for Spring / Hibernate insecure settings</li>
+  <li>IDE balloon notifications for discovered vulnerabilities</li>
+  <li>SARIF export for CI/CD integration</li>
+</ul>
+<p><b>Why OSV Plugin?</b></p>
+<ul>
+  <li>100% free — no API key or subscription required</li>
+  <li>Uses the open OSV database instead of commercial APIs</li>
+  <li>Enterprise-grade features (risk scoring, policy enforcement, team config) at zero cost</li>
+</ul>
     ]]></description>
+    
+    <category>Security</category>
     
     <version>1.1.0</version>
     

@@ -168,7 +168,7 @@ class OsVConfigurable : Configurable {
             config.scanDirectDependencies != scanDirectCheckbox.isSelected ||
             config.scanTransitiveDependencies != scanTransitiveCheckbox.isSelected ||
             config.githubAdvisoryEnabled != githubAdvisoryEnabledCheckbox.isSelected ||
-            config.githubToken != githubTokenField.text ||
+            OsVConfig.getGithubToken() != githubTokenField.text ||
             config.licenseScanningEnabled != licenseScanningEnabledCheckbox.isSelected ||
             config.focusModeEnabled != focusModeEnabledCheckbox.isSelected ||
             config.baseBranch != baseBranchField.text ||
@@ -181,7 +181,7 @@ class OsVConfigurable : Configurable {
             config.jiraBaseUrl != jiraBaseUrlField.text ||
             config.jiraProjectKey != jiraProjectKeyField.text ||
             config.jiraEmail != jiraEmailField.text ||
-            config.jiraToken != jiraTokenField.text
+            OsVConfig.getJiraToken() != jiraTokenField.text
 
     override fun apply() {
         config.minimumSeverity = minimumSeverityCombo.selectedItem as OsVSeverity
@@ -192,7 +192,7 @@ class OsVConfigurable : Configurable {
         config.scanDirectDependencies = scanDirectCheckbox.isSelected
         config.scanTransitiveDependencies = scanTransitiveCheckbox.isSelected
         config.githubAdvisoryEnabled = githubAdvisoryEnabledCheckbox.isSelected
-        config.githubToken = githubTokenField.text
+        OsVConfig.setGithubToken(githubTokenField.text)
         config.licenseScanningEnabled = licenseScanningEnabledCheckbox.isSelected
         config.focusModeEnabled = focusModeEnabledCheckbox.isSelected
         config.baseBranch = baseBranchField.text
@@ -205,7 +205,7 @@ class OsVConfigurable : Configurable {
         config.jiraBaseUrl = jiraBaseUrlField.text
         config.jiraProjectKey = jiraProjectKeyField.text
         config.jiraEmail = jiraEmailField.text
-        config.jiraToken = jiraTokenField.text
+        OsVConfig.setJiraToken(if (jiraTokenField.text.isNotEmpty()) jiraTokenField.text else null)
 
         // Save configuration
         com.intellij.openapi.application.ApplicationManager
@@ -229,7 +229,7 @@ class OsVConfigurable : Configurable {
         scanDirectCheckbox.isSelected = config.scanDirectDependencies
         scanTransitiveCheckbox.isSelected = config.scanTransitiveDependencies
         githubAdvisoryEnabledCheckbox.isSelected = config.githubAdvisoryEnabled
-        githubTokenField.text = config.githubToken ?: ""
+        githubTokenField.text = OsVConfig.getGithubToken() ?: ""
         licenseScanningEnabledCheckbox.isSelected = config.licenseScanningEnabled
         focusModeEnabledCheckbox.isSelected = config.focusModeEnabled
         baseBranchField.text = config.baseBranch
@@ -242,7 +242,7 @@ class OsVConfigurable : Configurable {
         jiraBaseUrlField.text = config.jiraBaseUrl ?: ""
         jiraProjectKeyField.text = config.jiraProjectKey ?: ""
         jiraEmailField.text = config.jiraEmail ?: ""
-        jiraTokenField.text = config.jiraToken ?: ""
+        jiraTokenField.text = OsVConfig.getJiraToken() ?: ""
     }
 
     private fun parseIgnoredPackages(text: String): List<String> =
