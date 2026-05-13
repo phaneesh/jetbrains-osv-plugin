@@ -153,5 +153,8 @@ class SbomExportPanel(
         CYCLONEDX_JSON("CycloneDX JSON", "cdx.json", SbomFormat.CYCLONEDX_JSON),
         SPDX_JSON("SPDX JSON", "spdx.json", SbomFormat.SPDX_JSON),
         SPDX_TAGVALUE("SPDX Tag-Value", "spdx.tv", SbomFormat.SPDX_TAGVALUE),
+        ;
+
+        override fun toString(): String = displayName
     }
 }
