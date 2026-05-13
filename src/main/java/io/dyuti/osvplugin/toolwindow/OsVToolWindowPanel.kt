@@ -19,6 +19,8 @@ import io.dyuti.osvplugin.api.model.OsVSeverity
 import io.dyuti.osvplugin.api.model.Vulnerability
 import io.dyuti.osvplugin.api.model.displayId
 import io.dyuti.osvplugin.api.model.formatFixVersions
+import io.dyuti.osvplugin.export.SarifExporter
+import io.dyuti.osvplugin.export.VulnerabilityWithDependency
 import io.dyuti.osvplugin.fix.AutoFixService
 import io.dyuti.osvplugin.parser.GradleParser
 import io.dyuti.osvplugin.parser.MavenParser
@@ -57,6 +59,7 @@ class OsVToolWindowPanel
 
         private val treeModelBuilder = OsVTreeModelBuilder()
         private val parsedDependencies = mutableMapOf<VirtualFile, List<Dependency>>()
+        private var lastScanVulnsWithDeps: List<VulnerabilityWithDependency> = emptyList()
         private var onScanCompleted: ((List<Vulnerability>, List<Dependency>) -> Unit)? = null
 
         /** Expose parsed dependencies for SBOM export. */
@@ -72,13 +75,44 @@ class OsVToolWindowPanel
         }
 
         fun exportResults() {
-            javax.swing.SwingUtilities.invokeLater {
-                javax.swing.JOptionPane.showMessageDialog(
+            if (lastScanVulnsWithDeps.isEmpty()) {
+                JOptionPane.showMessageDialog(
                     this,
-                    "SARIF export from toolbar is coming in a future update.\nUse the Export button in the tool window for now.",
-                    "Export",
-                    javax.swing.JOptionPane.INFORMATION_MESSAGE,
+                    "No scan data available. Run a scan first.",
+                    "Export SARIF",
+                    JOptionPane.INFORMATION_MESSAGE,
                 )
+                return
+            }
+
+            val projectName = project.name.replace(" ", "_")
+            val chooser =
+                JFileChooser().apply {
+                    dialogTitle = "Export SARIF Report"
+                    selectedFile = java.io.File("$projectName-osv-report.sarif")
+                }
+            if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                var file = chooser.selectedFile
+                if (!file.name.endsWith(".sarif", ignoreCase = true)) {
+                    file = java.io.File(file.parentFile, file.name + ".sarif")
+                }
+                val success = SarifExporter().exportVulnerabilities(lastScanVulnsWithDeps, file.absolutePath)
+                if (success) {
+                    updateStatus("SARIF exported to ${file.name}")
+                    JOptionPane.showMessageDialog(
+                        this,
+                        "SARIF report saved to:\n${file.absolutePath}",
+                        "Export Successful",
+                        JOptionPane.INFORMATION_MESSAGE,
+                    )
+                } else {
+                    JOptionPane.showMessageDialog(
+                        this,
+                        "Failed to export SARIF report.",
+                        "Export Failed",
+                        JOptionPane.ERROR_MESSAGE,
+                    )
+                }
             }
         }
 
@@ -264,9 +298,26 @@ class OsVToolWindowPanel
 
                         treeModelBuilder.buildModel(vulnerabilitiesByModule)
 
-                        // Notify trend panel of scan completion
+                        // Build vulnerability+dependency pairs for SARIF and notify trend panel
                         val allVulns = vulnerabilitiesByModule.values.flatten()
                         val allDeps = parsedDependencies.values.flatten()
+                        val depMap = allDeps.associateBy { "${it.name}:${it.version}" }
+                        lastScanVulnsWithDeps =
+                            allVulns.map { vuln ->
+                                VulnerabilityWithDependency(
+                                    vulnerability = vuln,
+                                    dependency =
+                                        depMap["${vuln.packageName}:${vuln.affectedVersions.firstOrNull() ?: ""}"]
+                                            ?: depMap.values.firstOrNull { it.name == vuln.packageName }
+                                            ?: Dependency(
+                                                name = vuln.packageName,
+                                                version = "unknown",
+                                                ecosystem = vuln.id.substringBefore("-"),
+                                                scope = "unknown",
+                                                transitive = false,
+                                            ),
+                                )
+                            }
                         onScanCompleted?.invoke(allVulns, allDeps)
 
                         val totalCount = treeModelBuilder.getVulnerabilityCount()
