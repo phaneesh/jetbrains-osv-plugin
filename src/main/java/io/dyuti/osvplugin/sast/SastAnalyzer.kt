@@ -45,6 +45,7 @@ class SastAnalyzer {
     fun analyzeProject(project: Project): List<SastFinding> {
         if (project.isDisposed) return emptyList()
 
+        @Suppress("DEPRECATION")
         return ReadAction.compute<List<SastFinding>, Throwable> {
             val findings = mutableListOf<SastFinding>()
             val sourceFiles = collectJavaSourceFiles(project)

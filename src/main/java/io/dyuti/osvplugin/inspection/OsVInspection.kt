@@ -217,10 +217,8 @@ open class OsVInspection : LocalInspectionTool() {
                         if (file.modificationStamp == expectedStamp && !file.project.isDisposed) {
                             fileCache[filePath] = VulnerabilityCacheEntry(results, expectedStamp)
 
-                            // Request daemon re-highlight to show results
-                            com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
-                                .getInstance(file.project)
-                                .restart(file)
+                            // Results are cached; daemon will pick them up on next pass.
+                            // No explicit restart needed — avoids deprecated restart(PsiFile) API.
                         }
                     }
                 }

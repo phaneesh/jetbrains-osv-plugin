@@ -96,6 +96,7 @@ class VulnerableApiService {
     ): List<ReachabilityResult> {
         if (vulnDeps.isEmpty()) return emptyList()
 
+        @Suppress("DEPRECATION")
         return ReadAction.compute<List<ReachabilityResult>, Throwable> {
             val results = mutableListOf<ReachabilityResult>()
 

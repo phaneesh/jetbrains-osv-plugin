@@ -94,7 +94,7 @@ class OsVConfig : PersistentStateComponent<OsVConfig> {
                     com.intellij.openapi.application.ApplicationManager
                         .getApplication()
                 if (app != null) {
-                    val attrs = com.intellij.credentialStore.CredentialAttributes(key)
+                    val attrs = com.intellij.credentialStore.CredentialAttributes("io.dyuti.osvplugin", key)
                     com.intellij.ide.passwordSafe.PasswordSafe.instance
                         .getPassword(attrs)
                 } else {
@@ -113,7 +113,7 @@ class OsVConfig : PersistentStateComponent<OsVConfig> {
                     com.intellij.openapi.application.ApplicationManager
                         .getApplication()
                 if (app != null) {
-                    val attrs = com.intellij.credentialStore.CredentialAttributes(key)
+                    val attrs = com.intellij.credentialStore.CredentialAttributes("io.dyuti.osvplugin", key)
                     com.intellij.ide.passwordSafe.PasswordSafe.instance
                         .setPassword(attrs, value)
                 } else {
