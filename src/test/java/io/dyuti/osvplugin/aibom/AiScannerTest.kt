@@ -1,12 +1,13 @@
 // Unit tests for AiScanner
 package io.dyuti.osvplugin.aibom
 
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class AiScannerTest {
     private fun createScanner(): AiScanner = AiScanner(project = null)
+
+    // ────────────────── POSITIVE DETECTION TESTS ──────────────────
 
     @Test
     fun `detects OpenAI API`() {
@@ -73,17 +74,52 @@ class AiScannerTest {
     }
 
     @Test
-    fun `returns empty for non-ai code`() {
-        val code = "System.out.println(\"Hello World\");"
-        val assets = createScanner().scanContent("Hello.java", code)
-        assertTrue(assets.isEmpty())
-    }
-
-    @Test
     fun `detects ONNX`() {
         val code = "import onnxruntime as ort; session = ort.InferenceSession('model.onnx');"
         val assets = createScanner().scanContent("inference.py", code)
         assertTrue(assets.isNotEmpty())
         assertTrue(assets.any { it.name == "ONNX Runtime" })
+    }
+
+    // ────────────────── FALSE POSITIVE TESTS ──────────────────
+
+    @Test
+    fun `no false positives on benign code`() {
+        val benignLines =
+            listOf(
+                // .build() is common in Java builders — NOT OpenAI
+                "val gson = GsonBuilder().setPrettyPrinting().create()",
+                // Completion is an IntelliJ API — NOT OpenAI
+                "class OsVCompletionContributor : CompletionContributor()",
+                // @generated is a JAXB annotation — NOT AI
+                "@Generated(value = \"org.example\")",
+                // Transformers is a JetBrains XML API — NOT HuggingFace
+                "val tf = javax.xml.transform.TransformerFactory.newInstance()",
+                // tf prefix is common in variable names
+                "var tf = Typeface.create(\"sans\", Typeface.NORMAL)",
+                // predict/fit are common method names
+                "val prediction = model.predict(input)",
+                "model.fit(trainingData)",
+                // Embedding in a generic class name
+                "class MyEmbedding { fun encode() {} }",
+                // ort is a common abbreviation
+                "val ort = OrthogonalMatrix()",
+                // onNext in reactive streams (partial onnx match)
+                "stream.onNext { println(it) }",
+                // Generic builder
+                "val toolbar = JBToolbar().build()",
+            )
+
+        val failures = mutableListOf<String>()
+        benignLines.forEach { line ->
+            val assets = createScanner().scanContent("Test.java", line)
+            if (assets.isNotEmpty()) {
+                failures.add("\"$line\" -> ${assets.map { "${it.name}[${it.type}]" }}")
+            }
+        }
+        assertTrue(
+            failures.isEmpty(),
+            "False positives detected:\n${failures.joinToString("\n")}",
+        )
     }
 }

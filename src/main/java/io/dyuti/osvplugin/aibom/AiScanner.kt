@@ -87,15 +87,15 @@ class AiScanner(
     @Suppress("MaxLineLength")
     private val sourceDetectors =
         listOf(
-            // OpenAI API
+            // ── OpenAI API ── highly specific patterns only
             Detector(
                 Pattern.compile(
                     """
-                    (openai|ChatCompletion|Completion|Embedding)\s*\(|\.build\(\)|openai\.api_key|OpenAI\.apiKey|openAIClient
+                    \b(from\s+openai|import\s+openai|openai\.(api_key|api_base|chat\.completions|embeddings|Completion|Embedding)|ChatCompletion|OpenAI\.apiKey|openAIClient|openai_client)
                     """.trimIndent().replace("\n", ""),
                     Pattern.CASE_INSENSITIVE,
                 ),
-            ) { file, line, _, m ->
+            ) { file, line, _, _ ->
                 AiAsset(
                     name = "OpenAI API",
                     type = AiAssetType.LLM_API,
@@ -105,15 +105,15 @@ class AiScanner(
                     lineNumber = line,
                 )
             },
-            // Anthropic Claude
+            // ── Anthropic Claude ──
             Detector(
                 Pattern.compile(
                     """
-                    (anthropic|claude|AnthropicClient|claude-\d|messages\.create|completion\s*\(.*model\s*[=:]\s*["']claude)
+                    \b(from|import)\s+anthropic|anthropic\.(Anthropic|Client|HUMAN_PROMPT)|claude-[0-9]|claude\.sonnet|claude\.opus|claude\.haiku|messages\.create\(.*model\s*[=:]\s*["']claude
                     """.trimIndent().replace("\n", ""),
                     Pattern.CASE_INSENSITIVE,
                 ),
-            ) { file, line, _, m ->
+            ) { file, line, _, _ ->
                 AiAsset(
                     name = "Anthropic Claude",
                     type = AiAssetType.LLM_API,
@@ -123,15 +123,15 @@ class AiScanner(
                     lineNumber = line,
                 )
             },
-            // Google Gemini / Vertex AI
+            // ── Google Gemini / Vertex AI ──
             Detector(
                 Pattern.compile(
                     """
-                    (vertexai|gemini|GenerativeModel|gemini-pro|gemini-\d|google\.generativeai|google\.cloud\.aiplatform)
+                    \b(from|import)\s+google\.generativeai|google\.cloud\.aiplatform|vertexai|gemini-pro|gemini-[0-9]|GenerativeModel
                     """.trimIndent().replace("\n", ""),
                     Pattern.CASE_INSENSITIVE,
                 ),
-            ) { file, line, _, m ->
+            ) { file, line, _, _ ->
                 AiAsset(
                     name = "Google Gemini / Vertex AI",
                     type = AiAssetType.LLM_API,
@@ -141,15 +141,15 @@ class AiScanner(
                     lineNumber = line,
                 )
             },
-            // Azure OpenAI
+            // ── Azure OpenAI ──
             Detector(
                 Pattern.compile(
                     """
-                    (azure\.openai|AzureOpenAI|openai\.azure|\.azure\.com/openai)
+                    \bazure\.openai|AzureOpenAI|\.azure\.com/openai|openai\.azure
                     """.trimIndent().replace("\n", ""),
                     Pattern.CASE_INSENSITIVE,
                 ),
-            ) { file, line, _, m ->
+            ) { file, line, _, _ ->
                 AiAsset(
                     name = "Azure OpenAI",
                     type = AiAssetType.LLM_API,
@@ -159,15 +159,15 @@ class AiScanner(
                     lineNumber = line,
                 )
             },
-            // HuggingFace Transformers
+            // ── HuggingFace Transformers ──
             Detector(
                 Pattern.compile(
                     """
-                    (transformers|AutoModel|from_pretrained|HuggingFace|huggingface|pipeline\s*\(\s*["'](text-generation|summarization|translation|question-answering))
+                    \b(from|import)\s+transformers|transformers\.(AutoModel|pipeline|from_pretrained)|HuggingFace|huggingface|from_pretrained\s*\(
                     """.trimIndent().replace("\n", ""),
                     Pattern.CASE_INSENSITIVE,
                 ),
-            ) { file, line, _, m ->
+            ) { file, line, _, _ ->
                 AiAsset(
                     name = "HuggingFace Transformers",
                     type = AiAssetType.ML_FRAMEWORK,
@@ -177,15 +177,15 @@ class AiScanner(
                     lineNumber = line,
                 )
             },
-            // TensorFlow
+            // ── TensorFlow / Keras ── require module-context indicators
             Detector(
                 Pattern.compile(
                     """
-                    (tensorflow|tf\.|keras|tf\.keras|TensorFlow|SavedModel|load_model)
+                    \b(from|import)\s+tensorflow|tensorflow\.(keras|data|nn|saved_model)|tf\.keras|tf\.nn|tf\.saved_model|keras\.(models|layers|Sequential|Model)|SavedModel|load_model\s*\(
                     """.trimIndent().replace("\n", ""),
                     Pattern.CASE_INSENSITIVE,
                 ),
-            ) { file, line, _, m ->
+            ) { file, line, _, _ ->
                 AiAsset(
                     name = "TensorFlow / Keras",
                     type = AiAssetType.ML_FRAMEWORK,
@@ -195,15 +195,15 @@ class AiScanner(
                     lineNumber = line,
                 )
             },
-            // PyTorch
+            // ── PyTorch ──
             Detector(
                 Pattern.compile(
                     """
-                    (torch\.|pytorch|nn\.Module|torchvision|torchaudio|load_state_dict)
+                    \b(from|import)\s+torch|torch\.(nn|optim|utils|vision|audio)|nn\.Module|torchvision|torchaudio|load_state_dict\s*\(
                     """.trimIndent().replace("\n", ""),
                     Pattern.CASE_INSENSITIVE,
                 ),
-            ) { file, line, _, m ->
+            ) { file, line, _, _ ->
                 AiAsset(
                     name = "PyTorch",
                     type = AiAssetType.ML_FRAMEWORK,
@@ -213,15 +213,15 @@ class AiScanner(
                     lineNumber = line,
                 )
             },
-            // ONNX
+            // ── ONNX Runtime ──
             Detector(
                 Pattern.compile(
                     """
-                    (onnx|onnxruntime|InferenceSession|ort\.)
+                    \b(from|import)\s+onnx|onnxruntime|InferenceSession|onnx\.(load|save|check_model)
                     """.trimIndent().replace("\n", ""),
                     Pattern.CASE_INSENSITIVE,
                 ),
-            ) { file, line, _, m ->
+            ) { file, line, _, _ ->
                 AiAsset(
                     name = "ONNX Runtime",
                     type = AiAssetType.ML_FRAMEWORK,
@@ -231,15 +231,15 @@ class AiScanner(
                     lineNumber = line,
                 )
             },
-            // scikit-learn
+            // ── Scikit-learn ── never match generic .fit() / .predict()
             Detector(
                 Pattern.compile(
                     """
-                    (sklearn|scikit-learn|scikit_learn|\.fit\(|\.predict\()
+                    \b(from|import)\s+sklearn|sklearn\.(datasets|model_selection|metrics|cluster|decomposition)|scikit-learn|scikit_learn
                     """.trimIndent().replace("\n", ""),
                     Pattern.CASE_INSENSITIVE,
                 ),
-            ) { file, line, _, m ->
+            ) { file, line, _, _ ->
                 AiAsset(
                     name = "scikit-learn",
                     type = AiAssetType.ML_FRAMEWORK,
@@ -249,15 +249,15 @@ class AiScanner(
                     lineNumber = line,
                 )
             },
-            // LangChain
+            // ── LangChain ──
             Detector(
                 Pattern.compile(
                     """
-                    (langchain|LangChain|ChatPromptTemplate|LLMChain|RetrievalQA)
+                    \b(from|import)\s+langchain|langchain\.(chains|agents|prompts|callbacks)|ChatPromptTemplate|LLMChain|RetrievalQA
                     """.trimIndent().replace("\n", ""),
                     Pattern.CASE_INSENSITIVE,
                 ),
-            ) { file, line, _, m ->
+            ) { file, line, _, _ ->
                 AiAsset(
                     name = "LangChain",
                     type = AiAssetType.AI_ORCHESTRATION,
@@ -267,17 +267,17 @@ class AiScanner(
                     lineNumber = line,
                 )
             },
-            // Vector DBs for RAG
+            // ── Vector DBs for RAG ──
             Detector(
                 Pattern.compile(
                     """
-                    (chromadb|chroma|pinecone|weaviate|qdrant|milvus|faiss|pgvector)
+                    \bchromadb\b|\bchroma\b|\bpinecone\b|\bweaviate\b|\bqdrant\b|\bmilvus\b|\bfaiss\b|\bpgvector\b
                     """.trimIndent().replace("\n", ""),
                     Pattern.CASE_INSENSITIVE,
                 ),
             ) { file, line, _, m ->
                 AiAsset(
-                    name = m.group(1).replaceFirstChar { it.uppercase() },
+                    name = m.group().replaceFirstChar { it.uppercase() },
                     type = AiAssetType.VECTOR_DATABASE,
                     subtype = "Vector Database for RAG",
                     properties = mapOf("purpose" to "retrieval-augmented-generation"),
@@ -285,11 +285,11 @@ class AiScanner(
                     lineNumber = line,
                 )
             },
-            // AI-generated code markers
+            // ── AI-generated code markers ── exclude JAXB @Generated
             Detector(
                 Pattern.compile(
                     """
-                    (Generated\s*(by|with)\s*AI|AI-generated|@ai-generated|@generated|copilot|GitHub\s*Copilot|tabnine|codeium)
+                    \bGenerated\s+(by|with)\s+AI\b|\bAI-generated\b|@ai-generated\b|\bcopilot\b|\bGitHub\s+Copilot\b|\btabnine\b|\bcodeium\b
                     """.trimIndent().replace("\n", ""),
                     Pattern.CASE_INSENSITIVE,
                 ),
@@ -298,7 +298,7 @@ class AiScanner(
                     name = "AI-Generated Code Marker",
                     type = AiAssetType.AI_GENERATED_CODE,
                     subtype = "AI-Assisted Code Attribution",
-                    properties = mapOf("marker" to m.group(1)),
+                    properties = mapOf("marker" to m.group()),
                     sourceFile = file,
                     lineNumber = line,
                 )
