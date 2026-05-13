@@ -1,248 +1,375 @@
 // OSV Vulnerability Scanner Settings Page
 package io.dyuti.osvplugin.settings
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.Configurable
+import com.intellij.ui.components.JBPasswordField
 import io.dyuti.osvplugin.api.model.OsVSeverity
 import io.dyuti.osvplugin.config.OsVConfig
+import java.awt.BorderLayout
+import java.awt.Dimension
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import java.awt.Insets
+import javax.swing.BorderFactory
 import javax.swing.JCheckBox
 import javax.swing.JComboBox
+import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.JPasswordField
 import javax.swing.JSpinner
 import javax.swing.JTextField
 import javax.swing.SpinnerNumberModel
+import javax.swing.border.TitledBorder
 
 /**
- * Settings configurable for OSV Vulnerability Scanner
+ * Settings configurable for OSV Vulnerability Scanner.
+ *
+ * Uses [GridBagLayout] with [TitledBorder] sections for professional
+ * JetBrains-style settings layout aligned to platform standards.
  */
 class OsVConfigurable : Configurable {
     private var config: OsVConfig = OsVConfig()
 
-    private lateinit var minimumSeverityCombo: JComboBox<OsVSeverity>
-    private lateinit var inspectionEnabledCheckbox: JCheckBox
+    // ─── Scan Behaviour ───
+    private lateinit var minSeverityCombo: JComboBox<OsVSeverity>
+    private lateinit var inspectionEnabledCheck: JCheckBox
     private lateinit var cacheTtlSpinner: JSpinner
-    private lateinit var rateLimitEnabledCheckbox: JCheckBox
-    private lateinit var rateLimitRequestsSpinner: JSpinner
-    private lateinit var scanDirectCheckbox: JCheckBox
-    private lateinit var scanTransitiveCheckbox: JCheckBox
-    private lateinit var githubAdvisoryEnabledCheckbox: JCheckBox
-    private lateinit var githubTokenField: JTextField
-    private lateinit var licenseScanningEnabledCheckbox: JCheckBox
-    private lateinit var focusModeEnabledCheckbox: JCheckBox
+    private lateinit var scanDirectCheck: JCheckBox
+    private lateinit var scanTransitiveCheck: JCheckBox
+
+    // ─── API & Integrations ───
+    private lateinit var rateLimitCheck: JCheckBox
+    private lateinit var rateLimitSpinner: JSpinner
+    private lateinit var githubAdvisoryCheck: JCheckBox
+    private lateinit var githubTokenField: JPasswordField
+    private lateinit var licenseScanningCheck: JCheckBox
+    private lateinit var focusModeCheck: JCheckBox
     private lateinit var baseBranchField: JTextField
-    private lateinit var sarifExportPathField: JTextField
+    private lateinit var sarifPathField: JTextField
     private lateinit var osvApiUrlField: JTextField
-    private lateinit var ignoredPackagesField: JTextField
 
-    // Organization Management
-    private lateinit var orgManagementEnabledCheckbox: JCheckBox
-    private lateinit var currentOrgField: JTextField
+    // ─── Organisation Management ───
+    private lateinit var orgEnabledCheck: JCheckBox
+    private lateinit var orgNameField: JTextField
 
-    // Jira Integration
-    private lateinit var jiraEnabledCheckbox: JCheckBox
-    private lateinit var jiraBaseUrlField: JTextField
-    private lateinit var jiraProjectKeyField: JTextField
+    // ─── Jira Integration ───
+    private lateinit var jiraEnabledCheck: JCheckBox
+    private lateinit var jiraUrlField: JTextField
+    private lateinit var jiraProjectField: JTextField
     private lateinit var jiraEmailField: JTextField
-    private lateinit var jiraTokenField: JTextField
+    private lateinit var jiraTokenField: JPasswordField
+
+    // ─── Ignored Packages ───
+    private lateinit var ignoredPackagesField: JTextField
 
     override fun getDisplayName(): String = "OSV Scanner"
 
-    override fun createComponent(): javax.swing.JComponent {
-        val panel = JPanel()
-        panel.layout = java.awt.GridLayout(0, 2, 10, 10)
+    override fun createComponent(): JComponent {
+        val root = JPanel(BorderLayout())
+        root.border = BorderFactory.createEmptyBorder(12, 12, 12, 12)
 
-        // Minimum Severity
-        panel.add(JLabel("Minimum Severity:"))
-        minimumSeverityCombo = JComboBox(OsVSeverity.values())
-        minimumSeverityCombo.selectedItem = OsVSeverity.MEDIUM
-        panel.add(minimumSeverityCombo)
+        val content = JPanel(GridBagLayout())
+        val gbc =
+            GridBagConstraints().apply {
+                fill = GridBagConstraints.HORIZONTAL
+                weightx = 1.0
+                insets = Insets(0, 0, 10, 0)
+                gridx = 0
+            }
+        var row = 0
 
-        // Inspection Enabled
-        inspectionEnabledCheckbox = JCheckBox("Enable Inspection")
-        inspectionEnabledCheckbox.isSelected = true
-        panel.add(inspectionEnabledCheckbox)
+        // ── Scan Behaviour ──
+        minSeverityCombo = JComboBox(OsVSeverity.values())
+        inspectionEnabledCheck = JCheckBox("Enable real-time vulnerability inspection in editor")
+        cacheTtlSpinner = JSpinner(SpinnerNumberModel(24, 1, 168, 1))
+        scanDirectCheck = JCheckBox("Scan direct dependencies")
+        scanTransitiveCheck = JCheckBox("Scan transitive dependencies")
 
-        // Cache TTL
-        panel.add(JLabel("Cache TTL (hours):"))
-        cacheTtlSpinner = JSpinner(SpinnerNumberModel(1, 1, 24, 1))
-        panel.add(cacheTtlSpinner)
+        gbc.gridy = row++
+        content.add(
+            sectionPanel(
+                "Scan Behaviour",
+                run {
+                    val p = JPanel(GridBagLayout())
+                    var r = 0
+                    p.row(r++, JLabel("Minimum severity:"), minSeverityCombo)
+                    p.spanRow(r++, inspectionEnabledCheck)
+                    p.row(r++, JLabel("Cache TTL (hours):"), cacheTtlSpinner)
+                    p.spanRow(r++, scanDirectCheck)
+                    p.spanRow(r++, scanTransitiveCheck)
+                    p
+                },
+            ),
+            gbc,
+        )
 
-        // Rate Limit
-        rateLimitEnabledCheckbox = JCheckBox("Enable Rate Limiting")
-        rateLimitEnabledCheckbox.isSelected = true
-        panel.add(rateLimitEnabledCheckbox)
-
-        panel.add(JLabel("Requests per hour:"))
-        rateLimitRequestsSpinner = JSpinner(SpinnerNumberModel(100, 1, 1000, 1))
-        panel.add(rateLimitRequestsSpinner)
-
-        // Scan options
-        scanDirectCheckbox = JCheckBox("Scan Direct Dependencies")
-        scanDirectCheckbox.isSelected = true
-        panel.add(scanDirectCheckbox)
-
-        scanTransitiveCheckbox = JCheckBox("Scan Transitive Dependencies")
-        scanTransitiveCheckbox.isSelected = true
-        panel.add(scanTransitiveCheckbox)
-
-        // GitHub Advisory
-        githubAdvisoryEnabledCheckbox = JCheckBox("Enable GitHub Advisory Integration")
-        panel.add(githubAdvisoryEnabledCheckbox)
-
-        panel.add(JLabel("GitHub Token:"))
-        githubTokenField = JTextField(20)
-        panel.add(githubTokenField)
-
-        // License Scanning
-        licenseScanningEnabledCheckbox = JCheckBox("Enable License Scanning")
-        panel.add(licenseScanningEnabledCheckbox)
-
-        // Focus Mode
-        focusModeEnabledCheckbox = JCheckBox("Focus Mode (Show only critical)")
-        panel.add(focusModeEnabledCheckbox)
-
-        // Branch
-        panel.add(JLabel("Base Branch:"))
-        baseBranchField = JTextField("main", 10)
-        panel.add(baseBranchField)
-
-        // SARIF Export
-        panel.add(JLabel("SARIF Export Path:"))
-        sarifExportPathField = JTextField(20)
-        panel.add(sarifExportPathField)
-
-        // OSV API URL
-        panel.add(JLabel("OSV API URL:"))
+        // ── API & Integrations ──
+        rateLimitCheck = JCheckBox("Enable API rate limiting")
+        rateLimitSpinner = JSpinner(SpinnerNumberModel(1000, 1, 10000, 100))
+        githubAdvisoryCheck = JCheckBox("Enable GitHub Advisory integration")
+        githubTokenField =
+            JBPasswordField().apply {
+                columns = 25
+                toolTipText = "GitHub personal access token"
+            }
+        licenseScanningCheck = JCheckBox("Enable license scanning")
+        focusModeCheck = JCheckBox("Focus mode (show only critical / high)")
+        baseBranchField = JTextField("main", 15)
+        sarifPathField = JTextField(25).apply { toolTipText = "Directory path for SARIF export" }
         osvApiUrlField = JTextField("https://api.osv.dev/v1/query", 30)
-        panel.add(osvApiUrlField)
 
-        // Ignored Packages
-        panel.add(JLabel("Ignored Packages:"))
-        ignoredPackagesField = JTextField(20)
-        ignoredPackagesField.toolTipText = "Comma-separated list of package names to ignore"
-        panel.add(ignoredPackagesField)
+        gbc.gridy = row++
+        content.add(
+            sectionPanel(
+                "API & Integrations",
+                run {
+                    val p = JPanel(GridBagLayout())
+                    var r = 0
+                    p.spanRow(r++, rateLimitCheck)
+                    p.row(r++, JLabel("Requests per hour:"), rateLimitSpinner)
+                    p.spanRow(r++, githubAdvisoryCheck)
+                    p.row(r++, JLabel("GitHub token:"), githubTokenField)
+                    p.spanRow(r++, licenseScanningCheck)
+                    p.spanRow(r++, focusModeCheck)
+                    p.row(r++, JLabel("Base branch:"), baseBranchField)
+                    p.row(r++, JLabel("SARIF export path:"), sarifPathField)
+                    p.row(r++, JLabel("OSV API URL:"), osvApiUrlField)
+                    p
+                },
+            ),
+            gbc,
+        )
 
-        // ===== Organization Management Section =====
-        panel.add(JLabel("--- Organization Management ---"))
-        panel.add(JLabel(""))
+        // ── Organisation Management ──
+        orgEnabledCheck = JCheckBox("Enable organisation management")
+        orgNameField = JTextField(20).apply { toolTipText = "Organisation name" }
 
-        orgManagementEnabledCheckbox = JCheckBox("Enable Organization Management")
-        panel.add(orgManagementEnabledCheckbox)
+        gbc.gridy = row++
+        content.add(
+            sectionPanel(
+                "Organisation Management",
+                run {
+                    val p = JPanel(GridBagLayout())
+                    var r = 0
+                    p.spanRow(r++, orgEnabledCheck)
+                    p.row(r++, JLabel("Organisation:"), orgNameField)
+                    p
+                },
+            ),
+            gbc,
+        )
 
-        panel.add(JLabel("Current Organization:"))
-        currentOrgField = JTextField(20)
-        panel.add(currentOrgField)
+        // ── Jira Integration ──
+        jiraEnabledCheck = JCheckBox("Enable Jira integration")
+        jiraUrlField = JTextField(25).apply { toolTipText = "https://jira.company.com" }
+        jiraProjectField = JTextField(10).apply { toolTipText = "Project key, e.g. PROJ" }
+        jiraEmailField = JTextField(20).apply { toolTipText = "user@company.com" }
+        jiraTokenField =
+            JBPasswordField().apply {
+                columns = 25
+                toolTipText = "Jira API token"
+            }
 
-        // ===== Jira Integration Section =====
-        panel.add(JLabel("--- Jira Integration ---"))
-        panel.add(JLabel(""))
+        gbc.gridy = row++
+        content.add(
+            sectionPanel(
+                "Jira Integration",
+                run {
+                    val p = JPanel(GridBagLayout())
+                    var r = 0
+                    p.spanRow(r++, jiraEnabledCheck)
+                    p.row(r++, JLabel("Base URL:"), jiraUrlField)
+                    p.row(r++, JLabel("Project key:"), jiraProjectField)
+                    p.row(r++, JLabel("Email:"), jiraEmailField)
+                    p.row(r++, JLabel("API token:"), jiraTokenField)
+                    p
+                },
+            ),
+            gbc,
+        )
 
-        jiraEnabledCheckbox = JCheckBox("Enable Jira Integration")
-        panel.add(jiraEnabledCheckbox)
+        // ── Ignored Packages ──
+        ignoredPackagesField =
+            JTextField(30).apply {
+                toolTipText = "Comma-separated list of package names to ignore"
+            }
+        val ignoredNote =
+            JLabel(
+                "<html><small>" +
+                    "Separate package names with commas (e.g. org.example:lib, com.test:app)" +
+                    "</small></html>",
+            )
 
-        panel.add(JLabel("Jira Base URL:"))
-        jiraBaseUrlField = JTextField(20)
-        panel.add(jiraBaseUrlField)
+        gbc.gridy = row++
+        content.add(
+            sectionPanel(
+                "Ignored Packages",
+                run {
+                    val p = JPanel(GridBagLayout())
+                    var r = 0
+                    p.row(r++, JLabel("Packages to ignore:"), ignoredPackagesField)
+                    p.spanRow(r++, ignoredNote)
+                    p
+                },
+            ),
+            gbc,
+        )
 
-        panel.add(JLabel("Jira Project Key:"))
-        jiraProjectKeyField = JTextField(10)
-        panel.add(jiraProjectKeyField)
+        // Glue at bottom
+        gbc.gridy = row
+        gbc.weighty = 1.0
+        gbc.fill = GridBagConstraints.BOTH
+        content.add(JPanel(), gbc)
 
-        panel.add(JLabel("Jira Email:"))
-        jiraEmailField = JTextField(20)
-        panel.add(jiraEmailField)
+        root.add(content, BorderLayout.NORTH)
+        return com.intellij.ui.components.JBScrollPane(root).apply {
+            border = BorderFactory.createEmptyBorder()
+            verticalScrollBar.unitIncrement = 16
+        }
+    }
 
-        panel.add(JLabel("Jira API Token:"))
-        jiraTokenField = JTextField(20)
-        panel.add(jiraTokenField)
+    /** Adds a row with [label]–[control] pair to [this] panel at the given row index. */
+    private fun JPanel.row(
+        row: Int,
+        label: JLabel,
+        control: JComponent,
+    ) {
+        val c = GridBagConstraints()
+        c.gridy = row
+        c.insets = Insets(4, 0, 4, 8)
+        // Label
+        c.gridx = 0
+        c.fill = GridBagConstraints.NONE
+        c.anchor = GridBagConstraints.WEST
+        add(label, c)
+        // Control
+        c.gridx = 1
+        c.weightx = 1.0
+        c.fill = GridBagConstraints.HORIZONTAL
+        c.anchor = GridBagConstraints.WEST
+        add(control, c)
+    }
 
+    /** Adds a component that spans both columns (e.g. a checkbox). */
+    private fun JPanel.spanRow(
+        row: Int,
+        control: JComponent,
+    ) {
+        val c = GridBagConstraints()
+        c.gridy = row
+        c.gridx = 0
+        c.gridwidth = 2
+        c.weightx = 1.0
+        c.fill = GridBagConstraints.HORIZONTAL
+        c.insets = Insets(4, 0, 4, 0)
+        c.anchor = GridBagConstraints.WEST
+        add(control, c)
+    }
+
+    private fun sectionPanel(
+        title: String,
+        panel: JPanel,
+    ): JPanel {
+        panel.border =
+            BorderFactory.createCompoundBorder(
+                TitledBorder(title),
+                BorderFactory.createEmptyBorder(4, 8, 8, 8),
+            )
         return panel
     }
 
-    override fun isModified(): Boolean =
-        config.minimumSeverity != minimumSeverityCombo.selectedItem ||
-            config.inspectionEnabled != inspectionEnabledCheckbox.isSelected ||
+    override fun isModified(): Boolean {
+        val currentGithubToken = OsVConfig.getGithubToken() ?: ""
+        val fieldGithubToken = String(githubTokenField.password)
+        val currentJiraToken = OsVConfig.getJiraToken() ?: ""
+        val fieldJiraToken = String(jiraTokenField.password)
+
+        return config.minimumSeverity != minSeverityCombo.selectedItem ||
+            config.inspectionEnabled != inspectionEnabledCheck.isSelected ||
             config.cacheTtl != cacheTtlSpinner.value ||
-            config.rateLimitEnabled != rateLimitEnabledCheckbox.isSelected ||
-            config.rateLimitRequestsPerHour != rateLimitRequestsSpinner.value ||
-            config.scanDirectDependencies != scanDirectCheckbox.isSelected ||
-            config.scanTransitiveDependencies != scanTransitiveCheckbox.isSelected ||
-            config.githubAdvisoryEnabled != githubAdvisoryEnabledCheckbox.isSelected ||
-            OsVConfig.getGithubToken() != githubTokenField.text ||
-            config.licenseScanningEnabled != licenseScanningEnabledCheckbox.isSelected ||
-            config.focusModeEnabled != focusModeEnabledCheckbox.isSelected ||
+            config.rateLimitEnabled != rateLimitCheck.isSelected ||
+            config.rateLimitRequestsPerHour != rateLimitSpinner.value ||
+            config.scanDirectDependencies != scanDirectCheck.isSelected ||
+            config.scanTransitiveDependencies != scanTransitiveCheck.isSelected ||
+            config.githubAdvisoryEnabled != githubAdvisoryCheck.isSelected ||
+            currentGithubToken != fieldGithubToken ||
+            config.licenseScanningEnabled != licenseScanningCheck.isSelected ||
+            config.focusModeEnabled != focusModeCheck.isSelected ||
             config.baseBranch != baseBranchField.text ||
-            config.sarifExportPath != sarifExportPathField.text ||
+            config.sarifExportPath != sarifPathField.text.takeIf { it.isNotEmpty() } ||
             config.osvApiUrl != osvApiUrlField.text ||
             config.ignoredPackages != parseIgnoredPackages(ignoredPackagesField.text) ||
-            config.orgManagementEnabled != orgManagementEnabledCheckbox.isSelected ||
-            config.currentOrganization != currentOrgField.text ||
-            config.jiraEnabled != jiraEnabledCheckbox.isSelected ||
-            config.jiraBaseUrl != jiraBaseUrlField.text ||
-            config.jiraProjectKey != jiraProjectKeyField.text ||
-            config.jiraEmail != jiraEmailField.text ||
-            OsVConfig.getJiraToken() != jiraTokenField.text
+            config.orgManagementEnabled != orgEnabledCheck.isSelected ||
+            config.currentOrganization != orgNameField.text.takeIf { it.isNotEmpty() } ||
+            config.jiraEnabled != jiraEnabledCheck.isSelected ||
+            config.jiraBaseUrl != jiraUrlField.text.takeIf { it.isNotEmpty() } ||
+            config.jiraProjectKey != jiraProjectField.text.takeIf { it.isNotEmpty() } ||
+            config.jiraEmail != jiraEmailField.text.takeIf { it.isNotEmpty() } ||
+            currentJiraToken != fieldJiraToken
+    }
 
     override fun apply() {
-        config.minimumSeverity = minimumSeverityCombo.selectedItem as OsVSeverity
-        config.inspectionEnabled = inspectionEnabledCheckbox.isSelected
+        config.minimumSeverity = minSeverityCombo.selectedItem as OsVSeverity
+        config.inspectionEnabled = inspectionEnabledCheck.isSelected
         config.cacheTtl = cacheTtlSpinner.value as Int
-        config.rateLimitEnabled = rateLimitEnabledCheckbox.isSelected
-        config.rateLimitRequestsPerHour = rateLimitRequestsSpinner.value as Int
-        config.scanDirectDependencies = scanDirectCheckbox.isSelected
-        config.scanTransitiveDependencies = scanTransitiveCheckbox.isSelected
-        config.githubAdvisoryEnabled = githubAdvisoryEnabledCheckbox.isSelected
-        OsVConfig.setGithubToken(githubTokenField.text)
-        config.licenseScanningEnabled = licenseScanningEnabledCheckbox.isSelected
-        config.focusModeEnabled = focusModeEnabledCheckbox.isSelected
+        config.rateLimitEnabled = rateLimitCheck.isSelected
+        config.rateLimitRequestsPerHour = rateLimitSpinner.value as Int
+        config.scanDirectDependencies = scanDirectCheck.isSelected
+        config.scanTransitiveDependencies = scanTransitiveCheck.isSelected
+        config.githubAdvisoryEnabled = githubAdvisoryCheck.isSelected
+        OsVConfig.setGithubToken(String(githubTokenField.password).takeIf { it.isNotEmpty() })
+        config.licenseScanningEnabled = licenseScanningCheck.isSelected
+        config.focusModeEnabled = focusModeCheck.isSelected
         config.baseBranch = baseBranchField.text
-        config.sarifExportPath = sarifExportPathField.text
+        config.sarifExportPath = sarifPathField.text.takeIf { it.isNotEmpty() }
         config.osvApiUrl = osvApiUrlField.text
         config.ignoredPackages = parseIgnoredPackages(ignoredPackagesField.text)
-        config.orgManagementEnabled = orgManagementEnabledCheckbox.isSelected
-        config.currentOrganization = currentOrgField.text
-        config.jiraEnabled = jiraEnabledCheckbox.isSelected
-        config.jiraBaseUrl = jiraBaseUrlField.text
-        config.jiraProjectKey = jiraProjectKeyField.text
-        config.jiraEmail = jiraEmailField.text
-        OsVConfig.setJiraToken(if (jiraTokenField.text.isNotEmpty()) jiraTokenField.text else null)
+        config.orgManagementEnabled = orgEnabledCheck.isSelected
+        config.currentOrganization = orgNameField.text.takeIf { it.isNotEmpty() }
+        config.jiraEnabled = jiraEnabledCheck.isSelected
+        config.jiraBaseUrl = jiraUrlField.text.takeIf { it.isNotEmpty() }
+        config.jiraProjectKey = jiraProjectField.text.takeIf { it.isNotEmpty() }
+        config.jiraEmail = jiraEmailField.text.takeIf { it.isNotEmpty() }
+        OsVConfig.setJiraToken(String(jiraTokenField.password).takeIf { it.isNotEmpty() })
 
-        // Save configuration
-        com.intellij.openapi.application.ApplicationManager
+        ApplicationManager
             .getApplication()
             .getService(OsVConfig::class.java)
             .loadState(config)
     }
 
+    @Suppress("DuplicatedCode")
     override fun reset() {
-        val savedConfig =
-            com.intellij.openapi.application.ApplicationManager
+        val saved =
+            ApplicationManager
                 .getApplication()
                 .getService(OsVConfig::class.java)
-        config = savedConfig
+        config = saved
 
-        minimumSeverityCombo.selectedItem = config.minimumSeverity
-        inspectionEnabledCheckbox.isSelected = config.inspectionEnabled
+        minSeverityCombo.selectedItem = config.minimumSeverity
+        inspectionEnabledCheck.isSelected = config.inspectionEnabled
         cacheTtlSpinner.value = config.cacheTtl
-        rateLimitEnabledCheckbox.isSelected = config.rateLimitEnabled
-        rateLimitRequestsSpinner.value = config.rateLimitRequestsPerHour
-        scanDirectCheckbox.isSelected = config.scanDirectDependencies
-        scanTransitiveCheckbox.isSelected = config.scanTransitiveDependencies
-        githubAdvisoryEnabledCheckbox.isSelected = config.githubAdvisoryEnabled
-        githubTokenField.text = OsVConfig.getGithubToken() ?: ""
-        licenseScanningEnabledCheckbox.isSelected = config.licenseScanningEnabled
-        focusModeEnabledCheckbox.isSelected = config.focusModeEnabled
+        scanDirectCheck.isSelected = config.scanDirectDependencies
+        scanTransitiveCheck.isSelected = config.scanTransitiveDependencies
+        rateLimitCheck.isSelected = config.rateLimitEnabled
+        rateLimitSpinner.value = config.rateLimitRequestsPerHour
+        githubAdvisoryCheck.isSelected = config.githubAdvisoryEnabled
+        githubTokenField.setText(OsVConfig.getGithubToken() ?: "")
+        licenseScanningCheck.isSelected = config.licenseScanningEnabled
+        focusModeCheck.isSelected = config.focusModeEnabled
         baseBranchField.text = config.baseBranch
-        sarifExportPathField.text = config.sarifExportPath ?: ""
+        sarifPathField.text = config.sarifExportPath ?: ""
         osvApiUrlField.text = config.osvApiUrl
         ignoredPackagesField.text = config.ignoredPackages.joinToString(", ")
-        orgManagementEnabledCheckbox.isSelected = config.orgManagementEnabled
-        currentOrgField.text = config.currentOrganization ?: ""
-        jiraEnabledCheckbox.isSelected = config.jiraEnabled
-        jiraBaseUrlField.text = config.jiraBaseUrl ?: ""
-        jiraProjectKeyField.text = config.jiraProjectKey ?: ""
+        orgEnabledCheck.isSelected = config.orgManagementEnabled
+        orgNameField.text = config.currentOrganization ?: ""
+        jiraEnabledCheck.isSelected = config.jiraEnabled
+        jiraUrlField.text = config.jiraBaseUrl ?: ""
+        jiraProjectField.text = config.jiraProjectKey ?: ""
         jiraEmailField.text = config.jiraEmail ?: ""
-        jiraTokenField.text = OsVConfig.getJiraToken() ?: ""
+        jiraTokenField.setText(OsVConfig.getJiraToken() ?: "")
     }
 
     private fun parseIgnoredPackages(text: String): List<String> =
@@ -252,6 +379,6 @@ class OsVConfigurable : Configurable {
             .filter { it.isNotEmpty() }
 
     override fun disposeUIResources() {
-        // Clean up resources if needed
+        // No external resources to clean up
     }
 }
