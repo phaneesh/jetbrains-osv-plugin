@@ -50,18 +50,8 @@ class AiScanner(
 
         val detectors =
             when {
-                fileName.endsWith(".java") || fileName.endsWith(".kt") ||
-                    fileName.endsWith(".groovy") || fileName.endsWith(".scala") ||
-                    fileName.endsWith(".py") || fileName.endsWith(".js") ||
-                    fileName.endsWith(".ts") || fileName.endsWith(".rs") -> sourceDetectors
-
-                fileName.endsWith(".xml") || fileName.endsWith(".gradle") ||
-                    fileName.endsWith(".gradle.kts") || fileName == "pom.xml" ||
-                    fileName.endsWith(".properties") || fileName.endsWith(".yml") ||
-                    fileName.endsWith(".yaml") || fileName.endsWith(".json") ||
-                    fileName.endsWith(".toml") || fileName.endsWith(".cfg") ||
-                    fileName.endsWith(".ini") || fileName.endsWith(".txt") -> configDetectors
-
+                isSourceFile(fileName) -> sourceDetectors
+                isConfigFile(fileName) -> configDetectors
                 else -> sourceDetectors + configDetectors
             }
 
@@ -386,16 +376,29 @@ class AiScanner(
         }
     }
 
-    private fun isSourceOrConfigFile(name: String): Boolean =
+    private fun isSourceFile(name: String): Boolean =
         name.endsWith(".java") || name.endsWith(".kt") ||
             name.endsWith(".groovy") || name.endsWith(".scala") ||
-            name.endsWith(".py") || name.endsWith(".js") || name.endsWith(".ts") ||
-            name.endsWith(".rs") || name.endsWith(".xml") || name.endsWith(".properties") ||
+            name.endsWith(".py") || name.endsWith(".js") ||
+            name.endsWith(".ts") || name.endsWith(".go") ||
+            name.endsWith(".rs") || name.endsWith(".php") ||
+            name.endsWith(".rb") || name.endsWith(".r") ||
+            name.endsWith(".dart") || name.endsWith(".cs") ||
+            name.endsWith(".swift") || name.endsWith(".cpp") ||
+            name.endsWith(".c") || name.endsWith(".h") ||
+            name.endsWith(".hpp") || name.endsWith(".ex") ||
+            name.endsWith(".exs")
+
+    private fun isConfigFile(name: String): Boolean =
+        name.endsWith(".xml") || name.endsWith(".properties") ||
             name.endsWith(".gradle") || name.endsWith(".gradle.kts") ||
             name.endsWith(".yml") || name.endsWith(".yaml") ||
-            name.endsWith(".json") || name.endsWith(".toml") ||
+            name.endsWith(".json") || name.endsWith(".conf") ||
             name.endsWith(".cfg") || name.endsWith(".ini") ||
-            name.endsWith(".txt") || name == "pom.xml"
+            name.endsWith(".toml") || name.endsWith(".lock") ||
+            name.endsWith(".config") || name == "pom.xml"
+
+    private fun isSourceOrConfigFile(name: String): Boolean = isSourceFile(name) || isConfigFile(name)
 
     companion object {
         private val EXCLUDED_DIRS =

@@ -49,15 +49,8 @@ class QuantumScanner(
 
         val detectors =
             when {
-                fileName.endsWith(".java") || fileName.endsWith(".kt") ||
-                    fileName.endsWith(".groovy") || fileName.endsWith(".scala") -> sourceDetectors
-
-                fileName.endsWith(".xml") || fileName.endsWith(".gradle") ||
-                    fileName.endsWith(".gradle.kts") || fileName == "pom.xml" ||
-                    fileName.endsWith(".properties") || fileName.endsWith(".yml") ||
-                    fileName.endsWith(".yaml") || fileName.endsWith(".json") ||
-                    fileName.endsWith(".conf") || fileName.endsWith(".cfg") -> configDetectors
-
+                isSourceFile(fileName) -> sourceDetectors
+                isConfigFile(fileName) -> configDetectors
                 else -> sourceDetectors + configDetectors
             }
 
@@ -301,6 +294,132 @@ class QuantumScanner(
                     lineNumber = line,
                 )
             },
+            // ─── CROSS-LANGUAGE PQC DETECTORS ───────────────────
+            // Python: liboqs / oqs-python binding
+            Detector(
+                Pattern.compile(
+                    """
+                    import\s+oqs\b|from\s+oqs\b
+                    """.trimIndent().replace("\n", ""),
+                    Pattern.CASE_INSENSITIVE,
+                ),
+            ) { file, line, _, _ ->
+                QuantumAsset(
+                    name = "liboqs (Python)",
+                    type = QuantumAssetType.PQC_LIBRARY,
+                    subtype = "PQC Library",
+                    properties = mapOf("language" to "Python", "library" to "liboqs"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Python: pycryptodome / cryptography PQC awareness
+            Detector(
+                Pattern.compile(
+                    """
+                    cryptography\.hazmat\.primitives\.asymmetric\.(kyber|dilithium|falcon)
+                    """.trimIndent().replace("\n", ""),
+                    Pattern.CASE_INSENSITIVE,
+                ),
+            ) { file, line, _, m ->
+                QuantumAsset(
+                    name = m.group(1),
+                    type = QuantumAssetType.PQC_ALGORITHM,
+                    subtype = "PQC Algorithm (Python)",
+                    properties = mapOf("language" to "Python"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Node.js: oqs-openssl, post-quantum-crypto
+            Detector(
+                Pattern.compile(
+                    """
+                    (oqs-openssl|post-quantum-crypto|mlkem|mldsa)\b
+                    """.trimIndent().replace("\n", ""),
+                    Pattern.CASE_INSENSITIVE,
+                ),
+            ) { file, line, _, m ->
+                QuantumAsset(
+                    name = m.group(1),
+                    type = QuantumAssetType.PQC_LIBRARY,
+                    subtype = "PQC Library (Node.js)",
+                    properties = mapOf("language" to "JavaScript"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Rust: pqc_core, pqc_kyber, pqc_dilithium, pqc_falcon
+            Detector(
+                Pattern.compile(
+                    """
+                    (pqc_kyber|pqc_dilithium|pqc_falcon|pqc_sphincs|pqc_core)\b
+                    """.trimIndent().replace("\n", ""),
+                    Pattern.CASE_INSENSITIVE,
+                ),
+            ) { file, line, _, m ->
+                QuantumAsset(
+                    name = m.group(1),
+                    type = QuantumAssetType.PQC_LIBRARY,
+                    subtype = "PQC Crate (Rust)",
+                    properties = mapOf("language" to "Rust"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Go: cloudflare/circl (PQC primitives)
+            Detector(
+                Pattern.compile(
+                    """
+                    cloudflare/circl\b
+                    """.trimIndent().replace("\n", ""),
+                ),
+            ) { file, line, _, _ ->
+                QuantumAsset(
+                    name = "cloudflare/circl",
+                    type = QuantumAssetType.PQC_LIBRARY,
+                    subtype = "PQC Go Library",
+                    properties = mapOf("language" to "Go"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // C/C++: oqs-provider, liboqs, pqclean
+            Detector(
+                Pattern.compile(
+                    """
+                    (oqs-provider|liboqs|pqclean|pqcrypto)\b
+                    """.trimIndent().replace("\n", ""),
+                    Pattern.CASE_INSENSITIVE,
+                ),
+            ) { file, line, _, m ->
+                QuantumAsset(
+                    name = m.group(1),
+                    type = QuantumAssetType.PQC_LIBRARY,
+                    subtype = "PQC Library (C/C++)",
+                    properties = mapOf("language" to "C/C++"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Generic: X25519Kyber768Draft00 (hybrid KEM)
+            Detector(
+                Pattern.compile(
+                    """
+                    (X25519Kyber768|X25519Kyber768Draft00|Kyber768|ML-KEM-\d+)
+                    """.trimIndent().replace("\n", ""),
+                    Pattern.CASE_INSENSITIVE,
+                ),
+            ) { file, line, _, m ->
+                QuantumAsset(
+                    name = m.group(1),
+                    type = QuantumAssetType.HYBRID_KEY_EXCHANGE,
+                    subtype = "Hybrid Post-Quantum Key Exchange",
+                    properties = mapOf("type" to "hybrid-kem"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
         )
 
     private fun scanDirectory(
@@ -325,14 +444,29 @@ class QuantumScanner(
         }
     }
 
-    private fun isSourceOrConfigFile(name: String): Boolean =
+    private fun isSourceFile(name: String): Boolean =
         name.endsWith(".java") || name.endsWith(".kt") ||
             name.endsWith(".groovy") || name.endsWith(".scala") ||
-            name.endsWith(".xml") || name.endsWith(".properties") ||
+            name.endsWith(".py") || name.endsWith(".js") ||
+            name.endsWith(".ts") || name.endsWith(".go") ||
+            name.endsWith(".rs") || name.endsWith(".php") ||
+            name.endsWith(".rb") || name.endsWith(".r") ||
+            name.endsWith(".dart") || name.endsWith(".cs") ||
+            name.endsWith(".swift") || name.endsWith(".cpp") ||
+            name.endsWith(".c") || name.endsWith(".h") ||
+            name.endsWith(".hpp") || name.endsWith(".ex") ||
+            name.endsWith(".exs")
+
+    private fun isConfigFile(name: String): Boolean =
+        name.endsWith(".xml") || name.endsWith(".properties") ||
             name.endsWith(".gradle") || name.endsWith(".gradle.kts") ||
             name.endsWith(".yml") || name.endsWith(".yaml") ||
             name.endsWith(".json") || name.endsWith(".conf") ||
-            name.endsWith(".cfg") || name == "pom.xml"
+            name.endsWith(".cfg") || name.endsWith(".ini") ||
+            name.endsWith(".toml") || name.endsWith(".lock") ||
+            name.endsWith(".config") || name == "pom.xml"
+
+    private fun isSourceOrConfigFile(name: String): Boolean = isSourceFile(name) || isConfigFile(name)
 
     companion object {
         private val EXCLUDED_DIRS =

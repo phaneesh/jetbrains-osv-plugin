@@ -145,14 +145,21 @@ class SbomGenerator(
      */
     fun toPurl(dep: Dependency): String {
         val type =
-            when (dep.ecosystem.lowercase()) {
-                "maven", "gradle" -> "maven"
-                "npm", "nodejs" -> "npm"
-                "pypi", "pip" -> "pypi"
-                "nuget" -> "nuget"
-                "golang" -> "golang"
-                "cargo", "rust" -> "cargo"
-                else -> dep.ecosystem.lowercase()
+            when (dep.ecosystem) {
+                "Maven", "Gradle" -> "maven"
+                "npm" -> "npm"
+                "PyPI" -> "pypi"
+                "NuGet" -> "nuget"
+                "Go" -> "golang"
+                "crates.io" -> "cargo"
+                "Packagist" -> "composer"
+                "RubyGems" -> "gem"
+                "Pub" -> "pub"
+                "Hackage" -> "hackage"
+                "Hex" -> "hex"
+                "CRAN" -> "cran"
+                "ConanCenter" -> "conan"
+                else -> dep.ecosystem.lowercase().replace(".", "")
             }
 
         val namespaceName =
@@ -165,6 +172,21 @@ class SbomGenerator(
                     } else {
                         dep.name
                     }
+                }
+
+                "golang" -> {
+                    // Go packages have fully-qualified paths like github.com/user/repo
+                    dep.name
+                }
+
+                "composer" -> {
+                    // PHP packages are vendor/package
+                    dep.name.replace("/", "::")
+                }
+
+                "gem" -> {
+                    // Ruby gems are just the gem name
+                    dep.name
                 }
 
                 else -> {

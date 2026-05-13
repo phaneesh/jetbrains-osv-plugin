@@ -56,22 +56,9 @@ class CryptoScanner(
         // Choose detector set based on file type
         val detectors =
             when {
-                fileName.endsWith(".java") || fileName.endsWith(".kt") ||
-                    fileName.endsWith(".groovy") || fileName.endsWith(".scala") -> {
-                    sourceDetectors
-                }
-
-                fileName.endsWith(".xml") || fileName.endsWith(".gradle") ||
-                    fileName.endsWith(".gradle.kts") || fileName == "pom.xml" ||
-                    fileName.endsWith(".properties") || fileName.endsWith(".yml") ||
-                    fileName.endsWith(".yaml") || fileName.endsWith(".json") ||
-                    fileName.endsWith(".conf") || fileName.endsWith(".cfg") -> {
-                    configDetectors
-                }
-
-                else -> {
-                    sourceDetectors + configDetectors
-                }
+                isSourceFile(fileName) -> sourceDetectors
+                isConfigFile(fileName) -> configDetectors
+                else -> sourceDetectors + configDetectors
             }
 
         lines.forEachIndexed { index, line ->
@@ -358,6 +345,281 @@ class CryptoScanner(
                     lineNumber = line,
                 )
             },
+            // ─── CROSS-LANGUAGE CRYPTO DETECTORS ──────────────────
+            // Python: cryptography.hazmat.primitives.ciphers.Cipher(...)
+            Detector(
+                Pattern.compile(
+                    """
+                    Cipher\s*\(\s*algorithms?\.(\w+)[^)]*
+                    """.trimIndent().replace("\n", ""),
+                    Pattern.CASE_INSENSITIVE,
+                ),
+                CryptoAssetType.ALGORITHM,
+            ) { file, line, _, m ->
+                CryptoAsset(
+                    name = m.group(1),
+                    type = CryptoAssetType.ALGORITHM,
+                    subtype = "Symmetric Cipher (Python)",
+                    properties = mapOf("primitive" to "cipher", "language" to "Python"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Python: hashlib.sha256(...)
+            Detector(
+                Pattern.compile(
+                    """
+                    hashlib\.(\w+)\s*\(
+                    """.trimIndent().replace("\n", ""),
+                    Pattern.CASE_INSENSITIVE,
+                ),
+                CryptoAssetType.ALGORITHM,
+            ) { file, line, _, m ->
+                CryptoAsset(
+                    name = m.group(1),
+                    type = CryptoAssetType.ALGORITHM,
+                    subtype = "Hash / Digest (Python)",
+                    properties = mapOf("primitive" to "hash", "language" to "Python"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Python: Fernet(...) from cryptography
+            Detector(
+                Pattern.compile(
+                    """
+                    from\s+cryptography\.(?:fernet|hazmat)\b[^\n]*
+                    """.trimIndent().replace("\n", ""),
+                    Pattern.CASE_INSENSITIVE,
+                ),
+                CryptoAssetType.ALGORITHM,
+            ) { file, line, _, _ ->
+                CryptoAsset(
+                    name = "cryptography",
+                    type = CryptoAssetType.ALGORITHM,
+                    subtype = "Cryptographic Library (Python)",
+                    properties = mapOf("primitive" to "library", "language" to "Python"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Node.js: crypto.createCipheriv('aes-256-gcm', ...)
+            Detector(
+                Pattern.compile(
+                    """
+                    crypto\.(?:createCipheriv|createDecipheriv|createHash|createHmac)\s*\(\s*['"]([^'"]+)['"]
+                    """.trimIndent().replace("\n", ""),
+                ),
+                CryptoAssetType.ALGORITHM,
+            ) { file, line, _, m ->
+                CryptoAsset(
+                    name = m.group(1),
+                    type = CryptoAssetType.ALGORITHM,
+                    subtype = "Cipher / Hash (Node.js)",
+                    properties = mapOf("primitive" to "cipher", "language" to "JavaScript"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Node.js: crypto.createHash('sha256')
+            Detector(
+                Pattern.compile(
+                    """
+                    crypto\.(?:createHash|createHmac|pbkdf2)\s*\(\s*['"]([^'"]+)['"]
+                    """.trimIndent().replace("\n", ""),
+                ),
+                CryptoAssetType.ALGORITHM,
+            ) { file, line, _, m ->
+                CryptoAsset(
+                    name = m.group(1),
+                    type = CryptoAssetType.ALGORITHM,
+                    subtype = "Hash / KDF (Node.js)",
+                    properties = mapOf("primitive" to "hash", "language" to "JavaScript"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Node.js/jose: jose.SignJWT, jose.jwtVerify
+            Detector(
+                Pattern.compile(
+                    """
+                    jose\.(?:SignJWT|jwtVerify|EncryptJWT)
+                    """.trimIndent().replace("\n", ""),
+                ),
+                CryptoAssetType.PROTOCOL,
+            ) { file, line, _, _ ->
+                CryptoAsset(
+                    name = "JOSE/JWT",
+                    type = CryptoAssetType.PROTOCOL,
+                    subtype = "JWT / JWS / JWE (Node.js)",
+                    properties = mapOf("primitive" to "jwt", "language" to "JavaScript"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Go: crypto/aes, crypto/rsa import or use
+            Detector(
+                Pattern.compile(
+                    """
+                    crypto/(aes|rsa|ecdsa|tls|x509|sha256|sha512|md5)\b
+                    """.trimIndent().replace("\n", ""),
+                ),
+                CryptoAssetType.ALGORITHM,
+            ) { file, line, _, m ->
+                CryptoAsset(
+                    name = m.group(1),
+                    type = CryptoAssetType.ALGORITHM,
+                    subtype = "Go Crypto Package",
+                    properties = mapOf("primitive" to "package", "language" to "Go"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Go: tls.Config{CipherSuites: [...]}
+            Detector(
+                Pattern.compile(
+                    """
+                    tls\.Config\b[^\n]*|CipherSuites\s*:\s*\[
+                    """.trimIndent().replace("\n", ""),
+                ),
+                CryptoAssetType.PROTOCOL,
+            ) { file, line, _, _ ->
+                CryptoAsset(
+                    name = "TLS Config",
+                    type = CryptoAssetType.PROTOCOL,
+                    subtype = "TLS/SSL Configuration (Go)",
+                    properties = mapOf("primitive" to "tls", "language" to "Go"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Rust: sha2::Sha256, aes_gcm::Aes256Gcm
+            Detector(
+                Pattern.compile(
+                    """
+                    (sha2|sha3|aes|aes_gcm|chacha20|ring|openssl)::
+                    """.trimIndent().replace("\n", ""),
+                    Pattern.CASE_INSENSITIVE,
+                ),
+                CryptoAssetType.ALGORITHM,
+            ) { file, line, _, m ->
+                CryptoAsset(
+                    name = m.group(1),
+                    type = CryptoAssetType.ALGORITHM,
+                    subtype = "Rust Crypto Crate",
+                    properties = mapOf("primitive" to "crate", "language" to "Rust"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Rust: rustls::ClientConfig
+            Detector(
+                Pattern.compile(
+                    """
+                    rustls::\w*Config\b
+                    """.trimIndent().replace("\n", ""),
+                ),
+                CryptoAssetType.PROTOCOL,
+            ) { file, line, _, _ ->
+                CryptoAsset(
+                    name = "rustls",
+                    type = CryptoAssetType.PROTOCOL,
+                    subtype = "TLS/SSL Library (Rust)",
+                    properties = mapOf("primitive" to "tls", "language" to "Rust"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // C/C++: OpenSSL EVP, AES, SHA usage
+            Detector(
+                Pattern.compile(
+                    """
+                    (EVP_|AES_|SHA256_|SHA512_|MD5_|HMAC_|RSA_|EC_KEY_|SSL_CTX_)
+                    """.trimIndent().replace("\n", ""),
+                ),
+                CryptoAssetType.ALGORITHM,
+            ) { file, line, _, m ->
+                CryptoAsset(
+                    name = m.group(1),
+                    type = CryptoAssetType.ALGORITHM,
+                    subtype = "OpenSSL Primitive (C/C++)",
+                    properties = mapOf("primitive" to "openssl", "language" to "C/C++"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // C/C++: mbedtls / wolfSSL
+            Detector(
+                Pattern.compile(
+                    """
+                    (mbedtls_|wolfSSL_|wc_Aes|wc_Sha)
+                    """.trimIndent().replace("\n", ""),
+                ),
+                CryptoAssetType.RELATED_CRYPTO_MATERIAL,
+            ) { file, line, _, m ->
+                CryptoAsset(
+                    name = m.group(1),
+                    type = CryptoAssetType.RELATED_CRYPTO_MATERIAL,
+                    subtype = "Embedded TLS Library (C/C++)",
+                    properties = mapOf("primitive" to "library", "language" to "C/C++"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // PHP: openssl_encrypt, hash('sha256', ...)
+            Detector(
+                Pattern.compile(
+                    """
+                    openssl_(encrypt|decrypt|sign|verify|seal|open)\s*\(
+                    """.trimIndent().replace("\n", ""),
+                ),
+                CryptoAssetType.ALGORITHM,
+            ) { file, line, _, m ->
+                CryptoAsset(
+                    name = "openssl_${m.group(1)}",
+                    type = CryptoAssetType.ALGORITHM,
+                    subtype = "OpenSSL Operation (PHP)",
+                    properties = mapOf("primitive" to "openssl", "language" to "PHP"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // PHP: sodium_crypto, libsodium
+            Detector(
+                Pattern.compile(
+                    """
+                    sodium_crypto_(\w+)\s*\(
+                    """.trimIndent().replace("\n", ""),
+                ),
+                CryptoAssetType.ALGORITHM,
+            ) { file, line, _, m ->
+                CryptoAsset(
+                    name = "sodium_${m.group(1)}",
+                    type = CryptoAssetType.ALGORITHM,
+                    subtype = "Libsodium Operation (PHP)",
+                    properties = mapOf("primitive" to "libsodium", "language" to "PHP"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Ruby: OpenSSL::Cipher, Digest::SHA256
+            Detector(
+                Pattern.compile(
+                    """
+                    OpenSSL::(Cipher|Digest|PKey|X509|SSL)
+                    """.trimIndent().replace("\n", ""),
+                ),
+                CryptoAssetType.ALGORITHM,
+            ) { file, line, _, m ->
+                CryptoAsset(
+                    name = "OpenSSL::${m.group(1)}",
+                    type = CryptoAssetType.ALGORITHM,
+                    subtype = "Ruby OpenSSL",
+                    properties = mapOf("primitive" to "openssl", "language" to "Ruby"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
         )
 
     @Suppress("MaxLineLength")
@@ -485,6 +747,99 @@ class CryptoScanner(
                     lineNumber = line,
                 )
             },
+            // ─── CROSS-LANGUAGE CRYPTO LIBRARIES IN LOCKFILES ──
+            // Python: cryptography, PyCryptodome, pycryptodomex
+            Detector(
+                Pattern.compile(
+                    """
+                    (cryptography|pycryptodome|pycryptodomex|m2crypto|paramiko)\b
+                    """.trimIndent().replace("\n", ""),
+                    Pattern.CASE_INSENSITIVE,
+                ),
+                CryptoAssetType.RELATED_CRYPTO_MATERIAL,
+            ) { file, line, _, m ->
+                CryptoAsset(
+                    name = m.group(1),
+                    type = CryptoAssetType.RELATED_CRYPTO_MATERIAL,
+                    subtype = "Python Crypto Library",
+                    properties = mapOf("primitive" to "library", "language" to "Python"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Node.js: crypto-js, node-rsa, forge, jsonwebtoken, jose
+            Detector(
+                Pattern.compile(
+                    """
+                    (crypto-js|node-rsa|node-forge|jsonwebtoken|jose|bcrypt|argon2)\b
+                    """.trimIndent().replace("\n", ""),
+                    Pattern.CASE_INSENSITIVE,
+                ),
+                CryptoAssetType.RELATED_CRYPTO_MATERIAL,
+            ) { file, line, _, m ->
+                CryptoAsset(
+                    name = m.group(1),
+                    type = CryptoAssetType.RELATED_CRYPTO_MATERIAL,
+                    subtype = "Node.js Crypto Library",
+                    properties = mapOf("primitive" to "library", "language" to "JavaScript"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Go: golang.org/x/crypto, crypto/tls
+            Detector(
+                Pattern.compile(
+                    """
+                    (golang\.org/x/crypto|crypto/tls)\b
+                    """.trimIndent().replace("\n", ""),
+                ),
+                CryptoAssetType.RELATED_CRYPTO_MATERIAL,
+            ) { file, line, _, m ->
+                CryptoAsset(
+                    name = m.group(1),
+                    type = CryptoAssetType.RELATED_CRYPTO_MATERIAL,
+                    subtype = "Go Crypto Library",
+                    properties = mapOf("primitive" to "library", "language" to "Go"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // Rust: sha2, aes, aes-gcm, chacha20poly1305, ring, rustls
+            Detector(
+                Pattern.compile(
+                    """
+                    (sha2|sha3|aes|aes-gcm|chacha20|chacha20poly1305|ring|rustls)\b
+                    """.trimIndent().replace("\n", ""),
+                ),
+                CryptoAssetType.RELATED_CRYPTO_MATERIAL,
+            ) { file, line, _, m ->
+                CryptoAsset(
+                    name = m.group(1),
+                    type = CryptoAssetType.RELATED_CRYPTO_MATERIAL,
+                    subtype = "Rust Crypto Crate",
+                    properties = mapOf("primitive" to "library", "language" to "Rust"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
+            // .NET: System.Security.Cryptography, BouncyCastle.Crypto
+            Detector(
+                Pattern.compile(
+                    """
+                    (System\.Security\.Cryptography|BouncyCastle\.Crypto)\b
+                    """.trimIndent().replace("\n", ""),
+                ),
+                CryptoAssetType.RELATED_CRYPTO_MATERIAL,
+            ) { file, line, _, m ->
+                CryptoAsset(
+                    name = m.group(1),
+                    type = CryptoAssetType.RELATED_CRYPTO_MATERIAL,
+                    subtype = ".NET Crypto Library",
+                    properties = mapOf("primitive" to "library", "language" to ".NET"),
+                    sourceFile = file,
+                    lineNumber = line,
+                )
+            },
         )
 
     // ─── Helpers ───────────────────────────────────────────────────
@@ -514,14 +869,32 @@ class CryptoScanner(
         }
     }
 
-    private fun isSourceOrConfigFile(name: String): Boolean =
+    /** Returns true if this is a known source code file extension. */
+    private fun isSourceFile(name: String): Boolean =
         name.endsWith(".java") || name.endsWith(".kt") ||
             name.endsWith(".groovy") || name.endsWith(".scala") ||
-            name.endsWith(".xml") || name.endsWith(".properties") ||
+            name.endsWith(".py") || name.endsWith(".js") ||
+            name.endsWith(".ts") || name.endsWith(".go") ||
+            name.endsWith(".rs") || name.endsWith(".php") ||
+            name.endsWith(".rb") || name.endsWith(".r") ||
+            name.endsWith(".dart") || name.endsWith(".cs") ||
+            name.endsWith(".swift") || name.endsWith(".cpp") ||
+            name.endsWith(".c") || name.endsWith(".h") ||
+            name.endsWith(".hpp") || name.endsWith(".ex") ||
+            name.endsWith(".exs")
+
+    /** Returns true if this is a known configuration / manifest file. */
+    private fun isConfigFile(name: String): Boolean =
+        name.endsWith(".xml") || name.endsWith(".properties") ||
             name.endsWith(".gradle") || name.endsWith(".gradle.kts") ||
             name.endsWith(".yml") || name.endsWith(".yaml") ||
             name.endsWith(".json") || name.endsWith(".conf") ||
-            name.endsWith(".cfg") || name == "pom.xml"
+            name.endsWith(".cfg") || name.endsWith(".ini") ||
+            name.endsWith(".toml") || name.endsWith(".lock") ||
+            name.endsWith(".config") || name == "pom.xml"
+
+    /** Returns true if this file should be scanned at all. */
+    private fun isSourceOrConfigFile(name: String): Boolean = isSourceFile(name) || isConfigFile(name)
 
     private fun parseCipherSpec(spec: String): Map<String, String> {
         val parts = spec.split("/")
