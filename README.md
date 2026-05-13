@@ -1,7 +1,7 @@
 # OSV IntelliJ Plugin
 
 ![Build](https://img.shields.io/badge/build-passing-brightgreen)
-![Version](https://img.shields.io/badge/jetbrains%20marketplace-v1.1.1-blue)
+![Version](https://img.shields.io/badge/jetbrains%20marketplace-v1.1.2-blue)
 ![License](https://img.shields.io/badge/license-Apache%202.0-yellow)
 
 > A free, open-source IntelliJ IDEA plugin that provides security vulnerability scanning for open-source dependencies using the [OSV Database](https://osv.dev/).
@@ -23,7 +23,7 @@
   - **SBOM** — CycloneDX 1.5 and SPDX 2.3 (JSON and Tag-Value)
   - **CBOM** — Cryptographic assets: algorithms, protocols, certificates, key material
   - **QBOM** — Post-quantum cryptography: ML-KEM, ML-DSA, SLH-DSA, Falcon, hybrid key exchange
-  - **AIBOM** — AI/ML assets: LLM APIs, TensorFlow, PyTorch, vector DBs, MLOps, AI-generated code markers  
+  - **AIBOM** — AI/ML assets: LLM APIs, TensorFlow, PyTorch, vector DBs, MLOps, AI-generated code markers
 - **Professional Trends Charts** — Rendered `Graphics2D` area + donut charts, rolling statistics table, delta change badges (replaced ASCII sparklines)
 - **SARIF Export** — Full CI/CD-ready export for GitHub Advanced Security, Azure DevOps
 
@@ -60,24 +60,24 @@
 
 ## Feature Comparison
 
-| Feature                       | OSV Plugin    | Snyk       | Mend.io    | Qodana |
-| ----------------------------- | ------------- | ---------- | ---------- | ------ |
-| Free SCA                      | ✅            | Free tier  | Paid       | Paid   |
-| Problems tab integration      | ✅            | ✅         | ✅         | ✅     |
-| Auto-fix via quick fix        | ✅            | ✅         | ✅         | ❌     |
-| License scanning              | ✅            | ✅         | ✅         | ❌     |
-| Reachability analysis         | ✅ Basic      | ✅ Premium | ✅ Premium | ✅     |
-| Malicious packages            | ✅ **Unique** | ❌         | ✅ Premium | ❌     |
-| Basic SAST                    | ✅ **Unique** | ✅         | ✅         | ✅     |
-| Privacy exports               | ✅ **Unique** | ❌         | ❌         | ❌     |
-| Risk scoring (EPSS+KEV)       | ✅ **Unique** | ✅ Premium | ✅ Premium | ❌     |
-| Policy enforcement            | ✅ **Unique** | ✅ Premium | ✅ Premium | ❌     |
-| Team config sharing           | ✅ **Unique** | ✅ Premium | ✅ Premium | ❌     |
-| Differential analysis         | ✅ **Unique** | ✅         | ✅         | ❌     |
-| Historical trends             | ✅ **Unique** | ✅         | ✅ Premium | ❌     |
-| Config audit (properties/yml) | ✅ **Unique** | ❌         | ❌         | ❌     |
+| Feature                        | OSV Plugin    | Snyk       | Mend.io    | Qodana |
+| ------------------------------ | ------------- | ---------- | ---------- | ------ |
+| Free SCA                       | ✅            | Free tier  | Paid       | Paid   |
+| Problems tab integration       | ✅            | ✅         | ✅         | ✅     |
+| Auto-fix via quick fix         | ✅            | ✅         | ✅         | ❌     |
+| License scanning               | ✅            | ✅         | ✅         | ❌     |
+| Reachability analysis          | ✅ Basic      | ✅ Premium | ✅ Premium | ✅     |
+| Malicious packages             | ✅ **Unique** | ❌         | ✅ Premium | ❌     |
+| Basic SAST                     | ✅ **Unique** | ✅         | ✅         | ✅     |
+| Privacy exports                | ✅ **Unique** | ❌         | ❌         | ❌     |
+| Risk scoring (EPSS+KEV)        | ✅ **Unique** | ✅ Premium | ✅ Premium | ❌     |
+| Policy enforcement             | ✅ **Unique** | ✅ Premium | ✅ Premium | ❌     |
+| Team config sharing            | ✅ **Unique** | ✅ Premium | ✅ Premium | ❌     |
+| Differential analysis          | ✅ **Unique** | ✅         | ✅         | ❌     |
+| Historical trends              | ✅ **Unique** | ✅         | ✅ Premium | ❌     |
+| Config audit (properties/yml)  | ✅ **Unique** | ❌         | ❌         | ❌     |
 | **SBOM / CBOM / QBOM / AIBOM** | ✅ **Unique** | ✅ SBOM    | ✅ SBOM    | ❌     |
-| Tree-based UI                 | ✅            | ✅         | ✅         | ✅     |
+| Tree-based UI                  | ✅            | ✅         | ✅         | ✅     |
 
 ## Installation
 

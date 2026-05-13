@@ -29,7 +29,7 @@ class CbomExportPanel(
 ) : JBPanel<CbomExportPanel>(BorderLayout()) {
     private val statusLabel = JLabel("Click 'Scan' to discover cryptographic assets")
     private val cbomTree = JTree(DefaultMutableTreeNode("Cryptographic Assets"))
-    private val generator = CbomGenerator(appName = project.name, appVersion = "1.1.1")
+    private val generator = CbomGenerator(appName = project.name, appVersion = "1.1.2")
     private val scanner = CryptoScanner(project)
     private var lastAssets: List<CryptoAsset> = emptyList()
 

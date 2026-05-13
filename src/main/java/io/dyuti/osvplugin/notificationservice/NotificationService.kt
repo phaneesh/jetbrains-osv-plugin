@@ -2,8 +2,7 @@
 package io.dyuti.osvplugin.notificationservice
 
 import com.intellij.notification.Notification
-import com.intellij.notification.NotificationDisplayType
-import com.intellij.notification.NotificationGroup
+import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
 import com.intellij.openapi.project.Project
@@ -23,13 +22,9 @@ object NotificationService {
      */
     const val NOTIFICATION_GROUP_ID = "OSV Vulnerability Alerts"
 
-    /**
-     * The [NotificationGroup] instance, lazily created.
-     */
-    @Suppress("DEPRECATION")
-    private val notificationGroup: NotificationGroup by lazy {
-        NotificationGroup(NOTIFICATION_GROUP_ID, NotificationDisplayType.BALLOON, true)
-    }
+    private fun notificationGroup() =
+        NotificationGroupManager.getInstance().getNotificationGroup(NOTIFICATION_GROUP_ID)
+            ?: error("Notification group '$NOTIFICATION_GROUP_ID' not registered in plugin.xml")
 
     /**
      * Show a notification for a single vulnerability.
@@ -45,7 +40,7 @@ object NotificationService {
         val title = buildNotificationTitle(vulnNotification)
         val content = buildNotificationContent(vulnNotification)
 
-        val notification = notificationGroup.createNotification(title, content, type)
+        val notification = notificationGroup().createNotification(title, content, type)
         Notifications.Bus.notify(notification, project)
     }
 
@@ -94,7 +89,7 @@ object NotificationService {
                 }
             }
 
-        val notification = notificationGroup.createNotification(title, content.trim(), type)
+        val notification = notificationGroup().createNotification(title, content.trim(), type)
         Notifications.Bus.notify(notification, project)
     }
 
@@ -103,7 +98,7 @@ object NotificationService {
      */
     fun showCleanScanNotification(project: Project?) {
         val notification =
-            notificationGroup.createNotification(
+            notificationGroup().createNotification(
                 "No Vulnerabilities Found",
                 "OSV scan completed. No known vulnerabilities detected in project dependencies.",
                 NotificationType.INFORMATION,

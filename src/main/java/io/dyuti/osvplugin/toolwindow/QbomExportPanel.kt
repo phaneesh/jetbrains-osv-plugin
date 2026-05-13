@@ -26,7 +26,7 @@ class QbomExportPanel(
 ) : JBPanel<QbomExportPanel>(BorderLayout()) {
     private val statusLabel = JLabel("Click 'Scan' to discover PQC assets")
     private val qbomTree = JTree(DefaultMutableTreeNode("Post-Quantum Assets"))
-    private val generator = QbomGenerator(appName = project.name, appVersion = "1.1.1")
+    private val generator = QbomGenerator(appName = project.name, appVersion = "1.1.2")
     private val scanner = QuantumScanner(project)
     private var lastAssets: List<QuantumAsset> = emptyList()
 

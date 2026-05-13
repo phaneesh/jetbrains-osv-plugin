@@ -3,6 +3,7 @@
 A comprehensive guide to the OSV Vulnerability Scanner plugin for IntelliJ IDEA.
 
 ## Table of Contents
+
 1. [Overview](#overview)
 2. [Architecture](#architecture)
 3. [Features](#features)
@@ -65,6 +66,7 @@ The OSV Vulnerability Scanner is a free, open-source IntelliJ IDEA plugin that p
 ### Component Details
 
 #### 1. Tool UI Layer (`toolwindow/`)
+
 - **OsVToolWindowFactory:** Creates the tool window instance
 - **OsVToolWindowPanel:** Main UI with tree view, filtering, and actions
 - **OsVDetailsPanel:** Displays detailed vulnerability information
@@ -72,6 +74,7 @@ The OSV Vulnerability Scanner is a free, open-source IntelliJ IDEA plugin that p
 - **SummaryButton:** Quick access to scan results
 
 #### 2. Parser Layer (`parser/`)
+
 - **DependencyParser:** Base interface for all parsers
 - **MavenParser:** Parses pom.xml files
 - **GradleParser:** Parses build.gradle and build.gradle.kts files
@@ -79,18 +82,21 @@ The OSV Vulnerability Scanner is a free, open-source IntelliJ IDEA plugin that p
 - **PipParser:** Parses requirements.txt files
 
 #### 3. API Services (`api/`)
+
 - **OsVApiService:** Primary interface to OSV database
 - **GitHubAdvisoryApiService:** Secondary source for security advisories
 - **NvdApiService:** National Vulnerability Database integration
 - **AggregatedVulnerabilityService:** Combines multiple sources
 
 #### 4. Model Layer (`model/`)
+
 - **Dependency:** Represents a parsed dependency
 - **Vulnerability:** Represents a security vulnerability
 - **OsVSeverity:** Severity levels (CRITICAL, HIGH, MEDIUM, LOW, INFO)
 - **ScanResult:** Aggregated results from a scan
 
 #### 5. Configuration Layer (`config/`)
+
 - **OsVConfig:** Application-wide settings
 - **LicensePolicyConfig:** License compliance settings
 
@@ -103,6 +109,7 @@ The OSV Vulnerability Scanner is a free, open-source IntelliJ IDEA plugin that p
 The plugin supports parsing multiple dependency file formats:
 
 #### Maven (pom.xml)
+
 ```xml
 <dependencies>
     <dependency>
@@ -114,6 +121,7 @@ The plugin supports parsing multiple dependency file formats:
 ```
 
 #### Gradle (build.gradle)
+
 ```kotlin
 dependencies {
     implementation("org.springframework:spring-core:5.3.20")
@@ -122,6 +130,7 @@ dependencies {
 ```
 
 #### npm (package-lock.json)
+
 ```json
 {
   "name": "my-app",
@@ -133,6 +142,7 @@ dependencies {
 ```
 
 #### PIP (requirements.txt)
+
 ```
 requests==2.25.1
 django==3.1.5
@@ -149,7 +159,7 @@ The plugin queries multiple vulnerability databases:
 ### Data Flow
 
 ```
-Dependency Files → Parsers → Dependency Objects → API Queries → 
+Dependency Files → Parsers → Dependency Objects → API Queries →
 Vulnerability Objects → Tree Model → UI Rendering
 ```
 
@@ -173,34 +183,34 @@ Context actions for each vulnerability:
 
 ### BOM Generation (v1.1.1)
 
-| Feature | Description | Status |
-|---------|-------------|--------|
-| SBOM Export | CycloneDX 1.5 and SPDX 2.3 JSON/Tag-Value with dependency tree view | ✅ v1.1.1 |
-| CBOM Export | Cryptographic Bill of Materials: algorithms, protocols, certificates | ✅ v1.1.1 |
-| QBOM Export | Post-Quantum BOM: ML-KEM, ML-DSA, SLH-DSA, Falcon detection | ✅ v1.1.1 |
-| AIBOM Export | AI/ML BOM: LLM APIs, TensorFlow, PyTorch, vector DBs, MLOps | ✅ v1.1.1 |
-| Trends Charts | Rendered `Graphics2D` area + donut charts, rolling stats table | ✅ v1.1.1 |
-| SARIF Export | CI/CD-ready SARIF export from tool-window toolbar | ✅ v1.1.1 |
+| Feature       | Description                                                          | Status    |
+| ------------- | -------------------------------------------------------------------- | --------- |
+| SBOM Export   | CycloneDX 1.5 and SPDX 2.3 JSON/Tag-Value with dependency tree view  | ✅ v1.1.1 |
+| CBOM Export   | Cryptographic Bill of Materials: algorithms, protocols, certificates | ✅ v1.1.1 |
+| QBOM Export   | Post-Quantum BOM: ML-KEM, ML-DSA, SLH-DSA, Falcon detection          | ✅ v1.1.1 |
+| AIBOM Export  | AI/ML BOM: LLM APIs, TensorFlow, PyTorch, vector DBs, MLOps          | ✅ v1.1.1 |
+| Trends Charts | Rendered `Graphics2D` area + donut charts, rolling stats table       | ✅ v1.1.1 |
+| SARIF Export  | CI/CD-ready SARIF export from tool-window toolbar                    | ✅ v1.1.1 |
 
 ### Security Features (v1.1.0)
 
-| Feature | Description | Status |
-|---------|-------------|--------|
-| Malicious Package Detection | Typosquatting, homoglyph, and known-malware checks | ✅ v1.1.0 |
-| Basic SAST / Taint Analysis | Pattern-based SQL injection, XSS, path-traversal detection | ✅ v1.1.0 |
-| Config Audit | Scan `application.properties`/`application.yml` for 20 insecure patterns | ✅ v1.1.0 |
-| Risk Scoring | Composite EPSS + CISA KEV + CVSS prioritization | ✅ v1.1.0 |
-| Policy Enforcement | Org-wide rules for severity, CVSS, KEV, and license compliance | ✅ v1.1.0 |
-| Privacy-Preserving Queries | SHA-256 hash package names in UI / logs / exports | ✅ v1.1.0 |
-| Vulnerable API Detection | Cross-reference vulnerable function signatures with call sites | ✅ v1.1.0 |
+| Feature                     | Description                                                              | Status    |
+| --------------------------- | ------------------------------------------------------------------------ | --------- |
+| Malicious Package Detection | Typosquatting, homoglyph, and known-malware checks                       | ✅ v1.1.0 |
+| Basic SAST / Taint Analysis | Pattern-based SQL injection, XSS, path-traversal detection               | ✅ v1.1.0 |
+| Config Audit                | Scan `application.properties`/`application.yml` for 20 insecure patterns | ✅ v1.1.0 |
+| Risk Scoring                | Composite EPSS + CISA KEV + CVSS prioritization                          | ✅ v1.1.0 |
+| Policy Enforcement          | Org-wide rules for severity, CVSS, KEV, and license compliance           | ✅ v1.1.0 |
+| Privacy-Preserving Queries  | SHA-256 hash package names in UI / logs / exports                        | ✅ v1.1.0 |
+| Vulnerable API Detection    | Cross-reference vulnerable function signatures with call sites           | ✅ v1.1.0 |
 
 ### Team Features (v1.1.0)
 
-| Feature | Description | Status |
-|---------|-------------|--------|
-| Team Config Sharing | `.idea/osv-plugin-config.json` for project-level policies | ✅ v1.1.0 |
-| Differential Analysis | Compare scans for NEW / RESOLVED / CHANGED findings | ✅ v1.1.0 |
-| IDE Notifications | Severity-based balloon notifications | ✅ v1.1.0 |
+| Feature               | Description                                               | Status    |
+| --------------------- | --------------------------------------------------------- | --------- |
+| Team Config Sharing   | `.idea/osv-plugin-config.json` for project-level policies | ✅ v1.1.0 |
+| Differential Analysis | Compare scans for NEW / RESOLVED / CHANGED findings       | ✅ v1.1.0 |
+| IDE Notifications     | Severity-based balloon notifications                      | ✅ v1.1.0 |
 
 ---
 
@@ -271,6 +281,7 @@ OSV Vulnerability Scanner
 ### Filtering
 
 Filter by:
+
 - **CVE ID:** `CVE-2023-1234`
 - **Package name:** `spring`, `lodash`
 - **Severity:** `critical`, `high`, `medium`, `low`
@@ -299,25 +310,26 @@ Compare vulnerabilities between branches:
 
 **Path:** Settings/Preferences → Tools → OSV Scanner
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| Minimum Severity | Only show vulnerabilities at or above this level | Medium |
-| Cache TTL (minutes) | How long to cache API responses | 60 |
-| OSV API Endpoint | Custom OSV API URL | https://api.osv.dev/v1/query |
-| GitHub Advisory | Enable GitHub Advisory scanning | Enabled |
-| NVD Integration | Enable NVD API queries | Disabled |
+| Setting             | Description                                      | Default                      |
+| ------------------- | ------------------------------------------------ | ---------------------------- |
+| Minimum Severity    | Only show vulnerabilities at or above this level | Medium                       |
+| Cache TTL (minutes) | How long to cache API responses                  | 60                           |
+| OSV API Endpoint    | Custom OSV API URL                               | https://api.osv.dev/v1/query |
+| GitHub Advisory     | Enable GitHub Advisory scanning                  | Enabled                      |
+| NVD Integration     | Enable NVD API queries                           | Disabled                     |
 
 ### License Policy
 
 **Path:** Settings/Preferences → Tools → OSV Scanner → License Policy
 
-| Setting | Description |
-|---------|-------------|
+| Setting          | Description                              |
+| ---------------- | ---------------------------------------- |
 | Allowed Licenses | Comma-separated SPDX license identifiers |
-| Strict Mode | Reject all non-allowed licenses |
-| Warning Licenses | Licenses that trigger warnings |
+| Strict Mode      | Reject all non-allowed licenses          |
+| Warning Licenses | Licenses that trigger warnings           |
 
 Example allowed licenses:
+
 ```
 MIT, Apache-2.0, BSD-3-Clause, ISC, Unlicense
 ```
@@ -339,6 +351,7 @@ Right-click on a project file → **OSV Scanner** → **Project Settings**
 **Base URL:** https://api.osv.dev/v1/
 
 #### Query Endpoint
+
 ```
 POST /query
 Content-Type: application/json
@@ -353,6 +366,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "id": "GHSA-x5rq-j2xg-h7cm",
@@ -375,16 +389,16 @@ Content-Type: application/json
       "ranges": [
         {
           "type": "ECOSYSTEM",
-          "events": [
-            {"introduced": "0"},
-            {"fixed": "5.3.21"}
-          ]
+          "events": [{ "introduced": "0" }, { "fixed": "5.3.21" }]
         }
       ]
     }
   ],
   "references": [
-    {"type": "ADVISORY", "url": "https://github.com/advisories/GHSA-x5rq-j2xg-h7cm"}
+    {
+      "type": "ADVISORY",
+      "url": "https://github.com/advisories/GHSA-x5rq-j2xg-h7cm"
+    }
   ]
 }
 ```
@@ -394,6 +408,7 @@ Content-Type: application/json
 **Base URL:** https://api.github.com/
 
 #### List Advisories
+
 ```
 GET /advisories?per_page=100
 ```
@@ -403,6 +418,7 @@ GET /advisories?per_page=100
 **Base URL:** https://services.nvd.nist.gov/rest/json/
 
 #### CVE Details
+
 ```
 GET /2.0/cves/cveId/CVE-2023-1234
 ```
@@ -430,11 +446,13 @@ The plugin implements a disk-based cache:
 **File:** `MavenParser.kt`
 
 **Features:**
+
 - Parses dependencies, dependency management, and plugin dependencies
 - Extracts group ID, artifact ID, and version
 - Handles property references (`${version.spring}`)
 
 **Example:**
+
 ```kotlin
 val pomXml = """
     <project>
@@ -459,11 +477,13 @@ val pomXml = """
 **File:** `GradleParser.kt`
 
 **Features:**
+
 - Supports Kotlin DSL (build.gradle.kts) and Groovy DSL
 - Handles both `implementation` and `compileOnly` configurations
 - Extracts version from string literals and maps
 
 **Example:**
+
 ```kotlin
 dependencies {
     implementation("org.springframework:spring-core:5.3.20")
@@ -476,11 +496,13 @@ dependencies {
 **File:** `NpmParser.kt`
 
 **Features:**
+
 - Parses package-lock.json
 - Extracts dependencies and devDependencies
 - Handles nested dependencies
 
 **Example:**
+
 ```json
 {
   "name": "my-app",
@@ -499,11 +521,13 @@ dependencies {
 **File:** `PipParser.kt`
 
 **Features:**
+
 - Parses requirements.txt
 - Handles version specifiers (`==`, `>=`, `<=`, `~=`, `!=`)
 - Ignores comments and empty lines
 
 **Example:**
+
 ```
 requests==2.25.1
 django>=3.1.5,<4.0.0
@@ -685,11 +709,11 @@ interface OsVApiService {
         packageId: String,
         version: String
     ): List<Vulnerability>
-    
+
     suspend fun queryBatch(
         queries: List<QueryRequest>
     ): List<List<Vulnerability>>
-    
+
     fun getCachedVulnerabilities(
         packageId: String,
         version: String
@@ -734,11 +758,13 @@ data class Vulnerability(
 **Symptoms:** Scan completes but shows zero vulnerabilities
 
 **Possible Causes:**
+
 - No dependency files found in project
 - Network connectivity issues
 - OSV API is down
 
 **Solutions:**
+
 - Verify dependency files exist
 - Check internet connection
 - Try scanning again
@@ -748,11 +774,13 @@ data class Vulnerability(
 **Symptoms:** Scanning takes a long time
 
 **Possible Causes:**
+
 - Large project with many dependencies
 - Network latency to OSV API
 - Cache is disabled
 
 **Solutions:**
+
 - Increase cache TTL in settings
 - Use Focus Mode to scan fewer files
 - Consider upgrading internet connection
@@ -762,10 +790,12 @@ data class Vulnerability(
 **Symptoms:** Some API calls fail with rate limit errors
 
 **Possible Causes:**
+
 - Too many API requests in short time
 - OSV API rate limiting
 
 **Solutions:**
+
 - Wait for rate limit to reset
 - Enable caching
 - Reduce concurrent scans
@@ -782,6 +812,11 @@ Enable debug logging:
 ---
 
 ## Changelog
+
+### Version 1.1.2
+
+- **Deprecated API Cleanup** — replaced `NotificationGroup` constructor with `NotificationGroupManager` API
+- **Deprecated API Cleanup** — replaced `Project.getBaseDir()` with `LocalFileSystem.findFileByPath(project.basePath)`
 
 ### Version 1.1.1
 

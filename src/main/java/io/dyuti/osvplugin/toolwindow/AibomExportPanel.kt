@@ -26,7 +26,7 @@ class AibomExportPanel(
 ) : JBPanel<AibomExportPanel>(BorderLayout()) {
     private val statusLabel = JLabel("Click 'Scan' to discover AI/ML assets")
     private val aibomTree = JTree(DefaultMutableTreeNode("AI/ML Assets"))
-    private val generator = AibomGenerator(appName = project.name, appVersion = "1.1.1")
+    private val generator = AibomGenerator(appName = project.name, appVersion = "1.1.2")
     private val scanner = AiScanner(project)
     private var lastAssets: List<AiAsset> = emptyList()
 

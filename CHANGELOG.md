@@ -4,6 +4,14 @@ All notable changes to the OSV IntelliJ Plugin are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.2] - 2026-05-13
+
+### Fixed
+
+- **Deprecated API Usage** — replaced `NotificationGroup` constructor with `NotificationGroupManager` API (IntelliJ 2023.3+)
+- **Deprecated API Usage** — replaced `Project.getBaseDir()` with `LocalFileSystem.findFileByPath(project.basePath)` in SAST analyzer and Vulnerable API service (IntelliJ 2023.3+)
+- **Gson Internal Deprecation** — `JsonElement.getAsCharacter()` warning comes from bundled Gson 2.11.0; no user-code references exist
+
 ## [1.1.1] - 2026-05-13
 
 ### Added

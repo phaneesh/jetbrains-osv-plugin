@@ -3,6 +3,7 @@
 A step-by-step guide to help you install, configure, and use the OSV Vulnerability Scanner plugin for IntelliJ IDEA.
 
 ## Table of Contents
+
 - [Installation](#installation)
 - [First Scans](#first-scans)
 - [Understanding the Tool Window](#understanding-the-tool-window)
@@ -35,6 +36,14 @@ cd jetbrains-osv-plugin
 # Settings/Preferences → Plugins → Install Plugin from Disk
 # Select the JAR from build/distributions/
 ```
+
+## What's New in v1.1.2
+
+A maintenance release that cleans up IntelliJ Platform API usage to eliminate Marketplace verifier warnings and ensure forward compatibility:
+
+- **Modern Notification API** — migrated from the deprecated `NotificationGroup` constructor to `NotificationGroupManager`.
+- **Modern Project Base API** — replaced deprecated `Project.getBaseDir()` with `LocalFileSystem.findFileByPath(project.basePath)`.
+- **Zero verifier warnings** — plugin now passes JetBrains Marketplace compatibility checks without deprecated or scheduled-for-removal API usage (except for bundled dependency internals).
 
 ## What's New in v1.1.1
 
@@ -75,6 +84,7 @@ Other highlights: Malicious Package Detection, Basic SAST, Privacy-Preserving Qu
 ### What Gets Scanned
 
 The plugin automatically detects and scans:
+
 - **Maven:** `pom.xml` files
 - **Gradle:** `build.gradle` and `build.gradle.kts` files
 - **npm:** `package-lock.json` files
@@ -84,7 +94,7 @@ The plugin automatically detects and scans:
 
 The tool window provides **six tabs** for different views of your project security:
 
-- **Vulnerabilities** — real-time scan results grouped by module and severity  
+- **Vulnerabilities** — real-time scan results grouped by module and severity
 - **Trends** — historical vulnerability tracking with rendered charts and statistics
 - **SBOM** — CycloneDX / SPDX export for your current dependencies
 - **CBOM** — cryptographic asset inventory (algorithms, protocols, certificates)
@@ -110,11 +120,11 @@ OSV Vulnerability Scanner (root)
 
 ### Node Types
 
-| Node | Description |
-|------|-------------|
-| **Module File** | A dependency file (pom.xml, build.gradle, etc.) with vulnerability count |
-| **Severity Group** | Vulnerabilities grouped by severity (Critical, High, Medium, Low) |
-| **Vulnerability** | Individual CVE with CVE ID, summary, and fix version |
+| Node               | Description                                                              |
+| ------------------ | ------------------------------------------------------------------------ |
+| **Module File**    | A dependency file (pom.xml, build.gradle, etc.) with vulnerability count |
+| **Severity Group** | Vulnerabilities grouped by severity (Critical, High, Medium, Low)        |
+| **Vulnerability**  | Individual CVE with CVE ID, summary, and fix version                     |
 
 ### Status Bar Messages
 
@@ -145,6 +155,7 @@ OSV Vulnerability Scanner (root)
 ### Filtering Vulnerabilities
 
 Type in the **Filter** field to search by:
+
 - CVE ID (e.g., `CVE-2023-1234`)
 - Package name (e.g., `spring`)
 - Severity (e.g., `critical`)
@@ -179,13 +190,13 @@ Type in the **Filter** field to search by:
 
 ### Available Settings
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| **Minimum Severity** | Only show vulnerabilities at or above this level | Medium |
-| **Cache TTL** | How long to cache API responses (minutes) | 60 |
-| **OSV API Endpoint** | Custom OSV API URL | https://api.osv.dev/v1/query |
-| **GitHub Advisory** | Enable GitHub Advisory scanning | Enabled |
-| **Privacy Mode** | Hash package names in exports and UI | Disabled |
+| Setting              | Description                                      | Default                      |
+| -------------------- | ------------------------------------------------ | ---------------------------- |
+| **Minimum Severity** | Only show vulnerabilities at or above this level | Medium                       |
+| **Cache TTL**        | How long to cache API responses (minutes)        | 60                           |
+| **OSV API Endpoint** | Custom OSV API URL                               | https://api.osv.dev/v1/query |
+| **GitHub Advisory**  | Enable GitHub Advisory scanning                  | Enabled                      |
+| **Privacy Mode**     | Hash package names in exports and UI             | Disabled                     |
 
 ### License Policy Configuration
 
