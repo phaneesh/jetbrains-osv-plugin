@@ -4,6 +4,29 @@ All notable changes to the OSV IntelliJ Plugin are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.1] - 2026-05-13
+
+### Added
+
+- **SBOM Export Panel Redesign** — dependency tree view grouped by source file, format-aware file save dialog (CycloneDX JSON, SPDX JSON, SPDX Tag-Value)
+- **Professional Trends Panel** — card-based layout with rendered charts: area line chart, severity donut chart, rolling statistics table, and delta change badges
+- **SARIF Export** — functional export from tool-window toolbar with dependency matching and `JFileChooser` save dialog
+- **CBOM Generation** — Cryptographic Bill of Materials exporting CycloneDX 1.6 CBOM with algorithm/protocol/certificate/related-material discovery
+- **QBOM Generation** — Post-Quantum Cryptography BOM detecting ML-KEM, ML-DSA, SLH-DSA, Falcon, hybrid key exchange, and quantum-vulnerable crypto
+- **AIBOM Generation** — AI/ML Bill of Materials detecting LLM APIs, ML frameworks, vector databases, MLOps platforms, and AI-generated code markers
+- **Multi-format BOM Tabs** — six tool-window tabs: Vulnerabilities, Trends, SBOM, CBOM, QBOM, AIBOM
+
+### Fixed
+
+- **AIBOM False Positives** — tightened regex detectors for OpenAI, TensorFlow, PyTorch, scikit-learn, etc. to prevent matching generic Java/Kotlin constructs `.build()`, `Completion`, `@Generated`, `.fit()`, `.predict()`
+- **PluginException on Short Name Mismatch** — created inspection subclasses for XML, Groovy, Kotlin, JSON, and PlainText to satisfy IntelliJ 2024.1+ enforcement
+- **Rate Limit Errors** — adopted OSV `/v1/querybatch` API replacing N individual parallel requests; then added per-vulnerability `/v1/vulns/{id}` detail fetch for full alias/affected data
+- **GHSA Shown Instead of CVE** — CVE IDs now displayed preferentially across all UI paths via `/v1/vulns/{id}` detail fetch
+- **Fixed Version Always N/A** — removed git commit hashes from version ranges; corrected `affected[].versions` parsing
+- **AWT Threading Error in Quick Fix** — deferred dialog creation with `ApplicationManager.getApplication().invokeLater` to exit write action before UI
+- **SBOM Export Threading Error** — same `invokeLater` fix for `LocalFileSystem.refreshAndFindFileByIoFile()` called from background thread
+- **IntelliJ 2026.1 Compatibility** — removed `untilBuild` upper bound for forward compatibility
+
 ## [1.1.0] - 2026-05-12
 
 ### Added

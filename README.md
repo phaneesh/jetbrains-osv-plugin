@@ -17,6 +17,16 @@
 - **Quick Fixes** — Alt+Enter to upgrade to fixed versions or suppress false positives
 - **SARIF Export** — Export scan results for CI/CD ingestion (GitHub Advanced Security, Azure DevOps)
 
+### Advanced (v1.1.1)
+
+- **Multi-Format BOM Generation** — Export four bill-of-materials types from the tool window:
+  - **SBOM** — CycloneDX 1.5 and SPDX 2.3 (JSON and Tag-Value)
+  - **CBOM** — Cryptographic assets: algorithms, protocols, certificates, key material
+  - **QBOM** — Post-quantum cryptography: ML-KEM, ML-DSA, SLH-DSA, Falcon, hybrid key exchange
+  - **AIBOM** — AI/ML assets: LLM APIs, TensorFlow, PyTorch, vector DBs, MLOps, AI-generated code markers  
+- **Professional Trends Charts** — Rendered `Graphics2D` area + donut charts, rolling statistics table, delta change badges (replaced ASCII sparklines)
+- **SARIF Export** — Full CI/CD-ready export for GitHub Advanced Security, Azure DevOps
+
 ### Advanced (v1.1.0)
 
 - **Vulnerable API Detection** — Cross-references vulnerable function signatures with call sites
@@ -27,8 +37,6 @@
 - **Policy Enforcement** — Organization-wide compliance rules (severity, CVSS, KEV, license)
 - **Team Collaboration** — Project-level config sharing via `.idea/osv-plugin-config.json`
 - **Differential Analysis** — Compare two scans to identify NEW, RESOLVED, and CHANGED vulnerabilities
-- **Historical Trending** — Track vulnerability counts over time with ASCII sparklines
-- **SBOM Generation** — Export CycloneDX 1.5 and SPDX 2.3 (JSON and Tag-Value)
 - **Configuration Audit** — Scan `application.properties` / `application.yml` for 20 insecure patterns
 - **IDE Notifications** — Severity-based balloon notifications for discovered vulnerabilities
 - **Status Bar Widget** — Persistent scan status and vulnerability count in the IDE status bar
@@ -68,6 +76,7 @@
 | Differential analysis         | ✅ **Unique** | ✅         | ✅         | ❌     |
 | Historical trends             | ✅ **Unique** | ✅         | ✅ Premium | ❌     |
 | Config audit (properties/yml) | ✅ **Unique** | ❌         | ❌         | ❌     |
+| **SBOM / CBOM / QBOM / AIBOM** | ✅ **Unique** | ✅ SBOM    | ✅ SBOM    | ❌     |
 | Tree-based UI                 | ✅            | ✅         | ✅         | ✅     |
 
 ## Installation

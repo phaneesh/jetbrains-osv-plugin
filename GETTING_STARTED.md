@@ -36,15 +36,27 @@ cd jetbrains-osv-plugin
 # Select the JAR from build/distributions/
 ```
 
+## What's New in v1.1.1
+
+The latest release focuses on **BOM (Bill of Materials) generation** and **IDE stability**:
+
+1. **Multi-Format BOM Generation** — discover and export four BOM types:
+   - **SBOM** — CycloneDX 1.5 / SPDX 2.3 with dependency tree view
+   - **CBOM** — cryptographic assets (algorithms, protocols, certificates, key material)
+   - **QBOM** — post-quantum cryptography inventory (ML-KEM, ML-DSA, SLH-DSA, Falcon)
+   - **AIBOM** — AI/ML assets (LLM APIs, TensorFlow, PyTorch, vector DBs, MLOps)
+2. **Professional Trends Panel** — no more ASCII sparklines; rich `Graphics2D` charts with area fill, donut severity distribution, rolling statistics table, and delta change badges.
+3. **Full SARIF Export** — export scan results for CI/CD ingestion (GitHub Advanced Security, Azure DevOps).
+
+Plus: automated AIBOM false-positive fixes (`.build()` and `Completion` no longer trigger incorrectly), and expanded IDE compatibility.
+
 ## What's New in v1.1.0
 
-The latest release introduces three major capabilities:
+1. **Risk Scoring** — composite EPSS + CISA KEV + CVSS for exploitability-based prioritization.
+2. **Policy Enforcement** — organization-wide rules for severity, CVSS, KEV, and license compliance.
+3. **Differential Analysis** — compare two scans to detect NEW, RESOLVED, and severity-changed vulnerabilities.
 
-1. **Risk Scoring** — vulnerabilities are now scored with a composite of EPSS + CISA KEV + CVSS so you can prioritize exploitability, not just severity.
-2. **Policy Enforcement** — define organization-wide rules (e.g., "no CRITICAL with CVSS ≥ 9.0" or "no GPL-3.0 in production") and the plugin flags violations automatically.
-3. **SBOM Generation** — export CycloneDX or SPDX SBOMs directly from the tool window for compliance and supply-chain transparency.
-
-Other highlights include: Malicious Package Detection, Basic SAST, Privacy-Preserving Queries, Differential Analysis, Historical Trending, Configuration Audit, IDE Notifications, and Dark Mode support.
+Other highlights: Malicious Package Detection, Basic SAST, Privacy-Preserving Queries, Historical Trending, Configuration Audit, IDE Notifications, and Dark Mode support.
 
 ## First Scans
 
@@ -70,11 +82,14 @@ The plugin automatically detects and scans:
 
 ## Understanding the Tool Window
 
-The tool window provides **three tabs** for different views of your project security:
+The tool window provides **six tabs** for different views of your project security:
 
 - **Vulnerabilities** — real-time scan results grouped by module and severity  
-- **Trends** — historical vulnerability count tracking with ASCII sparklines
+- **Trends** — historical vulnerability tracking with rendered charts and statistics
 - **SBOM** — CycloneDX / SPDX export for your current dependencies
+- **CBOM** — cryptographic asset inventory (algorithms, protocols, certificates)
+- **QBOM** — post-quantum cryptography asset inventory
+- **AIBOM** — AI/ML asset inventory (LLM APIs, frameworks, vector DBs)
 
 ### Tree Structure
 

@@ -171,7 +171,18 @@ Context actions for each vulnerability:
 - **Navigate:** Jump to the dependency in the file
 - **Export:** Save results to SARIF format
 
-### Security Features
+### BOM Generation (v1.1.1)
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| SBOM Export | CycloneDX 1.5 and SPDX 2.3 JSON/Tag-Value with dependency tree view | ✅ v1.1.1 |
+| CBOM Export | Cryptographic Bill of Materials: algorithms, protocols, certificates | ✅ v1.1.1 |
+| QBOM Export | Post-Quantum BOM: ML-KEM, ML-DSA, SLH-DSA, Falcon detection | ✅ v1.1.1 |
+| AIBOM Export | AI/ML BOM: LLM APIs, TensorFlow, PyTorch, vector DBs, MLOps | ✅ v1.1.1 |
+| Trends Charts | Rendered `Graphics2D` area + donut charts, rolling stats table | ✅ v1.1.1 |
+| SARIF Export | CI/CD-ready SARIF export from tool-window toolbar | ✅ v1.1.1 |
+
+### Security Features (v1.1.0)
 
 | Feature | Description | Status |
 |---------|-------------|--------|
@@ -183,16 +194,13 @@ Context actions for each vulnerability:
 | Privacy-Preserving Queries | SHA-256 hash package names in UI / logs / exports | ✅ v1.1.0 |
 | Vulnerable API Detection | Cross-reference vulnerable function signatures with call sites | ✅ v1.1.0 |
 
-### Team Features
+### Team Features (v1.1.0)
 
 | Feature | Description | Status |
 |---------|-------------|--------|
 | Team Config Sharing | `.idea/osv-plugin-config.json` for project-level policies | ✅ v1.1.0 |
 | Differential Analysis | Compare scans for NEW / RESOLVED / CHANGED findings | ✅ v1.1.0 |
-| Historical Trending | ASCII sparklines tracking vulnerability counts over time | ✅ v1.1.0 |
 | IDE Notifications | Severity-based balloon notifications | ✅ v1.1.0 |
-| SARIF Export | CI/CD-ready SARIF format for security gates | ✅ v1.0.0 |
-| SBOM Generation | CycloneDX 1.5 and SPDX 2.3 export | ✅ v1.1.0 |
 
 ---
 
@@ -775,6 +783,20 @@ Enable debug logging:
 
 ## Changelog
 
+### Version 1.1.1
+
+- **BOM Generation Suite** — SBOM (CycloneDX/SPDX), CBOM (cryptographic), QBOM (post-quantum), AIBOM (AI/ML) with tree-view export panels
+- **Professional Trends Charts** — `Graphics2D` area + donut charts, rolling statistics, delta badges (replaced ASCII sparklines)
+- **Functional SARIF Export** — tool-window toolbar export with dependency matching
+- **IDE Stability Fixes** — AWT threading in quick fix, SBOM export threading, rate limit elimination via batch API + detail fetch
+- **False Positive Elimination** — tightened AIBOM regex to avoid `.build()`, `Completion`, `@Generated` triggers
+
+### Version 1.1.0
+
+- Malicious Package Detection, Basic SAST, Config Audit, Risk Scoring, Policy Enforcement
+- Privacy-Preserving Queries, Vulnerable API Detection, Team Config Sharing, Differential Analysis
+- Historical Trending (ASCII), IDE Notifications, Status Bar Widget, Dark Mode
+
 ### Version 1.0.0
 
 - Initial release
@@ -805,13 +827,13 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## Roadmap
 
-- [x] ~~Team collaboration features~~ — ✅ v1.1.0 (config sharing via JSON)
-- [x] ~~Vulnerability remediation suggestions~~ — ✅ v1.1.0 (auto-fix via PSI)
-- [x] ~~Advanced filtering and sorting~~ — ✅ v1.1.0 (tree filtering + severity groups)
+- [x] ~~Team collaboration features~~ — ✅ v1.1.0
+- [x] ~~Vulnerability remediation suggestions~~ — ✅ v1.1.0
+- [x] ~~Advanced filtering and sorting~~ — ✅ v1.1.0
 - [x] ~~Historical trends and differential analysis~~ — ✅ v1.1.0
-- [x] ~~SBOM generation~~ — ✅ v1.1.0
+- [x] ~~SBOM, CBOM, QBOM, AIBOM generation~~ — ✅ v1.1.1
+- [x] ~~Professional chart rendering (replace ASCII sparklines)~~ — ✅ v1.1.1
 - [ ] Additional dependency formats (Cargo, Go modules)
 - [ ] Integration with Jira and other issue trackers (stub exists)
 - [ ] Line-level problem markers in Problems tool window
-- [ ] Chart library for historical trends (replace ASCII sparklines)
 - [ ] Gradle version catalog support (`libs.versions.toml`)
