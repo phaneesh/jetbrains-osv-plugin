@@ -42,14 +42,11 @@
         <!-- Add actions here if needed -->
     </actions>
     
-    <application-components>
-        <!-- Application-level components -->
-    </application-components>
-    
-    <project-components>
-        <!-- Project-level components -->
-    </project-components>
-    
+    <!-- NOTE: No <application-components> or <project-components> tags
+         per dynamic plugin requirements (IntelliJ 2020.1+). All state is
+         managed through PersistentStateComponent services instead.
+         See: https://plugins.jetbrains.com/docs/intellij/dynamic-plugins.html -->
+
     <extensions defaultExtensionNs="com.intellij">
         <!-- OSV Inspection for manifest files (XML = pom.xml, Groovy = build.gradle, kotlin = build.gradle.kts, JSON = package.json) -->
         <localInspection

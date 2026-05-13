@@ -15,11 +15,13 @@ repositories {
 }
 
 dependencies {
+    // JSON serialization (bundled in shadow JAR)
     implementation("com.google.code.gson:gson:2.11.0")
 
-    // Maven model API for pom.xml parsing/writing
-    implementation("org.apache.maven:maven-model:3.9.6")
-    implementation("org.apache.maven:maven-model-builder:3.9.6")
+    // NOTE: org.apache.maven dependencies were removed in v1.1.2+
+    // MavenParser uses pure regex parsing; no Maven model API needed.
+    // This eliminates verifier warnings for java.net.URL and java.util.Locale
+    // constructors used transitively by maven-model/maven-model-builder.
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
@@ -115,15 +117,12 @@ tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJ
 
     dependencies {
         include(dependency("com.google.code.gson:gson"))
-        include(dependency("org.apache.maven:maven-model"))
-        include(dependency("org.apache.maven:maven-model-builder"))
     }
 
     minimize {
         exclude(dependency("org.jetbrains.kotlin:.*"))
         exclude(dependency("org.jetbrains:.*"))
         exclude(dependency("com.google.code.gson:.*"))
-        exclude(dependency("org.apache.maven:.*"))
     }
 
     doLast {
