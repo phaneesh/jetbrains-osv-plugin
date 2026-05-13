@@ -14,15 +14,17 @@ import io.dyuti.osvplugin.action.ScanAction
 import io.dyuti.osvplugin.historical.HistoricalTrendPanel
 
 /**
- * Factory for creating the OSV Tool Window with three tabs:
+ * Factory for creating the OSV Tool Window with four tabs:
  *  1. Vulnerabilities — real-time scan results
- *  2. Trends         — historical vulnerability tracking
- *  3. SBOM           — CycloneDX/SPDX export
+ *  2. Trends          — historical vulnerability tracking
+ *  3. SBOM            — CycloneDX/SPDX export
+ *  4. CBOM            — cryptographic asset inventory
  */
 class OsVToolWindowFactory : ToolWindowFactory {
     private var scanPanelRef: OsVToolWindowPanel? = null
     private var trendPanelRef: HistoricalTrendPanel? = null
     private var sbomPanelRef: SbomExportPanel? = null
+    private var cbomPanelRef: CbomExportPanel? = null
 
     override fun createToolWindowContent(
         project: Project,
@@ -39,6 +41,9 @@ class OsVToolWindowFactory : ToolWindowFactory {
 
         val sbomPanel = SbomExportPanel(project)
         sbomPanelRef = sbomPanel
+
+        val cbomPanel = CbomExportPanel(project)
+        cbomPanelRef = cbomPanel
 
         // Wire scan completion → other panels
         scanPanel.setOnScanCompleted { vulns, deps ->
@@ -60,6 +65,9 @@ class OsVToolWindowFactory : ToolWindowFactory {
         )
         contentManager.addContent(
             contentFactory.createContent(sbomPanel, "SBOM", false),
+        )
+        contentManager.addContent(
+            contentFactory.createContent(cbomPanel, "CBOM", false),
         )
     }
 
