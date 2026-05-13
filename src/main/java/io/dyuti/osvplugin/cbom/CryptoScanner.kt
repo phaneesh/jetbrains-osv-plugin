@@ -748,7 +748,7 @@ class CryptoScanner(
                 )
             },
             // ─── CROSS-LANGUAGE CRYPTO LIBRARIES IN LOCKFILES ──
-            // Python: cryptography, PyCryptodome, pycryptodomex
+            // Python: cryptography, PyCryptodome, pycryptodomex — only in Python lockfiles
             Detector(
                 Pattern.compile(
                     """
@@ -758,6 +758,14 @@ class CryptoScanner(
                 ),
                 CryptoAssetType.RELATED_CRYPTO_MATERIAL,
             ) { file, line, _, m ->
+                if (!file.endsWith("requirements.txt") &&
+                    !file.endsWith("poetry.lock") &&
+                    !file.endsWith("Pipfile.lock") &&
+                    !file.endsWith("pdm.lock") &&
+                    !file.endsWith("pyproject.toml")
+                ) {
+                    return@Detector null
+                }
                 CryptoAsset(
                     name = m.group(1),
                     type = CryptoAssetType.RELATED_CRYPTO_MATERIAL,
@@ -767,7 +775,7 @@ class CryptoScanner(
                     lineNumber = line,
                 )
             },
-            // Node.js: crypto-js, node-rsa, forge, jsonwebtoken, jose
+            // Node.js: crypto-js, node-rsa, forge, jsonwebtoken, jose — only in JS lockfiles
             Detector(
                 Pattern.compile(
                     """
@@ -777,6 +785,13 @@ class CryptoScanner(
                 ),
                 CryptoAssetType.RELATED_CRYPTO_MATERIAL,
             ) { file, line, _, m ->
+                if (!file.endsWith("package-lock.json") &&
+                    !file.endsWith("yarn.lock") &&
+                    !file.endsWith("pnpm-lock.yaml") &&
+                    !file.endsWith("bun.lock")
+                ) {
+                    return@Detector null
+                }
                 CryptoAsset(
                     name = m.group(1),
                     type = CryptoAssetType.RELATED_CRYPTO_MATERIAL,
@@ -786,7 +801,7 @@ class CryptoScanner(
                     lineNumber = line,
                 )
             },
-            // Go: golang.org/x/crypto, crypto/tls
+            // Go: golang.org/x/crypto, crypto/tls — only in go.mod / go.sum
             Detector(
                 Pattern.compile(
                     """
@@ -795,6 +810,9 @@ class CryptoScanner(
                 ),
                 CryptoAssetType.RELATED_CRYPTO_MATERIAL,
             ) { file, line, _, m ->
+                if (!file.endsWith("go.mod") && !file.endsWith("go.sum")) {
+                    return@Detector null
+                }
                 CryptoAsset(
                     name = m.group(1),
                     type = CryptoAssetType.RELATED_CRYPTO_MATERIAL,
@@ -804,7 +822,7 @@ class CryptoScanner(
                     lineNumber = line,
                 )
             },
-            // Rust: sha2, aes, aes-gcm, chacha20poly1305, ring, rustls
+            // Rust: sha2, aes, aes-gcm, chacha20poly1305, ring, rustls — only in Cargo files
             Detector(
                 Pattern.compile(
                     """
@@ -813,6 +831,9 @@ class CryptoScanner(
                 ),
                 CryptoAssetType.RELATED_CRYPTO_MATERIAL,
             ) { file, line, _, m ->
+                if (!file.endsWith("Cargo.lock") && !file.endsWith("Cargo.toml")) {
+                    return@Detector null
+                }
                 CryptoAsset(
                     name = m.group(1),
                     type = CryptoAssetType.RELATED_CRYPTO_MATERIAL,
@@ -822,7 +843,7 @@ class CryptoScanner(
                     lineNumber = line,
                 )
             },
-            // .NET: System.Security.Cryptography, BouncyCastle.Crypto
+            // .NET: System.Security.Cryptography, BouncyCastle.Crypto — only in .NET files
             Detector(
                 Pattern.compile(
                     """
@@ -831,6 +852,13 @@ class CryptoScanner(
                 ),
                 CryptoAssetType.RELATED_CRYPTO_MATERIAL,
             ) { file, line, _, m ->
+                if (!file.endsWith(".csproj") &&
+                    !file.endsWith(".deps.json") &&
+                    !file.endsWith("packages.config") &&
+                    !file.endsWith("packages.lock.json")
+                ) {
+                    return@Detector null
+                }
                 CryptoAsset(
                     name = m.group(1),
                     type = CryptoAssetType.RELATED_CRYPTO_MATERIAL,

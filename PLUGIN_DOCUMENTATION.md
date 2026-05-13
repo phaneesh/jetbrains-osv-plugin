@@ -443,24 +443,24 @@ The plugin implements a disk-based cache:
 
 ### Parser Reference (All Ecosystems)
 
-| Parser | File | Ecosystem |
-| --- | --- | --- |
-| `MavenParser.kt` | `pom.xml`, `verification-metadata.xml` | Maven |
-| `GradleParser.kt` | `build.gradle`, `build.gradle.kts`, `gradle.lockfile` | Gradle |
-| `NpmParser.kt` | `package-lock.json` | npm |
-| `YarnParser.kt` | `yarn.lock` | npm/Yarn |
-| `PipParser.kt` | `requirements.txt` | PyPI |
-| `PoetryParser.kt` | `poetry.lock`, `pyproject.toml`, `pdm.lock` | PyPI |
-| `GoParser.kt` | `go.mod` | Go |
-| `CargoParser.kt` | `Cargo.lock` | crates.io |
-| `ComposerParser.kt` | `composer.lock` | Packagist |
-| `GemfileParser.kt` | `Gemfile.lock`, `gems.locked` | RubyGems |
-| `NugetParser.kt` | `packages.lock.json`, `packages.config`, `*.deps.json` | NuGet |
-| `PubspecParser.kt` | `pubspec.lock` | Pub |
-| `StackParser.kt` | `stack.yaml.lock`, `cabal.project.freeze` | Hackage |
-| `MixParser.kt` | `mix.lock` | Hex |
-| `RenvParser.kt` | `renv.lock` | CRAN |
-| `ConanParser.kt` | `conan.lock` | ConanCenter |
+| Parser              | File                                                   | Ecosystem   |
+| ------------------- | ------------------------------------------------------ | ----------- |
+| `MavenParser.kt`    | `pom.xml`, `verification-metadata.xml`                 | Maven       |
+| `GradleParser.kt`   | `build.gradle`, `build.gradle.kts`, `gradle.lockfile`  | Gradle      |
+| `NpmParser.kt`      | `package-lock.json`                                    | npm         |
+| `YarnParser.kt`     | `yarn.lock`                                            | npm/Yarn    |
+| `PipParser.kt`      | `requirements.txt`                                     | PyPI        |
+| `PoetryParser.kt`   | `poetry.lock`, `pyproject.toml`, `pdm.lock`            | PyPI        |
+| `GoParser.kt`       | `go.mod`                                               | Go          |
+| `CargoParser.kt`    | `Cargo.lock`                                           | crates.io   |
+| `ComposerParser.kt` | `composer.lock`                                        | Packagist   |
+| `GemfileParser.kt`  | `Gemfile.lock`, `gems.locked`                          | RubyGems    |
+| `NugetParser.kt`    | `packages.lock.json`, `packages.config`, `*.deps.json` | NuGet       |
+| `PubspecParser.kt`  | `pubspec.lock`                                         | Pub         |
+| `StackParser.kt`    | `stack.yaml.lock`, `cabal.project.freeze`              | Hackage     |
+| `MixParser.kt`      | `mix.lock`                                             | Hex         |
+| `RenvParser.kt`     | `renv.lock`                                            | CRAN        |
+| `ConanParser.kt`    | `conan.lock`                                           | ConanCenter |
 
 ### Implementation Patterns
 

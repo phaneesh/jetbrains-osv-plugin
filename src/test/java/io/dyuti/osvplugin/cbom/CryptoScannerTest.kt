@@ -239,4 +239,29 @@ class CryptoScannerTest {
         assertTrue(assets.all { it.lineNumber > 0 })
         assertTrue(assets.zipWithNext().all { it.first.lineNumber < it.second.lineNumber })
     }
+
+    @Test
+    fun `no false positives from cross-language library names in unrelated files`() {
+        val scanner = createScanner()
+
+        // "ring" should NOT match in YML files (not Cargo.lock)
+        val ymlAssets = scanner.scanContent("application.yml", "ring: some-config-value")
+        assertTrue(ymlAssets.none { it.name == "ring" }, "ring should not match in YML")
+
+        // "sha2" should NOT match in Java files (not Cargo.lock)
+        val javaAssets = scanner.scanContent("Config.java", "String hash = \"sha2\";")
+        assertTrue(javaAssets.none { it.name == "sha2" }, "sha2 should not match in Java")
+
+        // "crypto-js" should NOT match in Gradle files (not package-lock.json)
+        val gradleAssets = scanner.scanContent("build.gradle", "someVariable = 'crypto-js'")
+        assertTrue(gradleAssets.none { it.name == "crypto-js" }, "crypto-js should not match in Gradle")
+
+        // "cryptography" SHOULD match in requirements.txt
+        val pipAssets = scanner.scanContent("requirements.txt", "cryptography==41.0.0")
+        assertTrue(pipAssets.any { it.name == "cryptography" }, "cryptography should match in requirements.txt")
+
+        // "sha2" SHOULD match in Cargo.lock
+        val cargoAssets = scanner.scanContent("Cargo.lock", """name = "sha2"""")
+        assertTrue(cargoAssets.any { it.name == "sha2" }, "sha2 should match in Cargo.lock")
+    }
 }
