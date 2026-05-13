@@ -216,6 +216,21 @@ Enable **Privacy Mode** to replace human-readable package names with SHA-256 has
 
 This is useful when sharing screenshots, SARIF exports, or SBOMs in public or customer-facing contexts.
 
+## BOM Exports
+
+The plugin can generate four types of Bill of Materials from the tool window tabs:
+
+| BOM | When to Use | How |
+| --- | --- | --- |
+| **SBOM** | Compliance, customer disclosure | SBOM tab → Scan → Export as CycloneDX JSON or SPDX |
+| **CBOM** | Regulated crypto inventory | CBOM tab → Scan Project → Export JSON |
+| **QBOM** | Post-quantum migration planning | QBOM tab → Scan Project → Export JSON |
+| **AIBOM** | AI governance, LLM audit | AIBOM tab → Scan Project → Export JSON |
+
+Each panel shows a tree view of discovered assets grouped by type. Click **Scan Project** to populate, then **Export** to save.
+
+---
+
 ## Tips & Best Practices
 
 ### 1. Set Up Automatic Scans

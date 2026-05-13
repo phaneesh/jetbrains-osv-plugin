@@ -53,21 +53,21 @@ cd jetbrains-osv-plugin
 
 ## Supported Languages & Formats
 
-| Language / Ecosystem | Supported Lockfiles & Manifests |
-| --- | --- |
-| **Java / Kotlin** | `pom.xml`, `build.gradle`, `build.gradle.kts`, `gradle.lockfile`, `verification-metadata.xml` |
-| **JavaScript / Node** | `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock` |
-| **Python** | `requirements.txt`, `pyproject.toml`, `poetry.lock`, `Pipfile.lock`, `pdm.lock`, `uv.lock`, `pylock.toml` |
-| **Go** | `go.mod` |
-| **Rust** | `Cargo.lock` |
-| **PHP** | `composer.lock` |
-| **Ruby** | `Gemfile.lock`, `gems.locked` |
-| **Dart / Flutter** | `pubspec.lock` |
-| **.NET** | `packages.lock.json`, `packages.config`, `*.deps.json` |
-| **Haskell** | `stack.yaml.lock`, `cabal.project.freeze` |
-| **Elixir** | `mix.lock` |
-| **R** | `renv.lock` |
-| **C / C++** | `conan.lock` |
+| Language / Ecosystem  | Supported Lockfiles & Manifests                                                                           |
+| --------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Java / Kotlin**     | `pom.xml`, `build.gradle`, `build.gradle.kts`, `gradle.lockfile`, `verification-metadata.xml`             |
+| **JavaScript / Node** | `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`                                            |
+| **Python**            | `requirements.txt`, `pyproject.toml`, `poetry.lock`, `Pipfile.lock`, `pdm.lock`, `uv.lock`, `pylock.toml` |
+| **Go**                | `go.mod`                                                                                                  |
+| **Rust**              | `Cargo.lock`                                                                                              |
+| **PHP**               | `composer.lock`                                                                                           |
+| **Ruby**              | `Gemfile.lock`, `gems.locked`                                                                             |
+| **Dart / Flutter**    | `pubspec.lock`                                                                                            |
+| **.NET**              | `packages.lock.json`, `packages.config`, `*.deps.json`                                                    |
+| **Haskell**           | `stack.yaml.lock`, `cabal.project.freeze`                                                                 |
+| **Elixir**            | `mix.lock`                                                                                                |
+| **R**                 | `renv.lock`                                                                                               |
+| **C / C++**           | `conan.lock`                                                                                              |
 
 > Detection is automatic — open a project and the plugin finds the files for you.
 
@@ -77,39 +77,39 @@ cd jetbrains-osv-plugin
 
 ### Core
 
-| Feature | What It Does |
-| --- | --- |
-| **Auto-Detection** | Scans all supported lockfiles across the project tree automatically |
-| **OSV API Integration** | Real-time batch queries with TTL caching, automatic retries, and offline fallback |
-| **Severity Grouping** | Vulnerabilities sorted by Critical / High / Medium / Low with color-coded icons |
-| **Inline Inspections** | Red/orange/yellow underlines in `pom.xml`, `build.gradle`, etc. — see issues as you type |
-| **Quick Fixes** | `Alt+Enter` on any vulnerable dependency to update to the fixed version |
-| **Navigate to Source** | Double-click a vulnerability to jump directly to the offending line |
-| **SARIF Export** | One-click export for GitHub Advanced Security, Azure DevOps, or any SARIF consumer |
+| Feature                 | What It Does                                                                             |
+| ----------------------- | ---------------------------------------------------------------------------------------- |
+| **Auto-Detection**      | Scans all supported lockfiles across the project tree automatically                      |
+| **OSV API Integration** | Real-time batch queries with TTL caching, automatic retries, and offline fallback        |
+| **Severity Grouping**   | Vulnerabilities sorted by Critical / High / Medium / Low with color-coded icons          |
+| **Inline Inspections**  | Red/orange/yellow underlines in `pom.xml`, `build.gradle`, etc. — see issues as you type |
+| **Quick Fixes**         | `Alt+Enter` on any vulnerable dependency to update to the fixed version                  |
+| **Navigate to Source**  | Double-click a vulnerability to jump directly to the offending line                      |
+| **SARIF Export**        | One-click export for GitHub Advanced Security, Azure DevOps, or any SARIF consumer       |
 
 ### Advanced (v1.1+)
 
-| Feature | What It Does |
-| --- | --- |
-| **Risk Scoring** | Combines EPSS, CISA KEV, and CVSS into a single exploitability score |
-| **Malicious Package Detection** | Flags typosquatting, homoglyphs, and known-malware packages |
-| **Basic SAST** | Pattern-based SQL injection, XSS, and path-traversal detection in project code |
-| **Privacy Mode** | SHA-256 hashes package names in UI, logs, and exports before sharing |
-| **Policy Enforcement** | Org-wide rules: block licenses, set severity thresholds, enforce KEV compliance |
-| **Team Config** | Project-level policy via `.idea/osv-plugin-config.json` — version controlled |
-| **Differential Analysis** | Compare two scans to see NEW, RESOLVED, and CHANGED vulnerabilities |
-| **Config Audit** | Scans `application.properties` / `.yml` for 20+ insecure patterns |
+| Feature                         | What It Does                                                                    |
+| ------------------------------- | ------------------------------------------------------------------------------- |
+| **Risk Scoring**                | Combines EPSS, CISA KEV, and CVSS into a single exploitability score            |
+| **Malicious Package Detection** | Flags typosquatting, homoglyphs, and known-malware packages                     |
+| **Basic SAST**                  | Pattern-based SQL injection, XSS, and path-traversal detection in project code  |
+| **Privacy Mode**                | SHA-256 hashes package names in UI, logs, and exports before sharing            |
+| **Policy Enforcement**          | Org-wide rules: block licenses, set severity thresholds, enforce KEV compliance |
+| **Team Config**                 | Project-level policy via `.idea/osv-plugin-config.json` — version controlled    |
+| **Differential Analysis**       | Compare two scans to see NEW, RESOLVED, and CHANGED vulnerabilities             |
+| **Config Audit**                | Scans `application.properties` / `.yml` for 20+ insecure patterns               |
 
 ### BOM Generation (v1.1.1+)
 
 Four exportable bill-of-materials types from the tool window:
 
-| BOM | Purpose | Format |
-| --- | --- | --- |
-| **SBOM** | Software Bill of Materials — all dependencies with PURLs and hashes | CycloneDX 1.5 JSON, SPDX 2.3 JSON, SPDX 2.3 Tag-Value |
-| **CBOM** | Cryptographic assets — algorithms, protocols, certificates, key material detected in source | CycloneDX 1.6 aligned JSON |
-| **QBOM** | Post-quantum cryptography inventory — ML-KEM, ML-DSA, Falcon, X25519Kyber768 | Custom JSON |
-| **AIBOM** | AI/ML asset inventory — LLM APIs, TensorFlow, PyTorch, vector DBs, MLOps | Custom JSON |
+| BOM       | Purpose                                                                                     | Format                                                |
+| --------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| **SBOM**  | Software Bill of Materials — all dependencies with PURLs and hashes                         | CycloneDX 1.5 JSON, SPDX 2.3 JSON, SPDX 2.3 Tag-Value |
+| **CBOM**  | Cryptographic assets — algorithms, protocols, certificates, key material detected in source | CycloneDX 1.6 aligned JSON                            |
+| **QBOM**  | Post-quantum cryptography inventory — ML-KEM, ML-DSA, Falcon, X25519Kyber768                | Custom JSON                                           |
+| **AIBOM** | AI/ML asset inventory — LLM APIs, TensorFlow, PyTorch, vector DBs, MLOps                    | Custom JSON                                           |
 
 ---
 
@@ -119,14 +119,14 @@ Four exportable bill-of-materials types from the tool window:
 
 After opening a project, the tool window appears at the bottom with **6 tabs**:
 
-| Tab | Content |
-| --- | --- |
-| **Vulnerabilities** | Tree view of all findings, grouped by lockfile → severity → issue |
-| **Trends** | Rolling scan history with rendered area charts, donut charts, and delta badges |
-| **SBOM** | Interactive dependency tree with CycloneDX / SPDX export controls |
-| **CBOM** | Cryptographic asset tree with automated source-code scanning |
-| **QBOM** | Post-quantum crypto asset tree with hybrid-key-exchange detection |
-| **AIBOM** | AI/ML asset tree detecting LLM providers, model frameworks, and vector DBs |
+| Tab                 | Content                                                                        |
+| ------------------- | ------------------------------------------------------------------------------ |
+| **Vulnerabilities** | Tree view of all findings, grouped by lockfile → severity → issue              |
+| **Trends**          | Rolling scan history with rendered area charts, donut charts, and delta badges |
+| **SBOM**            | Interactive dependency tree with CycloneDX / SPDX export controls              |
+| **CBOM**            | Cryptographic asset tree with automated source-code scanning                   |
+| **QBOM**            | Post-quantum crypto asset tree with hybrid-key-exchange detection              |
+| **AIBOM**           | AI/ML asset tree detecting LLM providers, model frameworks, and vector DBs     |
 
 ### Navigating Results
 
@@ -165,14 +165,14 @@ Type in the filter box to search by:
 
 Open **Settings → Tools → OSV Scanner**:
 
-| Setting | What It Controls | Default |
-| --- | --- | --- |
-| **Minimum Severity** | Filter out low-severity noise | Medium |
-| **Cache TTL** | How long API responses are cached locally | 60 min |
-| **OSV API Endpoint** | Point to a self-hosted OSV instance | `https://api.osv.dev/v1/query` |
-| **Privacy Mode** | Hash all package names in UI and exports | Off |
-| **GitHub Advisory** | Enrich results with GitHub Security Advisories | On |
-| **License Policy** | Block or warn on specific SPDX licenses | — |
+| Setting              | What It Controls                               | Default                        |
+| -------------------- | ---------------------------------------------- | ------------------------------ |
+| **Minimum Severity** | Filter out low-severity noise                  | Medium                         |
+| **Cache TTL**        | How long API responses are cached locally      | 60 min                         |
+| **OSV API Endpoint** | Point to a self-hosted OSV instance            | `https://api.osv.dev/v1/query` |
+| **Privacy Mode**     | Hash all package names in UI and exports       | Off                            |
+| **GitHub Advisory**  | Enrich results with GitHub Security Advisories | On                             |
+| **License Policy**   | Block or warn on specific SPDX licenses        | —                              |
 
 ---
 
@@ -197,14 +197,14 @@ Open **Settings → Tools → OSV Scanner**:
 
 ## Screenshots
 
-| Feature | Screenshot |
-| --- | --- |
-| Tool Window — Vulnerability Tree | *TBD* |
-| Inline Inspection — Red underline in `pom.xml` | *TBD* |
-| Quick Fix — Alt+Enter popup | *TBD* |
-| Trends Panel — Area + donut charts | *TBD* |
-| SBOM Panel — Dependency tree with export | *TBD* |
-| Settings — Plugin configuration | *TBD* |
+| Feature                                        | Screenshot |
+| ---------------------------------------------- | ---------- |
+| Tool Window — Vulnerability Tree               | _TBD_      |
+| Inline Inspection — Red underline in `pom.xml` | _TBD_      |
+| Quick Fix — Alt+Enter popup                    | _TBD_      |
+| Trends Panel — Area + donut charts             | _TBD_      |
+| SBOM Panel — Dependency tree with export       | _TBD_      |
+| Settings — Plugin configuration                | _TBD_      |
 
 > 📸 Screenshots will be captured before marketplace submission and embedded here.
 
@@ -213,21 +213,27 @@ Open **Settings → Tools → OSV Scanner**:
 ## FAQ
 
 **Q: Does it work in PyCharm, WebStorm, GoLand, etc.?**
+
 > Yes. The plugin installs on any JetBrains IDE. Java-specific features (SAST, reachability) are skipped on non-Java IDEs automatically.
 
 **Q: Do I need an API key?**
+
 > No. The OSV API is free and open. GitHub Advisory enrichment uses unauthenticated requests (60/hour).
 
 **Q: Does it modify my files automatically?**
+
 > No. Quick fixes only update versions when you explicitly trigger them (`Alt+Enter`).
 
 **Q: Can I use it offline?**
+
 > Partially. Cached results are available; new queries require internet.
 
 **Q: How often should I scan?**
+
 > The plugin auto-rescans when lockfiles change. For CI/CD, export SARIF on every build.
 
 **Q: What's in the plugin bundle?**
+
 > The distribution is self-contained (~4 MB). No additional downloads or JVMs required.
 
 ---

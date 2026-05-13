@@ -24,7 +24,7 @@ The OSV Vulnerability Scanner is a free, open-source IntelliJ IDEA plugin that p
 ### Key Benefits
 
 - **Real-time Scanning:** Automatic detection of vulnerabilities as you work
-- **Comprehensive Coverage:** Supports Maven, Gradle, npm, and PIP dependencies
+- **Comprehensive Coverage:** Supports Maven, Gradle, npm, PIP, Go, Rust, PHP, Ruby, .NET, Dart, Haskell, Elixir, R, and C/C++ dependencies
 - **Actionable Insights:** Includes CVE details, severity ratings, and fix versions
 - **IDE Integration:** Quick fixes, navigation, and inline highlighting
 - **CI/CD Ready:** SARIF export for integration with continuous integration pipelines
@@ -441,98 +441,58 @@ The plugin implements a disk-based cache:
 
 ## Parser Reference
 
-### Maven Parser
+### Parser Reference (All Ecosystems)
 
-**File:** `MavenParser.kt`
+| Parser | File | Ecosystem |
+| --- | --- | --- |
+| `MavenParser.kt` | `pom.xml`, `verification-metadata.xml` | Maven |
+| `GradleParser.kt` | `build.gradle`, `build.gradle.kts`, `gradle.lockfile` | Gradle |
+| `NpmParser.kt` | `package-lock.json` | npm |
+| `YarnParser.kt` | `yarn.lock` | npm/Yarn |
+| `PipParser.kt` | `requirements.txt` | PyPI |
+| `PoetryParser.kt` | `poetry.lock`, `pyproject.toml`, `pdm.lock` | PyPI |
+| `GoParser.kt` | `go.mod` | Go |
+| `CargoParser.kt` | `Cargo.lock` | crates.io |
+| `ComposerParser.kt` | `composer.lock` | Packagist |
+| `GemfileParser.kt` | `Gemfile.lock`, `gems.locked` | RubyGems |
+| `NugetParser.kt` | `packages.lock.json`, `packages.config`, `*.deps.json` | NuGet |
+| `PubspecParser.kt` | `pubspec.lock` | Pub |
+| `StackParser.kt` | `stack.yaml.lock`, `cabal.project.freeze` | Hackage |
+| `MixParser.kt` | `mix.lock` | Hex |
+| `RenvParser.kt` | `renv.lock` | CRAN |
+| `ConanParser.kt` | `conan.lock` | ConanCenter |
 
-**Features:**
+### Implementation Patterns
 
-- Parses dependencies, dependency management, and plugin dependencies
-- Extracts group ID, artifact ID, and version
-- Handles property references (`${version.spring}`)
-
-**Example:**
-
-```kotlin
-val pomXml = """
-    <project>
-        <properties>
-            <version.spring>5.3.20</version.spring>
-        </properties>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-core</artifactId>
-                <version>${version.spring}</version>
-            </dependency>
-        </dependencies>
-    </project>
-"""
-
-// Parses to: org.springframework:spring-core:5.3.20
-```
-
-### Gradle Parser
-
-**File:** `GradleParser.kt`
-
-**Features:**
-
-- Supports Kotlin DSL (build.gradle.kts) and Groovy DSL
-- Handles both `implementation` and `compileOnly` configurations
-- Extracts version from string literals and maps
-
-**Example:**
+All parsers implement the `DependencyParser` interface:
 
 ```kotlin
-dependencies {
-    implementation("org.springframework:spring-core:5.3.20")
-    implementation("org.apache.logging.log4j:log4j-core:2.14.0")
+interface DependencyParser {
+    /** Whether this parser handles the given file */
+    fun supports(file: VirtualFile): Boolean
+
+    /** Parse the file into a list of dependencies */
+    fun parse(content: String): List<Dependency>
 }
 ```
 
-### npm Parser
+Parsers use regex-based extraction (no external YAML/TOML/JSON libraries) for zero dependency overhead. See individual parser source files for regex patterns.
 
-**File:** `NpmParser.kt`
+### New Parser Checklist
 
-**Features:**
+When adding a new lockfile format:
 
-- Parses package-lock.json
-- Extracts dependencies and devDependencies
-- Handles nested dependencies
-
-**Example:**
-
-```json
-{
-  "name": "my-app",
-  "version": "1.0.0",
-  "lockfileVersion": 2,
-  "dependencies": {
-    "lodash": {
-      "version": "4.17.20"
-    }
-  }
-}
-```
-
-### PIP Parser
-
-**File:** `PipParser.kt`
-
-**Features:**
-
-- Parses requirements.txt
-- Handles version specifiers (`==`, `>=`, `<=`, `~=`, `!=`)
-- Ignores comments and empty lines
-
-**Example:**
-
-```
-requests==2.25.1
-django>=3.1.5,<4.0.0
-numpy~=1.20.0  # Compatible release
-```
+1. Create `XxxParser.kt` implementing `DependencyParser`
+2. Register in `DependencyParser.detectEcosystem()`
+3. Add to `OsVToolWindowPanel.collectModuleFiles()`
+4. Add to `LicenseInspection` parser list
+5. Write `XxxParserTest.kt` with sample lockfile content
+6. Add to `OsVInspection` file type detection
+7. Update supported formats in:
+   - `README.md`
+   - `plugin.xml` description
+   - `CHANGELOG.md`
+   - `GETTING_STARTED.md`
 
 ---
 
@@ -862,13 +822,24 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## Roadmap
 
-- [x] ~~Team collaboration features~~ — ✅ v1.1.0
-- [x] ~~Vulnerability remediation suggestions~~ — ✅ v1.1.0
-- [x] ~~Advanced filtering and sorting~~ — ✅ v1.1.0
-- [x] ~~Historical trends and differential analysis~~ — ✅ v1.1.0
-- [x] ~~SBOM, CBOM, QBOM, AIBOM generation~~ — ✅ v1.1.1
-- [x] ~~Professional chart rendering (replace ASCII sparklines)~~ — ✅ v1.1.1
-- [ ] Additional dependency formats (Cargo, Go modules)
-- [ ] Integration with Jira and other issue trackers (stub exists)
-- [ ] Line-level problem markers in Problems tool window
+### Completed
+
+- [x] Team collaboration features — ✅ v1.1.0
+- [x] Vulnerability remediation suggestions — ✅ v1.1.0
+- [x] Advanced filtering and sorting — ✅ v1.1.0
+- [x] Historical trends and differential analysis — ✅ v1.1.0
+- [x] SBOM, CBOM, QBOM, AIBOM generation — ✅ v1.1.1
+- [x] Professional chart rendering — ✅ v1.1.1
+- [x] Cross-IDE support (PyCharm, GoLand, WebStorm, etc.) — ✅ v1.1.2
+- [x] OSV-Scanner format parity (17 parsers, 12 ecosystems, 21 lockfiles) — ✅ v1.1.2
+- [x] Zero verifier warnings / deprecated API cleanup — ✅ v1.1.2
+
+### Planned
+
+- [ ] Integration with Jira and other issue trackers (connector stub exists)
+- [ ] Line-level problem markers in Problems tool window (currently file-level only)
 - [ ] Gradle version catalog support (`libs.versions.toml`)
+- [ ] Proper chart library (JFreeChart) replacing `Graphics2D` renderers
+- [ ] Plugin signing automation for Marketplace
+- [ ] `bun.lock` and `pdm.lock` refinements
+- [ ] `buildscript-gradle.lockfile` support

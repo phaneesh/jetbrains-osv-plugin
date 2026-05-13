@@ -30,10 +30,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Tool window `collectModuleFiles()` searches for all supported lockfile names
   - `LicenseInspection` covers all ecosystems
 
+- **Cross-Language BOM Support** — SBOM PURL generation, CBOM, QBOM, and AIBOM scanners now cover all supported languages
+  - **CryptoScanner** — detects cryptographic libraries in Python (`cryptography`), Node (`crypto-js`), Go (`crypto/tls`), Rust (`ring`), C/C++ (`EVP_`, `AES_`), PHP (`openssl`), Ruby (`OpenSSL`), .NET (`BouncyCastle`)
+  - **QuantumScanner** — detects PQC libraries in Python (`liboqs`), Node (`mlkem`), Rust (`pqc_kyber`), Go (`cloudflare/circl`), C++ (`oqs-provider`), plus hybrid KEM (`X25519Kyber768`)
+  - **AiScanner** — file extension coverage expanded to 20+ languages
+  - **SbomGenerator.toPurl()** — PURL support for 12 ecosystems: composer, gem, pub, hackage, hex, cran, conan
+
 ### Changed
 
 - **plugin.xml** description updated to list all 12 supported ecosystems
-- **README.md** features section expanded with full lockfile format matrix
+- **README.md** rewritten with clean usage guide, organized features, BOM use-case table, and FAQ
 
 ## [1.1.2] - 2026-05-13
 

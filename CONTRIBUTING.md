@@ -28,7 +28,8 @@ Thank you for your interest! This guide covers setup, code style, and the PR pro
 - Use MockWebServer for HTTP-dependent tests (no live API calls in CI)
 - Use `BasePlatformTestCase` / `HeavyPlatformTestCase` for PSI inspection tests
 - Run full suite: `./gradlew test`
-- Minimum target: maintain or improve current test count (311+)
+- Minimum target: maintain or improve current test count (393+)
+- All parser tests use static string input (no file IO) for CI compatibility
 
 ## Pull Request Process
 
