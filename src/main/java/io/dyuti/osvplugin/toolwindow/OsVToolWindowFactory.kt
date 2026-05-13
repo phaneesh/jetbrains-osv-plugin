@@ -14,17 +14,21 @@ import io.dyuti.osvplugin.action.ScanAction
 import io.dyuti.osvplugin.historical.HistoricalTrendPanel
 
 /**
- * Factory for creating the OSV Tool Window with four tabs:
+ * Factory for creating the OSV Tool Window with six tabs:
  *  1. Vulnerabilities — real-time scan results
  *  2. Trends          — historical vulnerability tracking
- *  3. SBOM            — CycloneDX/SPDX export
- *  4. CBOM            — cryptographic asset inventory
+ *  3. SBOM            — software bill of materials
+ *  4. CBOM            — cryptographic bill of materials
+ *  5. QBOM            — post-quantum cryptography bill of materials
+ *  6. AIBOM           — AI/ML bill of materials
  */
 class OsVToolWindowFactory : ToolWindowFactory {
     private var scanPanelRef: OsVToolWindowPanel? = null
     private var trendPanelRef: HistoricalTrendPanel? = null
     private var sbomPanelRef: SbomExportPanel? = null
     private var cbomPanelRef: CbomExportPanel? = null
+    private var qbomPanelRef: QbomExportPanel? = null
+    private var aibomPanelRef: AibomExportPanel? = null
 
     override fun createToolWindowContent(
         project: Project,
@@ -44,6 +48,12 @@ class OsVToolWindowFactory : ToolWindowFactory {
 
         val cbomPanel = CbomExportPanel(project)
         cbomPanelRef = cbomPanel
+
+        val qbomPanel = QbomExportPanel(project)
+        qbomPanelRef = qbomPanel
+
+        val aibomPanel = AibomExportPanel(project)
+        aibomPanelRef = aibomPanel
 
         // Wire scan completion → other panels
         scanPanel.setOnScanCompleted { vulns, deps ->
@@ -68,6 +78,12 @@ class OsVToolWindowFactory : ToolWindowFactory {
         )
         contentManager.addContent(
             contentFactory.createContent(cbomPanel, "CBOM", false),
+        )
+        contentManager.addContent(
+            contentFactory.createContent(qbomPanel, "QBOM", false),
+        )
+        contentManager.addContent(
+            contentFactory.createContent(aibomPanel, "AIBOM", false),
         )
     }
 
