@@ -30,11 +30,41 @@ abstract class DependencyParser {
      */
     open fun detectEcosystem(filePath: String): String =
         when {
-            filePath.endsWith("pom.xml") -> "Maven"
+            filePath.endsWith("pom.xml") || filePath.endsWith("gradle.lockfile") ||
+                filePath.endsWith("buildscript-gradle.lockfile") ||
+                filePath.endsWith("verification-metadata.xml") -> "Maven"
+
             filePath.endsWith("build.gradle") || filePath.endsWith("build.gradle.kts") -> "Gradle"
-            filePath.endsWith("package-lock.json") -> "npm"
-            filePath.endsWith("requirements.txt") || filePath.endsWith("pyproject.toml") -> "PyPI"
+
+            filePath.endsWith("package-lock.json") || filePath.endsWith("yarn.lock") ||
+                filePath.endsWith("pnpm-lock.yaml") || filePath.endsWith("bun.lock") -> "npm"
+
+            filePath.endsWith("requirements.txt") || filePath.endsWith("pyproject.toml") ||
+                filePath.endsWith("poetry.lock") || filePath.endsWith("Pipfile.lock") ||
+                filePath.endsWith("pdm.lock") || filePath.endsWith("uv.lock") ||
+                filePath.endsWith("pylock.toml") -> "PyPI"
+
             filePath.endsWith("go.mod") || filePath.endsWith("go.sum") -> "Go"
+
+            filePath.endsWith("Cargo.lock") -> "crates.io"
+
+            filePath.endsWith("composer.lock") -> "Packagist"
+
+            filePath.endsWith("Gemfile.lock") || filePath.endsWith("gems.locked") -> "RubyGems"
+
+            filePath.endsWith("pubspec.lock") -> "Pub"
+
+            filePath.endsWith("packages.lock.json") || filePath.endsWith("packages.config") ||
+                filePath.endsWith(".deps.json") -> "NuGet"
+
+            filePath.endsWith("stack.yaml.lock") || filePath.endsWith("cabal.project.freeze") -> "Hackage"
+
+            filePath.endsWith("mix.lock") -> "Hex"
+
+            filePath.endsWith("renv.lock") -> "CRAN"
+
+            filePath.endsWith("conan.lock") -> "ConanCenter"
+
             else -> "Unknown"
         }
 

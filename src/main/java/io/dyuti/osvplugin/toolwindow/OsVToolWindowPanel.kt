@@ -22,11 +22,22 @@ import io.dyuti.osvplugin.api.model.formatFixVersions
 import io.dyuti.osvplugin.export.SarifExporter
 import io.dyuti.osvplugin.export.VulnerabilityWithDependency
 import io.dyuti.osvplugin.fix.AutoFixService
+import io.dyuti.osvplugin.parser.CargoParser
+import io.dyuti.osvplugin.parser.ComposerParser
+import io.dyuti.osvplugin.parser.ConanParser
+import io.dyuti.osvplugin.parser.GemfileParser
 import io.dyuti.osvplugin.parser.GoParser
 import io.dyuti.osvplugin.parser.GradleParser
 import io.dyuti.osvplugin.parser.MavenParser
+import io.dyuti.osvplugin.parser.MixParser
 import io.dyuti.osvplugin.parser.NpmParser
+import io.dyuti.osvplugin.parser.NugetParser
 import io.dyuti.osvplugin.parser.PipParser
+import io.dyuti.osvplugin.parser.PoetryParser
+import io.dyuti.osvplugin.parser.PubspecParser
+import io.dyuti.osvplugin.parser.RenvParser
+import io.dyuti.osvplugin.parser.StackParser
+import io.dyuti.osvplugin.parser.YarnParser
 import io.dyuti.osvplugin.utils.CacheManager
 import io.dyuti.osvplugin.utils.SeverityUtil
 import java.awt.BorderLayout
@@ -534,9 +545,26 @@ class OsVToolWindowPanel
                 "build.gradle",
                 "build.gradle.kts",
                 "package.json",
+                "package-lock.json",
                 "requirements.txt",
                 "pyproject.toml",
+                "poetry.lock",
+                "Pipfile.lock",
                 "go.mod",
+                "Cargo.lock",
+                "pubspec.lock",
+                "composer.lock",
+                "Gemfile.lock",
+                "gems.locked",
+                "packages.lock.json",
+                "packages.config",
+                "stack.yaml.lock",
+                "cabal.project.freeze",
+                "mix.lock",
+                "renv.lock",
+                "conan.lock",
+                "yarn.lock",
+                "pnpm-lock.yaml",
             )) {
                 val moduleFile = directory.findChild(fileName)
                 if (moduleFile != null && moduleFile.isValid) {
@@ -566,6 +594,17 @@ class OsVToolWindowPanel
                     NpmParser(),
                     PipParser(),
                     GoParser(),
+                    CargoParser(),
+                    ComposerParser(),
+                    GemfileParser(),
+                    PubspecParser(),
+                    NugetParser(),
+                    StackParser(),
+                    MixParser(),
+                    RenvParser(),
+                    ConanParser(),
+                    YarnParser(),
+                    PoetryParser(),
                 )
 
             val dependencies = mutableListOf<Dependency>()

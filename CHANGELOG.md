@@ -12,14 +12,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - Made `com.intellij.modules.java` an optional dependency via `<depends optional="true" config-file="plugin-java.xml">`
   - Added `JavaPsiCompatibility` guard — detects Java PSI availability at runtime
   - SAST analyzer and reachability analysis gracefully skip when Java PSI unavailable
-  - New parsers: `GoParser` (`go.mod` modules), `pip`/`pyproject.toml`
   - New inspections: `Python`, `JavaScript`, `TypeScript`, `Go`, `YAML` language support
-  - Tool window collects `go.mod`, `pyproject.toml` in dependency file scan
-  - License inspection now covers Go and Python dependencies
+
+- **Complete OSV-Scanner Format Parity** — all lockfile/manifest formats from [OSV-Scanner](https://google.github.io/osv-scanner/supported-languages-and-lockfiles/) are now supported
+  - **Rust** — `CargoParser` (`Cargo.lock`)
+  - **PHP** — `ComposerParser` (`composer.lock`)
+  - **Ruby** — `GemfileParser` (`Gemfile.lock`, `gems.locked`)
+  - **Dart/Flutter** — `PubspecParser` (`pubspec.lock`)
+  - **.NET** — `NugetParser` (`packages.lock.json`, `packages.config`)
+  - **Haskell** — `StackParser` (`stack.yaml.lock`, `cabal.project.freeze`)
+  - **Elixir** — `MixParser` (`mix.lock`)
+  - **R** — `RenvParser` (`renv.lock`)
+  - **C/C++** — `ConanParser` (`conan.lock`)
+  - **Python extras** — `PoetryParser` (`poetry.lock`)
+  - **JavaScript extras** — `YarnParser` (`yarn.lock`)
+  - **DependencyParser.detectEcosystem()** updated to recognize all 20+ lockfile extensions
+  - Tool window `collectModuleFiles()` searches for all supported lockfile names
+  - `LicenseInspection` covers all ecosystems
 
 ### Changed
 
-- **plugin.xml** description updated to mention Go alongside Maven/Gradle/npm/pip
+- **plugin.xml** description updated to list all 12 supported ecosystems
+- **README.md** features section expanded with full lockfile format matrix
 
 ## [1.1.2] - 2026-05-13
 

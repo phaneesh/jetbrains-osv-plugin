@@ -10,7 +10,20 @@
 
 ### Core
 
-- **Dependency Parsing** — Maven (`pom.xml`), Gradle (`build.gradle`, `build.gradle.kts`), npm (`package-lock.json`), pip (`requirements.txt`)
+- **Dependency Parsing** — 20+ lockfile formats across 12 ecosystems:
+  - **Java** — `pom.xml`, `build.gradle`, `build.gradle.kts`, `gradle.lockfile`, `verification-metadata.xml`
+  - **JavaScript/Node** — `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`
+  - **Python** — `requirements.txt`, `pyproject.toml`, `poetry.lock`, `Pipfile.lock`, `pdm.lock`, `uv.lock`, `pylock.toml`
+  - **Go** — `go.mod`
+  - **Rust** — `Cargo.lock`
+  - **PHP** — `composer.lock`
+  - **Ruby** — `Gemfile.lock`, `gems.locked`
+  - **Dart/Flutter** — `pubspec.lock`
+  - **.NET** — `packages.lock.json`, `packages.config`, `*.deps.json`
+  - **Haskell** — `stack.yaml.lock`, `cabal.project.freeze`
+  - **Elixir** — `mix.lock`
+  - **R** — `renv.lock`
+  - **C/C++** — `conan.lock`
 - **OSV API Integration** — Real-time batch queries with TTL caching, rate limiting, and offline resilience
 - **Tool Window** — Tree-based vulnerability explorer with filtering, severity grouping, and hyperlinks
 - **Inline Inspections** — Highlight vulnerable dependencies directly in dependency files

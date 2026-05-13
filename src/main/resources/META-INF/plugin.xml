@@ -7,7 +7,7 @@
 <p>A free, open-source security vulnerability scanner for open-source dependencies, powered by the OSV (Open Source Vulnerabilities) database.</p>
 <p><b>Features:</b></p>
 <ul>
-  <li>Real-time vulnerability scanning for Maven, Gradle, npm, pip, and Go dependencies</li>
+  <li>Real-time vulnerability scanning for 20+ lockfile formats: Maven, Gradle, npm, yarn, pnpm, pip, poetry, Pipfile, pyproject.toml, Go, Rust Cargo, PHP Composer, Ruby Bundler, Dart/Flutter, .NET NuGet, Haskell Stack/Cabal, Elixir Mix, R renv, C/C++ Conan</li>
   <li>Inline inspection highlights with Alt+Enter quick fixes</li>
   <li>Risk scoring with EPSS + CISA KEV for exploitability-based prioritization</li>
   <li>Malicious package detection (typosquatting, homoglyph, known malware)</li>
@@ -134,6 +134,16 @@
             enabledByDefault="true"
             level="WARNING"
             implementationClass="io.dyuti.osvplugin.inspection.OsVInspectionTypeScript"/>
+
+        <!-- YAML lockfile inspection (pnpm, etc.) -->
+        <localInspection
+            language="yaml"
+            shortName="OsVInspectionYaml"
+            displayName="OSV Vulnerability Check"
+            groupName="Security"
+            enabledByDefault="true"
+            level="WARNING"
+            implementationClass="io.dyuti.osvplugin.inspection.OsVInspectionYaml"/>
 
         <!-- Go dependency file inspection -->
         <localInspection

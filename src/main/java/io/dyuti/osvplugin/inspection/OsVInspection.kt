@@ -18,12 +18,23 @@ import io.dyuti.osvplugin.api.model.Vulnerability
 import io.dyuti.osvplugin.api.model.displayId
 import io.dyuti.osvplugin.api.model.formatFixVersions
 import io.dyuti.osvplugin.config.OsVConfig
+import io.dyuti.osvplugin.parser.CargoParser
+import io.dyuti.osvplugin.parser.ComposerParser
+import io.dyuti.osvplugin.parser.ConanParser
 import io.dyuti.osvplugin.parser.DependencyParser
+import io.dyuti.osvplugin.parser.GemfileParser
 import io.dyuti.osvplugin.parser.GoParser
 import io.dyuti.osvplugin.parser.GradleParser
 import io.dyuti.osvplugin.parser.MavenParser
+import io.dyuti.osvplugin.parser.MixParser
 import io.dyuti.osvplugin.parser.NpmParser
+import io.dyuti.osvplugin.parser.NugetParser
 import io.dyuti.osvplugin.parser.PipParser
+import io.dyuti.osvplugin.parser.PoetryParser
+import io.dyuti.osvplugin.parser.PubspecParser
+import io.dyuti.osvplugin.parser.RenvParser
+import io.dyuti.osvplugin.parser.StackParser
+import io.dyuti.osvplugin.parser.YarnParser
 import io.dyuti.osvplugin.utils.SeverityUtil
 import java.util.Timer
 import java.util.TimerTask
@@ -77,6 +88,17 @@ open class OsVInspection : LocalInspectionTool() {
             NpmParser(),
             PipParser(),
             GoParser(),
+            CargoParser(),
+            ComposerParser(),
+            GemfileParser(),
+            PubspecParser(),
+            NugetParser(),
+            StackParser(),
+            MixParser(),
+            RenvParser(),
+            ConanParser(),
+            YarnParser(),
+            PoetryParser(),
         )
 
     private val apiService by lazy {
@@ -356,4 +378,8 @@ class OsVInspectionTypeScript : OsVInspection() {
 
 class OsVInspectionGo : OsVInspection() {
     override fun getShortName(): String = "OsVInspectionGo"
+}
+
+class OsVInspectionYaml : OsVInspection() {
+    override fun getShortName(): String = "OsVInspectionYaml"
 }
