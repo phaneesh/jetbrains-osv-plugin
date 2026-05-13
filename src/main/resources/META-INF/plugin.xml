@@ -7,7 +7,7 @@
 <p>A free, open-source security vulnerability scanner for open-source dependencies, powered by the OSV (Open Source Vulnerabilities) database.</p>
 <p><b>Features:</b></p>
 <ul>
-  <li>Real-time vulnerability scanning for Maven, Gradle, npm, and pip dependencies</li>
+  <li>Real-time vulnerability scanning for Maven, Gradle, npm, pip, and Go dependencies</li>
   <li>Inline inspection highlights with Alt+Enter quick fixes</li>
   <li>Risk scoring with EPSS + CISA KEV for exploitability-based prioritization</li>
   <li>Malicious package detection (typosquatting, homoglyph, known malware)</li>
@@ -35,7 +35,8 @@
     <version>1.1.2</version>
     
     <depends>com.intellij.modules.platform</depends>
-    <depends>com.intellij.modules.java</depends>
+    <!-- java module is optional: plugin works in PyCharm, GoLand, WebStorm, etc. -->
+    <depends optional="true" config-file="plugin-java.xml">com.intellij.modules.java</depends>
     
     <actions>
         <!-- Add actions here if needed -->
@@ -104,7 +105,46 @@
             enabledByDefault="true"
             level="WARNING"
             implementationClass="io.dyuti.osvplugin.inspection.OsVInspectionPlainText"/>
-        
+
+        <!-- Python dependency file inspection -->
+        <localInspection
+            language="Python"
+            shortName="OsVInspectionPython"
+            displayName="OSV Vulnerability Check"
+            groupName="Security"
+            enabledByDefault="true"
+            level="WARNING"
+            implementationClass="io.dyuti.osvplugin.inspection.OsVInspectionPython"/>
+
+        <!-- JavaScript / TypeScript dependency file inspection -->
+        <localInspection
+            language="JavaScript"
+            shortName="OsVInspectionJavaScript"
+            displayName="OSV Vulnerability Check"
+            groupName="Security"
+            enabledByDefault="true"
+            level="WARNING"
+            implementationClass="io.dyuti.osvplugin.inspection.OsVInspectionJavaScript"/>
+
+        <localInspection
+            language="TypeScript"
+            shortName="OsVInspectionTypeScript"
+            displayName="OSV Vulnerability Check"
+            groupName="Security"
+            enabledByDefault="true"
+            level="WARNING"
+            implementationClass="io.dyuti.osvplugin.inspection.OsVInspectionTypeScript"/>
+
+        <!-- Go dependency file inspection -->
+        <localInspection
+            language="go"
+            shortName="OsVInspectionGo"
+            displayName="OSV Vulnerability Check"
+            groupName="Security"
+            enabledByDefault="true"
+            level="WARNING"
+            implementationClass="io.dyuti.osvplugin.inspection.OsVInspectionGo"/>
+
         <!-- License Inspection -->
         <localInspection
             language="JAVA"

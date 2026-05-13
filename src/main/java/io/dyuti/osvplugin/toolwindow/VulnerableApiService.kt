@@ -14,6 +14,7 @@ import io.dyuti.osvplugin.api.model.Dependency
 import io.dyuti.osvplugin.api.model.ReachabilityResult
 import io.dyuti.osvplugin.api.model.Vulnerability
 import io.dyuti.osvplugin.api.model.VulnerableCallSite
+import io.dyuti.osvplugin.utils.JavaPsiCompatibility
 
 /**
  * Service that performs reachability analysis — checking whether vulnerable
@@ -86,11 +87,24 @@ class VulnerableApiService {
     /**
      * Perform reachability analysis for a list of vulnerability/dependency pairs.
      *
+     * Returns `[reachable=false]` defaults when running in a non-Java IDE
+     * because the Java-specific PSI classes are not available there.
+     *
      * @param project The IntelliJ project
      * @param vulnDeps List of (Vulnerability, Dependency) pairs to analyze
      * @return List of [ReachabilityResult] with call site details
      */
     fun analyzeReachability(
+        project: Project,
+        vulnDeps: List<Pair<Vulnerability, Dependency>>,
+    ): List<ReachabilityResult> =
+        JavaPsiCompatibility.ifAvailable(
+            vulnDeps.map { (vuln, dep) -> ReachabilityResult(vuln, dep, emptyList(), false) },
+        ) {
+            analyzeReachabilityImpl(project, vulnDeps)
+        }
+
+    private fun analyzeReachabilityImpl(
         project: Project,
         vulnDeps: List<Pair<Vulnerability, Dependency>>,
     ): List<ReachabilityResult> {

@@ -8,6 +8,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileVisitor
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import io.dyuti.osvplugin.utils.JavaPsiCompatibility
 
 /**
  * SAST (Static Application Security Testing) analyzer that detects common
@@ -41,8 +42,16 @@ import com.intellij.psi.PsiManager
 class SastAnalyzer {
     /**
      * Run all SAST checks on the project and return findings.
+     *
+     * Returns empty list when running in a non-Java IDE (PyCharm, GoLand, WebStorm, …)
+     * because the Java-specific PSI classes are not available there.
      */
-    fun analyzeProject(project: Project): List<SastFinding> {
+    fun analyzeProject(project: Project): List<SastFinding> =
+        JavaPsiCompatibility.ifAvailable(emptyList()) {
+            analyzeProjectImpl(project)
+        }
+
+    private fun analyzeProjectImpl(project: Project): List<SastFinding> {
         if (project.isDisposed) return emptyList()
 
         @Suppress("DEPRECATION")

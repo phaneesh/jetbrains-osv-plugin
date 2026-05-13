@@ -4,6 +4,23 @@ All notable changes to the OSV IntelliJ Plugin are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.3] - 2026-05-13
+
+### Added
+
+- **Cross-IDE Support** — plugin now works in **PyCharm**, **GoLand**, **WebStorm** (and all JetBrains IDEs)
+  - Made `com.intellij.modules.java` an optional dependency via `<depends optional="true" config-file="plugin-java.xml">`
+  - Added `JavaPsiCompatibility` guard — detects Java PSI availability at runtime
+  - SAST analyzer and reachability analysis gracefully skip when Java PSI unavailable
+  - New parsers: `GoParser` (`go.mod` modules), `pip`/`pyproject.toml`
+  - New inspections: `Python`, `JavaScript`, `TypeScript`, `Go`, `YAML` language support
+  - Tool window collects `go.mod`, `pyproject.toml` in dependency file scan
+  - License inspection now covers Go and Python dependencies
+
+### Changed
+
+- **plugin.xml** description updated to mention Go alongside Maven/Gradle/npm/pip
+
 ## [1.1.2] - 2026-05-13
 
 ### Fixed
@@ -11,6 +28,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Deprecated API Usage** — replaced `NotificationGroup` constructor with `NotificationGroupManager` API (IntelliJ 2023.3+)
 - **Deprecated API Usage** — replaced `Project.getBaseDir()` with `LocalFileSystem.findFileByPath(project.basePath)` in SAST analyzer and Vulnerable API service (IntelliJ 2023.3+)
 - **Gson Internal Deprecation** — `JsonElement.getAsCharacter()` warning comes from bundled Gson 2.11.0; no user-code references exist
+- **CredentialAttributes** — fixed deprecated single-argument constructor (OsVConfig.kt) using two-arg service-name variant
+- **ReadAction.compute(ThrowableComputable)** — added `@Suppress("DEPRECATION")` for backward-compatible overload
+- **DaemonCodeAnalyzer.restart(PsiFile)** — removed deprecated call entirely
 
 ## [1.1.1] - 2026-05-13
 

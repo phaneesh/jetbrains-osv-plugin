@@ -19,6 +19,7 @@ import io.dyuti.osvplugin.api.model.displayId
 import io.dyuti.osvplugin.api.model.formatFixVersions
 import io.dyuti.osvplugin.config.OsVConfig
 import io.dyuti.osvplugin.parser.DependencyParser
+import io.dyuti.osvplugin.parser.GoParser
 import io.dyuti.osvplugin.parser.GradleParser
 import io.dyuti.osvplugin.parser.MavenParser
 import io.dyuti.osvplugin.parser.NpmParser
@@ -75,6 +76,7 @@ open class OsVInspection : LocalInspectionTool() {
             GradleParser(),
             NpmParser(),
             PipParser(),
+            GoParser(),
         )
 
     private val apiService by lazy {
@@ -338,4 +340,20 @@ class OsVInspectionJson : OsVInspection() {
 
 class OsVInspectionPlainText : OsVInspection() {
     override fun getShortName(): String = "OsVInspectionPlainText"
+}
+
+class OsVInspectionPython : OsVInspection() {
+    override fun getShortName(): String = "OsVInspectionPython"
+}
+
+class OsVInspectionJavaScript : OsVInspection() {
+    override fun getShortName(): String = "OsVInspectionJavaScript"
+}
+
+class OsVInspectionTypeScript : OsVInspection() {
+    override fun getShortName(): String = "OsVInspectionTypeScript"
+}
+
+class OsVInspectionGo : OsVInspection() {
+    override fun getShortName(): String = "OsVInspectionGo"
 }

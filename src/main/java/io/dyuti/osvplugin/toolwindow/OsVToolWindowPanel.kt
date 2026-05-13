@@ -22,6 +22,7 @@ import io.dyuti.osvplugin.api.model.formatFixVersions
 import io.dyuti.osvplugin.export.SarifExporter
 import io.dyuti.osvplugin.export.VulnerabilityWithDependency
 import io.dyuti.osvplugin.fix.AutoFixService
+import io.dyuti.osvplugin.parser.GoParser
 import io.dyuti.osvplugin.parser.GradleParser
 import io.dyuti.osvplugin.parser.MavenParser
 import io.dyuti.osvplugin.parser.NpmParser
@@ -528,7 +529,15 @@ class OsVToolWindowPanel
             if (directory == null || !directory.isValid) return
 
             // Check for module files
-            for (fileName in listOf("pom.xml", "build.gradle", "build.gradle.kts", "package.json", "requirements.txt")) {
+            for (fileName in listOf(
+                "pom.xml",
+                "build.gradle",
+                "build.gradle.kts",
+                "package.json",
+                "requirements.txt",
+                "pyproject.toml",
+                "go.mod",
+            )) {
                 val moduleFile = directory.findChild(fileName)
                 if (moduleFile != null && moduleFile.isValid) {
                     moduleFiles.add(moduleFile)
@@ -556,6 +565,7 @@ class OsVToolWindowPanel
                     GradleParser(),
                     NpmParser(),
                     PipParser(),
+                    GoParser(),
                 )
 
             val dependencies = mutableListOf<Dependency>()

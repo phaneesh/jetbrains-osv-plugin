@@ -1,0 +1,6 @@
+<idea-plugin>
+    <!-- Java-module-only extensions loaded only when com.intellij.modules.java is present -->
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Java-specific vulnerability inspection (already in main plugin.xml, keep there for compatibility) -->
+    </extensions>
+</idea-plugin>

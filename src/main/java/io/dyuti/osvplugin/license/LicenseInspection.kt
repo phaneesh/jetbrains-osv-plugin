@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiFile
 import io.dyuti.osvplugin.inspection.DependencyWithVulnerabilities
 import io.dyuti.osvplugin.parser.DependencyParser
+import io.dyuti.osvplugin.parser.GoParser
 import io.dyuti.osvplugin.parser.GradleParser
 import io.dyuti.osvplugin.parser.MavenParser
 import io.dyuti.osvplugin.parser.NpmParser
@@ -28,6 +29,7 @@ class LicenseInspection : LocalInspectionTool() {
             GradleParser(),
             NpmParser(),
             PipParser(),
+            GoParser(),
         )
 
     private val licenseScanner = LicenseScanner()

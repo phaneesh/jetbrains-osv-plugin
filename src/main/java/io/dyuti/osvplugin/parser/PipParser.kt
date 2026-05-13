@@ -7,7 +7,7 @@ import io.dyuti.osvplugin.api.model.Dependency
  * Parser for pip requirements.txt files
  */
 class PipParser : DependencyParser() {
-    override fun getSupportedExtensions(): List<String> = listOf("requirements.txt")
+    override fun getSupportedExtensions(): List<String> = listOf("requirements.txt", "pyproject.toml")
 
     override fun parse(
         filePath: String,
