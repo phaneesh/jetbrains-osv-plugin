@@ -460,20 +460,49 @@ class OsVApiService(
                 return results
             }
 
+            // Phase 1: collect truncated vuln IDs from batch response
+            data class BatchResult(
+                val dep: Dependency,
+                val vulnIds: List<String>,
+            )
+            val batchResults = mutableListOf<BatchResult>()
             for (i in uncachedDependencies.indices) {
                 val dep = uncachedDependencies[i]
                 val resultObj = resultsArray[i].asJsonObject
                 val vulnsArray = resultObj.getAsJsonArray("vulns") ?: emptyList()
-
-                val vulns =
-                    vulnsArray.mapNotNull { element ->
-                        try {
-                            parseVulnerability(element.asJsonObject, dep.name)
-                        } catch (_: Exception) {
-                            null
-                        }
+                val ids = mutableListOf<String>()
+                vulnsArray.forEach { el ->
+                    try {
+                        ids.add(el.asJsonObject.get("id").asString)
+                    } catch (_: Exception) {
                     }
+                }
+                batchResults.add(BatchResult(dep, ids))
+            }
 
+            // Phase 2: fetch full details for each unique vuln ID via /v1/vulns/{id}
+            val allIds = batchResults.flatMap { it.vulnIds }.distinct()
+            val fullDetailsById = mutableMapOf<String, Vulnerability>()
+            for (vulnId in allIds) {
+                val detailJson = fetchVulnerabilityDetails(vulnId)
+                if (detailJson != null) {
+                    try {
+                        val detailObj = JsonParser.parseString(detailJson).asJsonObject
+                        // Determine which package name to associate: the one from the query context
+                        val associatedDep = batchResults.find { vulnId in it.vulnIds }?.dep
+                        val pkgName = associatedDep?.name ?: ""
+                        val vuln = parseVulnerability(detailObj, pkgName)
+                        fullDetailsById[vulnId] = vuln
+                    } catch (e: Exception) {
+                        LOG.error("Failed to parse details for $vulnId: ${e.message}")
+                    }
+                }
+            }
+
+            // Phase 3: assemble per-dependency results
+            for (br in batchResults) {
+                val dep = br.dep
+                val vulns = br.vulnIds.mapNotNull { fullDetailsById[it] }
                 val cacheKey = "${dep.name}:${dep.ecosystem}:${dep.version}"
                 cacheManager.cacheVulnerabilities(cacheKey, vulns)
                 results[dep] = vulns
@@ -564,6 +593,39 @@ class OsVApiService(
 
         errors.forEach { err ->
             LOG.error("Error querying dependency: $err")
+        }
+    }
+
+    /**
+     * Fetch full vulnerability details from OSV /v1/vulns/{id} endpoint.
+     * The batch API returns truncated data (only id + modified), so we need
+     * a second round-trip to get aliases (CVE), affected ranges (fix versions),
+     * summary, details, etc.
+     */
+    private fun fetchVulnerabilityDetails(vulnId: String): String? {
+        if (!checkRateLimit()) {
+            LOG.warn("Rate limit exceeded — skipping detail fetch for $vulnId")
+            return null
+        }
+        val detailUrl = osvApiUrl.replace("/query", "/vulns/$vulnId")
+        val request =
+            HttpRequest
+                .newBuilder(URI(detailUrl))
+                .header("Content-Type", "application/json")
+                .GET()
+                .build()
+        return try {
+            val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+            if (response.statusCode() == 200) {
+                incrementRequestCount()
+                response.body()
+            } else {
+                LOG.warn("Detail fetch for $vulnId returned ${response.statusCode()}")
+                null
+            }
+        } catch (e: Exception) {
+            LOG.error("Network error fetching $vulnId: ${e.message}")
+            null
         }
     }
 }

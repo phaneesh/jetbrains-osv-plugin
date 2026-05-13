@@ -43,8 +43,15 @@ class SbomExporter(
         val file = File(outputDir, name)
         file.writeText(content)
 
-        // Refresh VFS so file appears in Project view immediately
-        LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
+        // Refresh VFS so file appears in Project view immediately —
+        // must run on EDT to avoid "write thread only" access errors
+        com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+            try {
+                LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
+            } catch (_: Exception) {
+                // VFS refresh is best-effort; file exists on disk regardless
+            }
+        }
 
         return file
     }
