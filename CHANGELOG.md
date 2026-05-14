@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [1.1.3] - 2026-05-14
 
+### Fixed
+
+- **Inline inspection redline (editor gutter marks)** — rebuilt `resolveHighlightTarget()` to:
+  1. Look up the dependency's name/artifactId inside the exact line text
+  2. Find a `PsiElement` at that text offset and walk up to a meaningful parent
+  3. Register the problem via `holder.registerProblem(element, message, highlightType, rangeInElement, ...)` so red underlines appear in the editor _and_ the Problems view
+  4. Added `DaemonCodeAnalyzer.restart()` after async scan completes so the daemon re-runs `buildVisitor()` with cached results
+
 ### Added
 
 - **Elaborate License Policy Catalog** — replaced comma-separated text input with a categorized multi-select checkbox grid

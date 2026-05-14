@@ -1,14 +1,19 @@
 // OSV Vulnerability Scanner PSI Inspection with Async Dependency Scanning
 package io.dyuti.osvplugin.inspection
 
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task.Backgroundable
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiFile
 import io.dyuti.osvplugin.api.OsVApiService
@@ -220,8 +225,11 @@ open class OsVInspection : LocalInspectionTool() {
                         if (file.modificationStamp == expectedStamp && !file.project.isDisposed) {
                             fileCache[filePath] = VulnerabilityCacheEntry(results, expectedStamp)
 
-                            // Results are cached; daemon will pick them up on next pass.
-                            // No explicit restart needed — avoids deprecated restart(PsiFile) API.
+                            // Restart highlighting so the daemon re-runs buildVisitor()
+                            // and cached vulnerabilities are painted in the editor.
+                            if (!file.project.isDisposed) {
+                                DaemonCodeAnalyzer.getInstance(file.project).restart()
+                            }
                         }
                     }
                 }
@@ -247,8 +255,10 @@ open class OsVInspection : LocalInspectionTool() {
 
     /**
      * Register a single vulnerability problem at the exact line where the
-     * dependency is declared. Problems appear in the native Problems view
-     * (Alt+6) with click-to-navigate support.
+     * dependency is declared.  Uses either the leaf [PsiElement] at that
+     * offset (for structured files) or a [TextRange] covering the whole line
+     * (for plain-text files) so the red underline appears in the editor *and*
+     * the entry is navigable from the Problems view (Alt+6).
      */
     private fun reportVulnerability(
         holder: ProblemsHolder,
@@ -280,18 +290,107 @@ open class OsVInspection : LocalInspectionTool() {
                 }
             }
 
-        // Register at file level. Line-level TextRange registration requires
-        // finding the exact PsiElement at the offset; the IntelliJ Problems view
-        // still shows the vulnerability and supports quick-fixes.
-        // TODO: implement PsiElement-level registration for precise line navigation.
-        holder.registerProblem(
-            file,
-            message,
-            highlightType,
-            upgradeFix,
-            suppressFix,
-            ignoreFix,
-        )
+        // Try to find the most specific element / text-range for the line.
+        val (targetElement, rangeInElement) = resolveHighlightTarget(file, dep)
+
+        if (targetElement != null && rangeInElement != null) {
+            // Specific line range — shows red underline + gutter marker
+            holder.registerProblem(
+                targetElement,
+                message,
+                highlightType,
+                rangeInElement,
+                upgradeFix,
+                suppressFix,
+                ignoreFix,
+            )
+        } else {
+            // Fallback: file-level problem (Problems view only, no editor redline)
+            holder.registerProblem(
+                file,
+                message,
+                highlightType,
+                upgradeFix,
+                suppressFix,
+                ignoreFix,
+            )
+        }
+    }
+
+    /**
+     * Resolve a concrete [PsiElement] and [TextRange] for the dependency's
+     * declared line so the inspection paints a red underline in the editor.
+     *
+     * Looks for the dependency's name inside the line text itself (the user
+     * literally sees the same text) so that the match is recognisable and
+     * independent of PSI structure.
+     */
+    private fun resolveHighlightTarget(
+        file: PsiFile,
+        dep: Dependency,
+    ): Pair<PsiElement?, TextRange?> {
+        val lineNumber = dep.lineNumber
+        if (lineNumber == null || lineNumber < 1) return Pair(null, null)
+
+        val doc =
+            PsiDocumentManager.getInstance(file.project).getDocument(file)
+                ?: return Pair(null, null)
+        if (lineNumber > doc.lineCount) return Pair(null, null)
+
+        val lineIdx = lineNumber - 1
+        val lineStart = doc.getLineStartOffset(lineIdx)
+        val lineEnd = doc.getLineEndOffset(lineIdx).coerceAtMost(doc.textLength)
+        val lineText = doc.getText(TextRange.create(lineStart, lineEnd))
+        if (lineText.isBlank()) return Pair(null, null)
+
+        // Candidate search terms ordered from most specific to least specific
+        val searchTerms =
+            buildList {
+                add(dep.name.substringAfterLast(':')) // artifact-id
+                add(dep.name.substringBeforeLast(':')) // group-id
+                add(dep.name)
+                add(dep.name.substringAfterLast('/')) // npm scoped
+            }.filter { it.isNotBlank() && it.length >= 2 }.distinct()
+
+        // 1) Try to find the dependency name on this exact line
+        for (term in searchTerms) {
+            val idx = lineText.indexOf(term)
+            if (idx < 0) continue
+            val absStart = lineStart + idx
+            val absEnd = (absStart + term.length).coerceAtMost(file.textLength)
+            val matchRange = TextRange(absStart, absEnd)
+
+            // Walk up from a leaf to find an element covering the match
+            var element: PsiElement? = file.findElementAt(absStart)
+            while (element != null && element != file) {
+                val er = element.textRange
+                if (er != null && er.startOffset <= absStart && er.endOffset >= absEnd) {
+                    val rangeInElement = TextRange(absStart - er.startOffset, absEnd - er.startOffset)
+                    return Pair(element, rangeInElement.takeIf { !it.isEmpty })
+                }
+                element = element.parent
+            }
+            // No PSI element covers the text — still return file-level with exact range
+            return Pair(file, matchRange)
+        }
+
+        // 2) Fallback: first non-whitespace token on the line
+        val firstNonWs = lineText.indexOfFirst { !it.isWhitespace() }
+        if (firstNonWs >= 0) {
+            val offset = lineStart + firstNonWs
+            var element: PsiElement? = file.findElementAt(offset)
+            while (element != null && element != file) {
+                val er = element.textRange
+                if (er != null && er.startOffset >= lineStart && er.endOffset <= lineEnd) {
+                    val rangeInElement = TextRange(0, er.length)
+                    return Pair(element, rangeInElement)
+                }
+                element = element.parent
+            }
+        }
+
+        // 3) Last resort: file with full line range (editor may not show redline)
+        return Pair(file, TextRange(lineStart, lineEnd).takeIf { !it.isEmpty })
     }
 
     /**
