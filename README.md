@@ -191,23 +191,6 @@ Open **Settings → Tools → OSV Scanner**:
 4. Click **Export** → choose format → save to disk
 5. A notification with **Open Folder** appears on completion
 
----
-
-## Screenshots
-
-| Feature                                        | Screenshot |
-| ---------------------------------------------- | ---------- |
-| Tool Window — Vulnerability Tree               | _TBD_      |
-| Inline Inspection — Red underline in `pom.xml` | _TBD_      |
-| Quick Fix — Alt+Enter popup                    | _TBD_      |
-| Trends Panel — Area + donut charts             | _TBD_      |
-| SBOM Panel — Dependency tree with export       | _TBD_      |
-| Settings — Plugin configuration                | _TBD_      |
-
-> 📸 Screenshots will be captured before marketplace submission and embedded here.
-
----
-
 ## FAQ
 
 **Q: Does it work in PyCharm, WebStorm, GoLand, etc.?**
