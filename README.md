@@ -1,7 +1,7 @@
 # OSV IntelliJ Plugin
 
 ![Build](https://img.shields.io/badge/build-passing-brightgreen)
-![Version](https://img.shields.io/badge/jetbrains%20marketplace-v1.1.2-blue)
+![Version](https://img.shields.io/badge/jetbrains%20marketplace-v1.1.3-blue)
 ![License](https://img.shields.io/badge/license-Apache%202.0-yellow)
 
 > Find and fix security vulnerabilities in your dependencies — without leaving your IDE.

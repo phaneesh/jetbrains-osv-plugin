@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "io.dyuti"
-version = project.findProperty("pluginVersion")?.toString() ?: "1.1.2"
+version = project.findProperty("pluginVersion")?.toString() ?: "1.1.3"
 
 repositories {
     mavenCentral()

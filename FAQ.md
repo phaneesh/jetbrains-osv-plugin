@@ -1,6 +1,6 @@
 # OSV Plugin FAQ & Troubleshooting
 
-> Last updated for **v1.1.2**. For earlier versions, see [CHANGELOG](CHANGELOG.md).
+> Last updated for **v1.1.3**. For earlier versions, see [CHANGELOG](CHANGELOG.md).
 
 ---
 
@@ -130,7 +130,7 @@ Fixed in v1.1.1. If you see this, update to the latest plugin version.
 
 ### Q: Plugin crashes on startup with `ClassNotFoundError`?
 
-Fixed in v1.1.2. The plugin now detects Java PSI availability at runtime and skips Java-only features on non-Java IDEs.
+Fixed in v1.1.3. The plugin now detects Java PSI availability at runtime and skips Java-only features on non-Java IDEs.
 
 ### Q: Notifications not appearing?
 

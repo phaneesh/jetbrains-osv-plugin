@@ -37,7 +37,7 @@ cd jetbrains-osv-plugin
 # Select the JAR from build/distributions/
 ```
 
-## What's New in v1.1.2
+## What's New in v1.1.3
 
 A maintenance release that cleans up IntelliJ Platform API usage to eliminate Marketplace verifier warnings and ensure forward compatibility:
 

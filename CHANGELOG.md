@@ -4,9 +4,17 @@ All notable changes to the OSV IntelliJ Plugin are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [1.1.3] - 2026-05-13
+## [1.1.3] - 2026-05-14
 
 ### Added
+
+- **Elaborate License Policy Catalog** — replaced comma-separated text input with a categorized multi-select checkbox grid
+  - **68 real SPDX licenses** across 7 categories: Permissive (15), Weak Copyleft (11), Strong Copyleft (7), Public Domain (6), International (5), Proprietary (5), Other (14)
+  - Inline tooltips with risk descriptions on every license
+  - "Select All / Clear" quick links per category
+  - Category-level legal-context descriptions
+  - Word-boundary-aware heuristic categorization for free-text license strings
+  - New `LicenseCatalog.kt` with `findBySpdx()` and `categorize()` utilities
 
 - **Cross-IDE Support** — plugin now works in **PyCharm**, **GoLand**, **WebStorm** (and all JetBrains IDEs)
   - Made `com.intellij.modules.java` an optional dependency via `<depends optional="true" config-file="plugin-java.xml">`
@@ -26,7 +34,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - **C/C++** — `ConanParser` (`conan.lock`)
   - **Python extras** — `PoetryParser` (`poetry.lock`)
   - **JavaScript extras** — `YarnParser` (`yarn.lock`)
-  - **DependencyParser.detectEcosystem()** updated to recognize all 20+ lockfile extensions
+  - `DependencyParser.detectEcosystem()` updated to recognize all 20+ lockfile extensions
   - Tool window `collectModuleFiles()` searches for all supported lockfile names
   - `LicenseInspection` covers all ecosystems
 
@@ -51,6 +59,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **CredentialAttributes** — fixed deprecated single-argument constructor (OsVConfig.kt) using two-arg service-name variant
 - **ReadAction.compute(ThrowableComputable)** — added `@Suppress("DEPRECATION")` for backward-compatible overload
 - **DaemonCodeAnalyzer.restart(PsiFile)** — removed deprecated call entirely
+
+### Changed
+
+- **Removed `maven-model` dependencies** — eliminated 4 verifier warnings (`URL.<init>`, `Locale.<init>`) from unused Maven model API; `MavenParser` uses pure regex
+- **Dynamic plugin compliance** — removed empty `<application-components>` and `<project-components>` tags from `plugin.xml` per IntelliJ 2020.1+ requirements
 
 ## [1.1.1] - 2026-05-13
 
