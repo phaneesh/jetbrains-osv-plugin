@@ -6,8 +6,6 @@ import io.dyuti.osvplugin.api.model.Vulnerability
 import io.dyuti.osvplugin.notification.VulnerabilityNotification
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class NotificationServiceTest {

@@ -1,7 +1,6 @@
 package io.dyuti.osvplugin.utils
 
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.JBColor
 import io.dyuti.osvplugin.api.model.OsVSeverity
 import java.awt.Color

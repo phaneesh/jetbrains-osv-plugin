@@ -1,9 +1,7 @@
 package io.dyuti.osvplugin.config
 
 import io.dyuti.osvplugin.api.model.OsVSeverity
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 /**

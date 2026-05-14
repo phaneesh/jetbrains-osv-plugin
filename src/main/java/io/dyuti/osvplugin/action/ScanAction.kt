@@ -4,8 +4,6 @@ package io.dyuti.osvplugin.action
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.project.Project
-import io.dyuti.osvplugin.toolwindow.OsVToolWindowFactory
 import io.dyuti.osvplugin.toolwindow.OsVToolWindowPanel
 
 class ScanAction(

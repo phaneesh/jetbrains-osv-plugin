@@ -4,7 +4,6 @@ package io.dyuti.osvplugin.toolwindow
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.AnimatedIcon
 import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.JBColor
@@ -14,30 +13,11 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.treeStructure.Tree
 import io.dyuti.osvplugin.api.OsVApiService
-import io.dyuti.osvplugin.api.model.Dependency
-import io.dyuti.osvplugin.api.model.OsVSeverity
-import io.dyuti.osvplugin.api.model.Vulnerability
-import io.dyuti.osvplugin.api.model.displayId
-import io.dyuti.osvplugin.api.model.formatFixVersions
+import io.dyuti.osvplugin.api.model.*
 import io.dyuti.osvplugin.export.SarifExporter
 import io.dyuti.osvplugin.export.VulnerabilityWithDependency
 import io.dyuti.osvplugin.fix.AutoFixService
-import io.dyuti.osvplugin.parser.CargoParser
-import io.dyuti.osvplugin.parser.ComposerParser
-import io.dyuti.osvplugin.parser.ConanParser
-import io.dyuti.osvplugin.parser.GemfileParser
-import io.dyuti.osvplugin.parser.GoParser
-import io.dyuti.osvplugin.parser.GradleParser
-import io.dyuti.osvplugin.parser.MavenParser
-import io.dyuti.osvplugin.parser.MixParser
-import io.dyuti.osvplugin.parser.NpmParser
-import io.dyuti.osvplugin.parser.NugetParser
-import io.dyuti.osvplugin.parser.PipParser
-import io.dyuti.osvplugin.parser.PoetryParser
-import io.dyuti.osvplugin.parser.PubspecParser
-import io.dyuti.osvplugin.parser.RenvParser
-import io.dyuti.osvplugin.parser.StackParser
-import io.dyuti.osvplugin.parser.YarnParser
+import io.dyuti.osvplugin.parser.*
 import io.dyuti.osvplugin.utils.CacheManager
 import io.dyuti.osvplugin.utils.SeverityUtil
 import java.awt.BorderLayout
@@ -867,7 +847,7 @@ class SeverityTreeCellRenderer : ColoredTreeCellRenderer() {
         when (value) {
             is SeverityGroupTreeNode -> {
                 icon =
-                    io.dyuti.osvplugin.utils.SeverityUtil
+                    SeverityUtil
                         .getSeverityIcon(value.severity)
                 tooltipText = "${value.severity} severity vulnerabilities"
                 append(
@@ -876,7 +856,7 @@ class SeverityTreeCellRenderer : ColoredTreeCellRenderer() {
                 )
                 if (!sel) {
                     foreground =
-                        io.dyuti.osvplugin.utils.SeverityUtil
+                        SeverityUtil
                             .getColor(value.severity)
                 }
             }
@@ -884,7 +864,7 @@ class SeverityTreeCellRenderer : ColoredTreeCellRenderer() {
             is VulnerabilityTreeNode -> {
                 val vulnerability = value.vulnerability
                 icon =
-                    io.dyuti.osvplugin.utils.SeverityUtil
+                    SeverityUtil
                         .getSeverityIcon(vulnerability.severity)
 
                 val displayId = vulnerability.displayId()

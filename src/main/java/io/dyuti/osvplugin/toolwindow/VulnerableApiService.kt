@@ -7,13 +7,8 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileVisitor
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
-import io.dyuti.osvplugin.api.model.AffectedFunction
-import io.dyuti.osvplugin.api.model.Dependency
-import io.dyuti.osvplugin.api.model.ReachabilityResult
-import io.dyuti.osvplugin.api.model.Vulnerability
-import io.dyuti.osvplugin.api.model.VulnerableCallSite
+import io.dyuti.osvplugin.api.model.*
 import io.dyuti.osvplugin.utils.JavaPsiCompatibility
 
 /**

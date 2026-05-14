@@ -4,7 +4,6 @@ package io.dyuti.osvplugin.policy
 import io.dyuti.osvplugin.api.model.OsVSeverity
 import io.dyuti.osvplugin.api.model.Vulnerability
 import io.dyuti.osvplugin.risk.RiskAssessment
-import io.dyuti.osvplugin.risk.RiskLevel
 
 /**
  * Evaluates dependencies against a [PolicyConfig] and produces a [PolicyResult].

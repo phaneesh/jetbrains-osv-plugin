@@ -1,6 +1,7 @@
 package io.dyuti.osvplugin.toolwindow
 
 import com.intellij.icons.AllIcons
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
@@ -43,7 +44,7 @@ class CurrentFileSummaryPanel(
             border =
                 BorderFactory.createCompoundBorder(
                     BorderFactory.createEmptyBorder(2, 2, 2, 2),
-                    BorderFactory.createLineBorder(java.awt.Color.LIGHT_GRAY, 1, true),
+                    BorderFactory.createLineBorder(JBColor.LIGHT_GRAY, 1, true),
                 )
             addMouseListener(
                 object : MouseAdapter() {

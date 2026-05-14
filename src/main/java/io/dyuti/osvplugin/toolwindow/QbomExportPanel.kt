@@ -4,13 +4,13 @@ package io.dyuti.osvplugin.toolwindow
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.ui.Gray
 import com.intellij.ui.components.JBPanel
 import io.dyuti.osvplugin.qbom.QbomGenerator
 import io.dyuti.osvplugin.qbom.QuantumAsset
 import io.dyuti.osvplugin.qbom.QuantumAssetType
 import io.dyuti.osvplugin.qbom.QuantumScanner
 import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.FlowLayout
 import java.io.File
 import javax.swing.*
@@ -35,9 +35,9 @@ class QbomExportPanel(
             if (com.intellij.ui.JBColor
                     .isBright()
             ) {
-                Color(0xF5, 0xF5, 0xF5)
+                Gray._245
             } else {
-                Color(0x1A, 0x1A, 0x1A)
+                Gray._26
             }
         isOpaque = true
 

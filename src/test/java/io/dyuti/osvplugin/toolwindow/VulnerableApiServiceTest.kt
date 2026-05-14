@@ -2,7 +2,6 @@
 package io.dyuti.osvplugin.toolwindow
 
 import io.dyuti.osvplugin.api.model.AffectedFunction
-import io.dyuti.osvplugin.api.model.Dependency
 import io.dyuti.osvplugin.api.model.OsVSeverity
 import io.dyuti.osvplugin.api.model.Vulnerability
 import org.junit.jupiter.api.Assertions.*

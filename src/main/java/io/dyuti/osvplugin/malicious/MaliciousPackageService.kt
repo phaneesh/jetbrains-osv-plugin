@@ -5,7 +5,7 @@ package io.dyuti.osvplugin.malicious
 import io.dyuti.osvplugin.api.OsVApiException
 import io.dyuti.osvplugin.api.OsVApiService
 import io.dyuti.osvplugin.api.model.Dependency
-import io.dyuti.osvplugin.config.OsVConfig
+import io.dyuti.osvplugin.malicious.MaliciousPackageService.Companion.TYPOSQUAT_THRESHOLD
 
 /**
  * Result of a malicious package check.

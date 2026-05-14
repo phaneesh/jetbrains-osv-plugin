@@ -9,7 +9,6 @@ import io.dyuti.osvplugin.api.model.OsVSeverity
 import io.dyuti.osvplugin.api.model.Vulnerability
 import io.dyuti.osvplugin.privacy.PrivacyService
 import java.io.File
-import java.io.FileWriter
 
 /**
  * Export vulnerabilities to SARIF v2.1.0 format

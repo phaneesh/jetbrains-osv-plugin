@@ -1,12 +1,7 @@
 // Lightweight XSS (Cross-Site Scripting) Detector
 package io.dyuti.osvplugin.sast
 
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiLiteralExpression
-import com.intellij.psi.PsiMethodCallExpression
-import com.intellij.psi.PsiRecursiveElementVisitor
-import com.intellij.psi.PsiReferenceExpression
+import com.intellij.psi.*
 
 /**
  * Detects reflected XSS vulnerabilities by finding untrusted input

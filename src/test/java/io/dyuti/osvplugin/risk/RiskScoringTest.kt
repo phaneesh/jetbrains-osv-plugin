@@ -2,7 +2,8 @@
 package io.dyuti.osvplugin.risk
 
 import io.dyuti.osvplugin.api.model.OsVSeverity
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 

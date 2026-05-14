@@ -1,7 +1,8 @@
 // Tests for .NET packages.lock.json parser
 package io.dyuti.osvplugin.parser
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class NugetParserTest {

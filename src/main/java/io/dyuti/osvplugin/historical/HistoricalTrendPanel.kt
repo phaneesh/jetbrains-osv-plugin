@@ -3,6 +3,7 @@ package io.dyuti.osvplugin.historical
 
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
+import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
@@ -16,7 +17,6 @@ import java.awt.geom.*
 import java.text.SimpleDateFormat
 import javax.swing.*
 import javax.swing.border.CompoundBorder
-import javax.swing.border.EmptyBorder
 import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.DefaultTableModel
 
@@ -44,7 +44,7 @@ class HistoricalTrendPanel(
     private val contentPanel =
         JPanel(GridBagLayout()).apply {
             background = panelBackground()
-            border = EmptyBorder(16, 16, 16, 16)
+            border = JBUI.Borders.empty(16)
         }
 
     private val scrollPane =
@@ -181,7 +181,7 @@ class HistoricalTrendPanel(
         val panel =
             JPanel(FlowLayout(FlowLayout.LEFT, 12, 0)).apply {
                 isOpaque = false
-                alignmentX = Component.LEFT_ALIGNMENT
+                alignmentX = LEFT_ALIGNMENT
             }
 
         val latest = summary.latestRecord ?: return panel
@@ -250,7 +250,7 @@ class HistoricalTrendPanel(
                 autoResizeMode = JTable.AUTO_RESIZE_ALL_COLUMNS
                 isEnabled = false
                 fillsViewportHeight = false
-                border = EmptyBorder(4, 4, 4, 4)
+                border = JBUI.Borders.empty(4)
                 gridColor = if (JBColor.isBright()) Color(0xE8E8E8) else Color(0x2A2A2A)
                 showHorizontalLines = true
                 showVerticalLines = false
@@ -271,9 +271,9 @@ class HistoricalTrendPanel(
                     val comp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
                     val bg =
                         if (row % 2 == 0) {
-                            if (JBColor.isBright()) Color(0xFA, 0xFA, 0xFA) else Color(0x1E, 0x1E, 0x1E)
+                            if (JBColor.isBright()) Gray._250 else Gray._30
                         } else {
-                            if (JBColor.isBright()) Color.WHITE else Color(0x25, 0x25, 0x25)
+                            if (JBColor.isBright()) JBColor.WHITE else Gray._37
                         }
                     comp.background = bg
                     comp.foreground = JBColor.foreground()
@@ -281,9 +281,9 @@ class HistoricalTrendPanel(
 
                     // Align numbers right
                     if (column >= 2) {
-                        horizontalAlignment = SwingConstants.RIGHT
+                        horizontalAlignment = RIGHT
                     } else {
-                        horizontalAlignment = SwingConstants.LEFT
+                        horizontalAlignment = LEFT
                     }
 
                     // Bold the trend column
@@ -334,7 +334,7 @@ class HistoricalTrendPanel(
             when {
                 delta.isImproving -> JBColor(Color(0xE8, 0xF5, 0xE9), Color(0x1B, 0x5E, 0x20))
                 delta.isDegrading -> JBColor(Color(0xFF, 0xEB, 0xEE), Color(0x5C, 0x12, 0x12))
-                else -> JBColor(Color(0xF5, 0xF5, 0xF5), Color(0x33, 0x33, 0x33))
+                else -> JBColor(Gray._245, Gray._51)
             }
         val totalTextColor =
             when {
@@ -399,7 +399,7 @@ class HistoricalTrendPanel(
                     font = JBUI.Fonts.label(14f)
                 }
             add(label, BorderLayout.CENTER)
-            border = EmptyBorder(60, 20, 60, 20)
+            border = JBUI.Borders.empty(60, 20)
         }
 
     private fun cardPanel(
@@ -421,7 +421,7 @@ class HistoricalTrendPanel(
             JPanel(BorderLayout()).apply {
                 background = cardBackground()
                 isOpaque = true
-                border = EmptyBorder(12, 16, 8, 16)
+                border = JBUI.Borders.empty(12, 16, 8, 16)
             }
         titleBar.add(
             JBLabel(title).apply {
@@ -435,21 +435,21 @@ class HistoricalTrendPanel(
         // Content
         content.background = cardBackground()
         content.isOpaque = true
-        content.border = EmptyBorder(4, 16, 16, 16)
+        content.border = JBUI.Borders.empty(4, 16, 16, 16)
         card.add(content, BorderLayout.CENTER)
 
         return card
     }
 
-    private fun panelBackground(): Color = if (JBColor.isBright()) Color(0xF5, 0xF5, 0xF5) else Color(0x1A, 0x1A, 0x1A)
+    private fun panelBackground(): Color = if (JBColor.isBright()) Gray._245 else Gray._26
 
-    private fun cardBackground(): Color = if (JBColor.isBright()) Color.WHITE else Color(0x22, 0x22, 0x22)
+    private fun cardBackground(): Color = if (JBColor.isBright()) JBColor.WHITE else Gray._34
 
     private fun cardBorder(): CompoundBorder {
-        val outer = EmptyBorder(0, 0, 12, 0)
+        val outer = JBUI.Borders.emptyBottom(12)
         val inner =
             JBUI.Borders.customLine(
-                if (JBColor.isBright()) Color(0xE0, 0xE0, 0xE0) else Color(0x33, 0x33, 0x33),
+                if (JBColor.isBright()) Gray._224 else Gray._51,
                 1,
             )
         return CompoundBorder(outer, inner)
@@ -467,7 +467,7 @@ class HistoricalTrendPanel(
             this.fill = fill
             this.weightx = weightx
             this.weighty = weighty
-            insets = JBUI.insets(0)
+            insets = JBUI.emptyInsets()
             anchor = GridBagConstraints.NORTH
         }
 
@@ -492,10 +492,10 @@ private class MetricCard(
         border =
             CompoundBorder(
                 JBUI.Borders.customLine(
-                    if (JBColor.isBright()) Color(0xE0, 0xE0, 0xE0) else Color(0x33, 0x33, 0x33),
+                    if (JBColor.isBright()) Gray._224 else Gray._51,
                     1,
                 ),
-                EmptyBorder(12, 16, 12, 16),
+                JBUI.Borders.empty(12, 16),
             )
         minimumSize = Dimension(120, 72)
         preferredSize = Dimension(140, 72)
@@ -516,7 +516,7 @@ private class MetricCard(
         add(bottom, BorderLayout.CENTER)
     }
 
-    private fun cardBg(): Color = if (JBColor.isBright()) Color.WHITE else Color(0x22, 0x22, 0x22)
+    private fun cardBg(): Color = if (JBColor.isBright()) JBColor.WHITE else Gray._34
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -535,10 +535,10 @@ private class Badge(
         border =
             CompoundBorder(
                 JBUI.Borders.customLine(
-                    if (JBColor.isBright()) Color(0xD0, 0xD0, 0xD0) else Color(0x44, 0x44, 0x44),
+                    if (JBColor.isBright()) Gray._208 else Gray._68,
                     1,
                 ),
-                EmptyBorder(6, 10, 6, 10),
+                JBUI.Borders.empty(6, 10),
             )
 
         val text = if (icon.isNotEmpty()) "$icon  $label" else label
@@ -591,11 +591,11 @@ private class EnhancedLineChart(
         val isDark = !JBColor.isBright()
 
         // Background fill
-        g2.color = if (isDark) Color(0x1E, 0x1E, 0x1E) else Color(0xFA, 0xFA, 0xFA)
+        g2.color = if (isDark) Gray._30 else Gray._250
         g2.fillRect(0, 0, width, height)
 
         // Grid lines (horizontal)
-        val gridColor = if (isDark) Color(0x3A, 0x3A, 0x3A) else Color(0xE0, 0xE0, 0xE0)
+        val gridColor = if (isDark) Gray._58 else Gray._224
         g2.color = gridColor
         g2.stroke = BasicStroke(0.8f)
         val gridSteps = 5
@@ -643,7 +643,7 @@ private class EnhancedLineChart(
             g2.color = Color(0x33, 0x99, 0xFF, 60)
             g2.fill(Ellipse2D.Float(x - 6f, y - 6f, 12f, 12f))
             // White border
-            g2.color = Color.WHITE
+            g2.color = JBColor.WHITE
             g2.fill(Ellipse2D.Float(x - 4f, y - 4f, 8f, 8f))
             // Inner fill
             g2.color = Color(0x33, 0x99, 0xFF)
@@ -706,7 +706,7 @@ private class DonutChart(
         val h = height.toFloat()
         val isDark = !JBColor.isBright()
 
-        g2.color = if (isDark) Color(0x1E, 0x1E, 0x1E) else Color(0xFA, 0xFA, 0xFA)
+        g2.color = if (isDark) Gray._30 else Gray._250
         g2.fillRect(0, 0, width, height)
 
         val total = data.values.sum().coerceAtLeast(1)
@@ -746,7 +746,7 @@ private class DonutChart(
         }
 
         // Cut out center to make donut
-        g2.color = if (isDark) Color(0x1E, 0x1E, 0x1E) else Color(0xFA, 0xFA, 0xFA)
+        g2.color = if (isDark) Gray._30 else Gray._250
         g2.fill(Ellipse2D.Float(centerX - innerR, centerY - innerR, innerR * 2f, innerR * 2f))
 
         // Center label (total)

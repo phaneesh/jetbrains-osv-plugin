@@ -4,10 +4,7 @@ package io.dyuti.osvplugin.toolwindow
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
-import com.intellij.openapi.wm.ToolWindowManager
-import com.intellij.ui.content.Content
 import com.intellij.ui.content.ContentFactory
-import io.dyuti.osvplugin.OsVPlugin
 import io.dyuti.osvplugin.action.ClearResultsAction
 import io.dyuti.osvplugin.action.ExportAction
 import io.dyuti.osvplugin.action.ScanAction

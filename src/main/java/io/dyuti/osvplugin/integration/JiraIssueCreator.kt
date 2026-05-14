@@ -73,18 +73,16 @@ class JiraIssueCreator(
         val projectKey = jiraConnector.projectKey.coerceAtLeast("PROJ")
 
         val issue =
-            io.dyuti.osvplugin.integration.JiraIssue(
+            JiraIssue(
                 fields =
-                    io.dyuti.osvplugin.integration.JiraIssueFields(
+                    JiraIssueFields(
                         project =
-                            io.dyuti.osvplugin.integration
-                                .JiraProject(key = projectKey),
+                            JiraProject(key = projectKey),
                         summary = epicName,
                         description = description,
                         issueType =
-                            io.dyuti.osvplugin.integration
-                                .JiraIssueType(name = "Epic"),
-                        priority = io.dyuti.osvplugin.integration.JiraPriority.HIGH,
+                            JiraIssueType(name = "Epic"),
+                        priority = JiraPriority.HIGH,
                         labels = listOf("security", "epic"),
                     ),
             )

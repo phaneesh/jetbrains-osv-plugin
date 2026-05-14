@@ -7,24 +7,7 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiFile
-import io.dyuti.osvplugin.inspection.DependencyWithVulnerabilities
-import io.dyuti.osvplugin.parser.CargoParser
-import io.dyuti.osvplugin.parser.ComposerParser
-import io.dyuti.osvplugin.parser.ConanParser
-import io.dyuti.osvplugin.parser.DependencyParser
-import io.dyuti.osvplugin.parser.GemfileParser
-import io.dyuti.osvplugin.parser.GoParser
-import io.dyuti.osvplugin.parser.GradleParser
-import io.dyuti.osvplugin.parser.MavenParser
-import io.dyuti.osvplugin.parser.MixParser
-import io.dyuti.osvplugin.parser.NpmParser
-import io.dyuti.osvplugin.parser.NugetParser
-import io.dyuti.osvplugin.parser.PipParser
-import io.dyuti.osvplugin.parser.PoetryParser
-import io.dyuti.osvplugin.parser.PubspecParser
-import io.dyuti.osvplugin.parser.RenvParser
-import io.dyuti.osvplugin.parser.StackParser
-import io.dyuti.osvplugin.parser.YarnParser
+import io.dyuti.osvplugin.parser.*
 
 /**
  * License inspection tool

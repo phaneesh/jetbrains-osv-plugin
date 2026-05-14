@@ -12,32 +12,11 @@ import com.intellij.openapi.progress.Task.Backgroundable
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiFile
 import io.dyuti.osvplugin.api.OsVApiService
-import io.dyuti.osvplugin.api.model.Dependency
-import io.dyuti.osvplugin.api.model.OsVSeverity
-import io.dyuti.osvplugin.api.model.Vulnerability
-import io.dyuti.osvplugin.api.model.displayId
-import io.dyuti.osvplugin.api.model.formatFixVersions
+import io.dyuti.osvplugin.api.model.*
 import io.dyuti.osvplugin.config.OsVConfig
-import io.dyuti.osvplugin.parser.CargoParser
-import io.dyuti.osvplugin.parser.ComposerParser
-import io.dyuti.osvplugin.parser.ConanParser
-import io.dyuti.osvplugin.parser.DependencyParser
-import io.dyuti.osvplugin.parser.GemfileParser
-import io.dyuti.osvplugin.parser.GoParser
-import io.dyuti.osvplugin.parser.GradleParser
-import io.dyuti.osvplugin.parser.MavenParser
-import io.dyuti.osvplugin.parser.MixParser
-import io.dyuti.osvplugin.parser.NpmParser
-import io.dyuti.osvplugin.parser.NugetParser
-import io.dyuti.osvplugin.parser.PipParser
-import io.dyuti.osvplugin.parser.PoetryParser
-import io.dyuti.osvplugin.parser.PubspecParser
-import io.dyuti.osvplugin.parser.RenvParser
-import io.dyuti.osvplugin.parser.StackParser
-import io.dyuti.osvplugin.parser.YarnParser
+import io.dyuti.osvplugin.parser.*
 import io.dyuti.osvplugin.utils.SeverityUtil
-import java.util.Timer
-import java.util.TimerTask
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -257,7 +236,7 @@ open class OsVInspection : LocalInspectionTool() {
         val config =
             try {
                 val app =
-                    com.intellij.openapi.application.ApplicationManager
+                    ApplicationManager
                         .getApplication()
                 if (app != null) app.getService(OsVConfig::class.java) else OsVConfig()
             } catch (_: Exception) {

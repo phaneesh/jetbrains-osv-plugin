@@ -4,26 +4,12 @@ import com.intellij.ui.IdeBorderFactory
 import com.intellij.ui.JBColor
 import com.intellij.util.ui.GraphicsUtil
 import com.intellij.util.ui.JBInsets
-import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
-import java.awt.AlphaComposite
-import java.awt.Color
-import java.awt.Cursor
-import java.awt.Dimension
-import java.awt.Font
-import java.awt.Graphics
-import java.awt.Graphics2D
-import java.awt.Rectangle
+import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.geom.RoundRectangle2D
-import javax.swing.Box
-import javax.swing.BoxLayout
-import javax.swing.Icon
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.SwingConstants
-import javax.swing.SwingUtilities
+import javax.swing.*
 
 open class RoundedPanelWithBackgroundColor(
     backgroundColor: Color? = null,
@@ -208,9 +194,9 @@ class SummaryButton(
         repaint()
     }
 
-    override fun paintComponent(g: java.awt.Graphics) {
+    override fun paintComponent(g: Graphics) {
         if (alpha < 1.0f) {
-            val g2 = g.create() as java.awt.Graphics2D
+            val g2 = g.create() as Graphics2D
             g2.composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha)
             super.paintComponent(g2)
             g2.dispose()

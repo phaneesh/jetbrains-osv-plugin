@@ -4,7 +4,7 @@ package io.dyuti.osvplugin.privacy
 
 import com.intellij.openapi.components.service
 import io.dyuti.osvplugin.config.OsVConfig
-import java.util.UUID
+import java.util.*
 
 /**
  * Privacy-preserving service that protects intellectual property by hashing

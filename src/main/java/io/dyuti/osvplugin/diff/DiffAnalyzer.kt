@@ -1,10 +1,7 @@
 // Differential analysis engine — compare two scan snapshots
 package io.dyuti.osvplugin.diff
 
-import io.dyuti.osvplugin.api.model.OsVSeverity
 import io.dyuti.osvplugin.api.model.Vulnerability
-import io.dyuti.osvplugin.notification.ScanMetrics
-import io.dyuti.osvplugin.risk.RiskAssessment
 
 /**
  * Performs differential analysis between two scan snapshots to identify

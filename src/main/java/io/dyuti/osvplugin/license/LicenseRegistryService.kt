@@ -2,7 +2,6 @@
 package io.dyuti.osvplugin.license
 
 import com.google.gson.Gson
-import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import io.dyuti.osvplugin.api.model.Dependency
 import io.dyuti.osvplugin.utils.CacheManager

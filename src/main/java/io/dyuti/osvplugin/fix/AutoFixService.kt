@@ -13,8 +13,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import io.dyuti.osvplugin.api.model.Dependency
 import io.dyuti.osvplugin.api.model.Vulnerability
 import org.w3c.dom.Element
-import org.w3c.dom.Node
-import org.w3c.dom.NodeList
 import java.io.StringWriter
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.OutputKeys

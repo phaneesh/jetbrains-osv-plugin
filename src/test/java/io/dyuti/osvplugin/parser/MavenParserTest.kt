@@ -1,6 +1,5 @@
 package io.dyuti.osvplugin.parser
 
-import io.dyuti.osvplugin.api.model.Dependency
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test

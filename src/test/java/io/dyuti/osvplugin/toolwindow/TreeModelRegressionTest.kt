@@ -2,8 +2,6 @@ package io.dyuti.osvplugin.toolwindow
 
 import io.dyuti.osvplugin.api.model.OsVSeverity
 import io.dyuti.osvplugin.api.model.Vulnerability
-import io.mockk.every
-import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 

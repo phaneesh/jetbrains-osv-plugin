@@ -13,7 +13,6 @@ import com.intellij.psi.PsiFile
 import io.dyuti.osvplugin.api.model.Dependency
 import io.dyuti.osvplugin.api.model.Vulnerability
 import io.dyuti.osvplugin.api.model.displayId
-import io.dyuti.osvplugin.api.model.formatFixVersions
 import io.dyuti.osvplugin.config.OsVConfig
 
 /**
@@ -428,7 +427,7 @@ class OsVQuickFix private constructor(
 
     private fun ignorePackage(project: Project) {
         val config =
-            com.intellij.openapi.application.ApplicationManager
+            ApplicationManager
                 .getApplication()
                 .getService(OsVConfig::class.java)
         val ignoredPackages = config.ignoredPackages.toMutableList()

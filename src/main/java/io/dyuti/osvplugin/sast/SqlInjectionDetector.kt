@@ -1,13 +1,7 @@
 // Lightweight SQL Injection Detector
 package io.dyuti.osvplugin.sast
 
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiLiteralExpression
-import com.intellij.psi.PsiMethodCallExpression
-import com.intellij.psi.PsiRecursiveElementVisitor
-import com.intellij.psi.PsiReferenceExpression
-import com.intellij.psi.PsiTypeCastExpression
+import com.intellij.psi.*
 
 /**
  * Detects SQL injection vulnerabilities via pattern matching.

@@ -1,7 +1,6 @@
 // IDE Notification Service for OSV plugin
 package io.dyuti.osvplugin.notificationservice
 
-import com.intellij.notification.Notification
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications

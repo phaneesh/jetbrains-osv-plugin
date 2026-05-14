@@ -5,7 +5,8 @@ import io.dyuti.osvplugin.api.model.OsVSeverity
 import io.dyuti.osvplugin.api.model.Vulnerability
 import io.dyuti.osvplugin.risk.RiskAssessment
 import io.dyuti.osvplugin.risk.RiskLevel
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class PolicyEvaluatorTest {

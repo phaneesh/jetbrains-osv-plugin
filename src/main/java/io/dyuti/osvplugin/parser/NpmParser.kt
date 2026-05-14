@@ -1,7 +1,6 @@
 // OSV Vulnerability Scanner npm Parser
 package io.dyuti.osvplugin.parser
 
-import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import io.dyuti.osvplugin.api.model.Dependency
 

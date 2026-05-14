@@ -4,23 +4,13 @@ package io.dyuti.osvplugin.settings
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.Configurable
 import com.intellij.ui.components.JBPasswordField
+import com.intellij.util.ui.JBUI
 import io.dyuti.osvplugin.api.model.OsVSeverity
 import io.dyuti.osvplugin.config.OsVConfig
 import java.awt.BorderLayout
-import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import java.awt.Insets
-import javax.swing.BorderFactory
-import javax.swing.JCheckBox
-import javax.swing.JComboBox
-import javax.swing.JComponent
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JPasswordField
-import javax.swing.JSpinner
-import javax.swing.JTextField
-import javax.swing.SpinnerNumberModel
+import javax.swing.*
 import javax.swing.border.TitledBorder
 
 /**
@@ -75,7 +65,7 @@ class OsVConfigurable : Configurable {
             GridBagConstraints().apply {
                 fill = GridBagConstraints.HORIZONTAL
                 weightx = 1.0
-                insets = Insets(0, 0, 10, 0)
+                insets = JBUI.insetsBottom(10)
                 gridx = 0
             }
         var row = 0
@@ -238,7 +228,7 @@ class OsVConfigurable : Configurable {
     ) {
         val c = GridBagConstraints()
         c.gridy = row
-        c.insets = Insets(4, 0, 4, 8)
+        c.insets = JBUI.insets(4, 0, 4, 8)
         // Label
         c.gridx = 0
         c.fill = GridBagConstraints.NONE
@@ -263,7 +253,7 @@ class OsVConfigurable : Configurable {
         c.gridwidth = 2
         c.weightx = 1.0
         c.fill = GridBagConstraints.HORIZONTAL
-        c.insets = Insets(4, 0, 4, 0)
+        c.insets = JBUI.insets(4, 0)
         c.anchor = GridBagConstraints.WEST
         add(control, c)
     }

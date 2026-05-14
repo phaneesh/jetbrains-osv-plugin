@@ -4,18 +4,13 @@ package io.dyuti.osvplugin.privacy
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.util.ui.JBUI
 import io.dyuti.osvplugin.config.OsVConfig
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import java.awt.Insets
-import javax.swing.BorderFactory
-import javax.swing.JButton
-import javax.swing.JCheckBox
-import javax.swing.JComponent
-import javax.swing.JLabel
-import javax.swing.JPanel
+import javax.swing.*
 import javax.swing.border.TitledBorder
 
 /**
@@ -41,7 +36,7 @@ class PrivacyConfigurable : Configurable {
             GridBagConstraints().apply {
                 fill = GridBagConstraints.HORIZONTAL
                 weightx = 1.0
-                insets = Insets(0, 0, 12, 0)
+                insets = JBUI.insetsBottom(12)
                 gridx = 0
             }
         var row = 0
@@ -146,7 +141,7 @@ class PrivacyConfigurable : Configurable {
     ) {
         val c = GridBagConstraints()
         c.gridy = row
-        c.insets = Insets(4, 0, 4, 8)
+        c.insets = JBUI.insets(4, 0, 4, 8)
         c.gridx = 0
         c.fill = GridBagConstraints.NONE
         c.anchor = GridBagConstraints.EAST
@@ -169,7 +164,7 @@ class PrivacyConfigurable : Configurable {
         c.gridwidth = 2
         c.weightx = 1.0
         c.fill = GridBagConstraints.HORIZONTAL
-        c.insets = Insets(4, 0, 4, 0)
+        c.insets = JBUI.insets(4, 0)
         c.anchor = GridBagConstraints.WEST
         add(control, c)
     }

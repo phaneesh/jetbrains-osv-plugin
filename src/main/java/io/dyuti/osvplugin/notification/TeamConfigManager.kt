@@ -3,8 +3,6 @@ package io.dyuti.osvplugin.notification
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import io.dyuti.osvplugin.api.model.OsVSeverity
-import io.dyuti.osvplugin.policy.EnforcementMode
 import io.dyuti.osvplugin.policy.PolicyConfig
 import java.io.File
 
