@@ -35,12 +35,10 @@ The **OSV Vulnerability Scanner** is a free, open-source JetBrains plugin that s
 
 ### Install from Disk
 
-```bash
-git clone https://github.com/dyuti/jetbrains-osv-plugin.git
-cd jetbrains-osv-plugin
-./gradlew buildPlugin
-# Install via Settings → Plugins → ⚙️ → Install from Disk → build/distributions/*.zip
-```
+Download the latest release ZIP from [Releases](https://github.com/dyuti/jetbrains-osv-plugin/releases), then:
+
+1. Go to **Settings → Plugins → ⚙️ → Install from Disk**
+2. Select the downloaded ZIP and restart your IDE
 
 ### Run Your First Scan
 
