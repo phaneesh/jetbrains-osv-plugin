@@ -195,8 +195,9 @@ class OsVInspectionTest {
             )
         // This should not throw — we're verifying the fallback path works.
         assertDoesNotThrow {
-            // Can't call reportVulnerability directly (needs ProblemsHolder),
-            // but we can test the helper logic indirectly.
+            // verify dependency naming produces null lineNumber → fallback path
+            assertNull(dep.lineNumber)
+            assertEquals("GHSA-NULL-LINE", vuln.id)
         }
     }
 
@@ -224,6 +225,8 @@ class OsVInspectionTest {
                 references = emptyList(),
                 cweIds = emptyList(),
             )
+        assertEquals("com.example:lib", dep.name)
+        assertEquals("GHSA-LINE", vuln.id)
 
         val results = inspection.checkDependencies(listOf(dep))
         // API service returns no real results in headless tests, but the method

@@ -88,13 +88,13 @@ Open `build/reports/jacoco/test/html/index.html` for the HTML report.
 
 ## Troubleshooting Build Issues
 
-| Issue | Solution |
-|---|---|
-| `PluginException: Short name not unique` | Delete `build/` and rebuild: `./gradlew clean buildPlugin` |
-| `No tests found` | Ensure test class names end with `Test` (not `Tests`) |
-| `OutOfMemoryError` | Increase Gradle heap: `export GRADLE_OPTS=-Xmx4g` |
-| Kotlin compilation warnings | Fix all warnings; zero warnings is the project target |
-| Shadow JAR too large | Check transitive dependencies; remove unused ones from `build.gradle.kts` |
+| Issue                                    | Solution                                                                  |
+| ---------------------------------------- | ------------------------------------------------------------------------- |
+| `PluginException: Short name not unique` | Delete `build/` and rebuild: `./gradlew clean buildPlugin`                |
+| `No tests found`                         | Ensure test class names end with `Test` (not `Tests`)                     |
+| `OutOfMemoryError`                       | Increase Gradle heap: `export GRADLE_OPTS=-Xmx4g`                         |
+| Kotlin compilation warnings              | Fix all warnings; zero warnings is the project target                     |
+| Shadow JAR too large                     | Check transitive dependencies; remove unused ones from `build.gradle.kts` |
 
 ## Code Style
 

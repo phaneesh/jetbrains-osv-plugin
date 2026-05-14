@@ -321,9 +321,10 @@ open class OsVInspection : LocalInspectionTool() {
      * Resolve a concrete [PsiElement] and [TextRange] for the dependency's
      * declared line so the inspection paints a red underline in the editor.
      *
-     * Looks for the dependency's name inside the line text itself (the user
-     * literally sees the same text) so that the match is recognisable and
-     * independent of PSI structure.
+     * Multi-format lockfiles declare dependencies in blocks (pom.xml → Maven,
+     * build.gradle → Groovy, go.mod → plain text, …).  This method searches
+     * a surrounding line window for the dependency name so it works for
+     * block-start line numbers as well as strict name-on-same-line formats.
      */
     private fun resolveHighlightTarget(
         file: PsiFile,
@@ -337,60 +338,55 @@ open class OsVInspection : LocalInspectionTool() {
                 ?: return Pair(null, null)
         if (lineNumber > doc.lineCount) return Pair(null, null)
 
-        val lineIdx = lineNumber - 1
-        val lineStart = doc.getLineStartOffset(lineIdx)
-        val lineEnd = doc.getLineEndOffset(lineIdx).coerceAtMost(doc.textLength)
-        val lineText = doc.getText(TextRange.create(lineStart, lineEnd))
-        if (lineText.isBlank()) return Pair(null, null)
-
-        // Candidate search terms ordered from most specific to least specific
+        // Candidate search terms — prefer short unique names (artifactId) first
         val searchTerms =
             buildList {
-                add(dep.name.substringAfterLast(':')) // artifact-id
-                add(dep.name.substringBeforeLast(':')) // group-id
-                add(dep.name)
-                add(dep.name.substringAfterLast('/')) // npm scoped
+                add(dep.name.substringAfterLast(':')) // artifact-id (most specific)
+                add(dep.name.substringAfterLast('/')) // npm scoped name
+                add(dep.name) // full "group:artifact"
+                add(dep.name.substringBeforeLast(':')) // group-id (least specific)
             }.filter { it.isNotBlank() && it.length >= 2 }.distinct()
 
-        // 1) Try to find the dependency name on this exact line
-        for (term in searchTerms) {
-            val idx = lineText.indexOf(term)
-            if (idx < 0) continue
-            val absStart = lineStart + idx
-            val absEnd = (absStart + term.length).coerceAtMost(file.textLength)
-            val matchRange = TextRange(absStart, absEnd)
+        // Search lines outward from the declared line: 0, ±1, ±2, ±3, ±4
+        // (because block formats have the name on a line near the block start)
+        val lineIdx = lineNumber - 1 // 0-based
+        val maxLine = doc.lineCount - 1
+        val deltas = listOf(0, 1, -1, 2, -2, 3, -3, 4, -4)
 
-            // Walk up from a leaf to find an element covering the match
-            var element: PsiElement? = file.findElementAt(absStart)
-            while (element != null && element != file) {
-                val er = element.textRange
-                if (er != null && er.startOffset <= absStart && er.endOffset >= absEnd) {
-                    val rangeInElement = TextRange(absStart - er.startOffset, absEnd - er.startOffset)
-                    return Pair(element, rangeInElement.takeIf { !it.isEmpty })
+        for (delta in deltas) {
+            val candidateIdx = (lineIdx + delta).coerceIn(0, maxLine)
+            val lineStart = doc.getLineStartOffset(candidateIdx)
+            val lineEnd = doc.getLineEndOffset(candidateIdx).coerceAtMost(doc.textLength)
+            val lineText = doc.getText(TextRange.create(lineStart, lineEnd))
+            if (lineText.isBlank()) continue
+
+            for (term in searchTerms) {
+                val pos = lineText.indexOf(term)
+                if (pos < 0) continue
+
+                val absStart = lineStart + pos
+                val absEnd = (absStart + term.length).coerceAtMost(file.textLength)
+
+                // Try to find a PSI element that actually covers this text
+                var element: PsiElement? = file.findElementAt(absStart)
+                while (element != null && element != file) {
+                    val er = element.textRange
+                    if (er != null && er.startOffset <= absStart && er.endOffset >= absEnd) {
+                        val rangeInElement = TextRange(absStart - er.startOffset, absEnd - er.startOffset)
+                        return Pair(element, rangeInElement.takeIf { !it.isEmpty })
+                    }
+                    element = element.parent
                 }
-                element = element.parent
+
+                // No PSI element covers the text — still return file-level with exact range
+                return Pair(file, TextRange(absStart, absEnd))
             }
-            // No PSI element covers the text — still return file-level with exact range
-            return Pair(file, matchRange)
         }
 
-        // 2) Fallback: first non-whitespace token on the line
-        val firstNonWs = lineText.indexOfFirst { !it.isWhitespace() }
-        if (firstNonWs >= 0) {
-            val offset = lineStart + firstNonWs
-            var element: PsiElement? = file.findElementAt(offset)
-            while (element != null && element != file) {
-                val er = element.textRange
-                if (er != null && er.startOffset >= lineStart && er.endOffset <= lineEnd) {
-                    val rangeInElement = TextRange(0, er.length)
-                    return Pair(element, rangeInElement)
-                }
-                element = element.parent
-            }
-        }
-
-        // 3) Last resort: file with full line range (editor may not show redline)
-        return Pair(file, TextRange(lineStart, lineEnd).takeIf { !it.isEmpty })
+        // Last resort: return file with full declared-line range
+        val ls = doc.getLineStartOffset(lineIdx)
+        val le = doc.getLineEndOffset(lineIdx).coerceAtMost(file.textLength)
+        return Pair(file, TextRange(ls, le).takeIf { !it.isEmpty })
     }
 
     /**
