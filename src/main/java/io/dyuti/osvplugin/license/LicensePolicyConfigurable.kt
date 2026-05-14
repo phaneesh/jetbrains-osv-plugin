@@ -1,28 +1,40 @@
-// SPDX License Scanner Integration - Settings UI
+// SPDX License Scanner Integration — Settings UI (Checkbox Catalog)
 package io.dyuti.osvplugin.license
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.Configurable
+import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.components.JBTextArea
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.awt.GridLayout
+import java.awt.Insets
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import javax.swing.*
 import javax.swing.border.TitledBorder
 
 /**
- * License policy configurable with JetBrains-standard layout
- * using [GridBagLayout] and [TitledBorder] sections.
+ * License policy settings with an **elaborately enumerated** multi-select
+ * checkbox catalog.  Every category is a titled panel with:
+ *   • Two-column checkbox grid
+ *   • Inline risk notes as tool-tips
+ *   • “Select All / Clear” quick actions per category
+ *   • Category-level descriptions for legal context
+ *
+ * State is stored as a plain `List<String>` of SPDX ids (backward-compatible
+ * with existing [LicensePolicyConfig]).
  */
 class LicensePolicyConfigurable : Configurable {
     private val policy = ApplicationManager.getApplication().getService(LicensePolicyConfig::class.java)
 
-    private lateinit var allowedField: JBTextArea
-    private lateinit var blockedField: JBTextArea
-    private lateinit var copyleftField: JBTextArea
+    /** Maps SPDX id → checkbox widget (mutable during UI lifetime). */
+    private val checkBoxes = mutableMapOf<String, JBCheckBox>()
+
     private lateinit var strictCheck: JCheckBox
+    private lateinit var contentPanel: JPanel
 
     override fun getDisplayName(): String = "License Policy"
 
@@ -30,218 +42,190 @@ class LicensePolicyConfigurable : Configurable {
         val root = JPanel(BorderLayout())
         root.border = BorderFactory.createEmptyBorder(12, 12, 12, 12)
 
-        val content = JPanel(GridBagLayout())
+        contentPanel = JPanel(GridBagLayout())
         val gbc =
             GridBagConstraints().apply {
                 fill = GridBagConstraints.HORIZONTAL
                 weightx = 1.0
-                insets = JBUI.insetsBottom(12)
+                insets = JBUI.insetsBottom(10)
                 gridx = 0
             }
         var row = 0
 
-        // ── Allowed Licenses ──
-        allowedField =
-            JBTextArea(3, 30).apply {
-                lineWrap = true
-                wrapStyleWord = true
-                toolTipText = "MIT, BSD-3-Clause, Apache-2.0, ..."
-            }
-
+        // ── Overview banner ──
         gbc.gridy = row++
-        content.add(
-            sectionPanel(
-                "Allowed Licenses",
-                run {
-                    val p = JPanel(GridBagLayout())
-                    var r = 0
-                    p.row(r++, JLabel("Comma-separated list:", JLabel.TRAILING), wrap(allowedField))
-                    p.spanRow(
-                        r++,
-                        JLabel(
-                            "<html><small>When strict mode is enabled, only these licenses are considered compliant.</small></html>",
-                        ),
-                    )
-                    p
-                },
+        contentPanel.add(
+            JLabel(
+                "<html><b>License Approval Catalogue</b><br>" +
+                    "<small>Checked licenses are treated as <b>approved</b>.  All others require legal review.</small></html>",
             ),
             gbc,
         )
 
-        // ── Blocked Licenses ──
-        blockedField =
-            JBTextArea(2, 30).apply {
-                lineWrap = true
-                wrapStyleWord = true
-                toolTipText = "GPL-2.0-only, Proprietary, ..."
-            }
-
-        gbc.gridy = row++
-        content.add(
-            sectionPanel(
-                "Blocked Licenses",
-                run {
-                    val p = JPanel(GridBagLayout())
-                    var r = 0
-                    p.row(r++, JLabel("Comma-separated list:", JLabel.TRAILING), wrap(blockedField))
-                    p.spanRow(
-                        r++,
-                        JLabel(
-                            "<html><small>Dependencies with any of these licenses will be flagged as non-compliant.</small></html>",
-                        ),
-                    )
-                    p
-                },
-            ),
-            gbc,
-        )
-
-        // ── Copyleft Allow List ──
-        copyleftField =
-            JBTextArea(2, 30).apply {
-                lineWrap = true
-                wrapStyleWord = true
-                toolTipText = "GPL-3.0-or-later, MPL-2.0, ..."
-            }
-
-        gbc.gridy = row++
-        content.add(
-            sectionPanel(
-                "Copyleft Allow List",
-                run {
-                    val p = JPanel(GridBagLayout())
-                    var r = 0
-                    p.row(r++, JLabel("Comma-separated list:", JLabel.TRAILING), wrap(copyleftField))
-                    p.spanRow(
-                        r++,
-                        JLabel(
-                            "<html><small>Specific copyleft licenses that are <b>explicitly</b> permitted for this project.</small></html>",
-                        ),
-                    )
-                    p
-                },
-            ),
-            gbc,
-        )
+        // ── One panel per category ──
+        LicenseCatalog.Category.values().forEach { cat ->
+            gbc.gridy = row++
+            contentPanel.add(buildCategoryPanel(cat), gbc)
+        }
 
         // ── Enforcement ──
         strictCheck =
-            JCheckBox("Enable strict mode (only allow explicitly approved licenses)").apply {
-                toolTipText = "When enabled, any license not in the allowed list is treated as non-compliant"
+            JCheckBox(
+                "Enable strict mode (only checked licenses are compliant — everything else is flagged)",
+            ).apply {
+                toolTipText = "When enabled, any license NOT selected below triggers a non-compliance warning"
             }
 
         gbc.gridy = row++
-        content.add(
+        contentPanel.add(
             sectionPanel(
                 "Enforcement",
-                run {
-                    val p = JPanel(GridBagLayout())
-                    p.spanRow(0, strictCheck)
-                    p
-                },
+                JPanel(BorderLayout()).apply { add(strictCheck, BorderLayout.WEST) },
             ),
             gbc,
         )
 
-        // Glue
+        // ── Glue ──
         gbc.gridy = row
         gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.BOTH
-        content.add(JPanel(), gbc)
+        contentPanel.add(JPanel(), gbc)
 
-        root.add(content, BorderLayout.NORTH)
+        root.add(contentPanel, BorderLayout.NORTH)
         return JBScrollPane(root).apply {
             border = BorderFactory.createEmptyBorder()
             verticalScrollBar.unitIncrement = 16
         }
     }
 
-    /** Wraps a text area in a lightweight scroll pane. */
-    private fun wrap(area: JBTextArea): JComponent =
-        JBScrollPane(area).apply {
-            preferredSize = java.awt.Dimension(300, area.preferredSize.height.coerceIn(40, 120))
+    /** Builds one titled category panel with header + two-column checkbox grid. */
+    private fun buildCategoryPanel(category: LicenseCatalog.Category): JPanel {
+        val licenses = LicenseCatalog.byCategory[category] ?: emptyList()
+        val catPanel = JPanel(BorderLayout(0, 6))
+        catPanel.border =
+            BorderFactory.createCompoundBorder(
+                TitledBorder(category.displayName),
+                BorderFactory.createEmptyBorder(4, 8, 8, 8),
+            )
+
+        // Header row: description + Select All / Clear links
+        val header = JPanel(BorderLayout())
+        header.add(
+            JLabel("<html><small>${category.description}</small></html>").apply {
+                border = BorderFactory.createEmptyBorder(0, 0, 4, 0)
+            },
+            BorderLayout.CENTER,
+        )
+        val linkBox =
+            JPanel().apply {
+                isOpaque = false
+                layout = BoxLayout(this, BoxLayout.X_AXIS)
+                add(makeLinkLabel("Select All") { setCategory(category, true) })
+                add(JLabel("  ·  "))
+                add(makeLinkLabel("Clear") { setCategory(category, false) })
+            }
+        header.add(linkBox, BorderLayout.EAST)
+        catPanel.add(header, BorderLayout.NORTH)
+
+        // Checkbox grid: 2 columns to stay compact
+        val grid = JPanel(GridLayout(0, 2, 12, 2))
+        licenses.forEach { entry ->
+            val cb =
+                JBCheckBox(wrapLabel(entry)).apply {
+                    toolTipText = "<html><b>${entry.spdxId}</b><br>${entry.riskNote}</html>"
+                    mnemonic = 0 // disable accidental alt-key interpretation
+                }
+            checkBoxes[entry.spdxId] = cb
+            grid.add(cb)
+        }
+        // If odd number of licenses, fill last cell with horizontal glue so grid stays aligned
+        if (licenses.size % 2 != 0) {
+            grid.add(Box.createHorizontalGlue())
+        }
+        catPanel.add(grid, BorderLayout.CENTER)
+        return catPanel
+    }
+
+    /** Wraps a long display name so the checkbox label doesn't explode layout. */
+    private fun wrapLabel(entry: LicenseCatalog.LicenseEntry): String {
+        val short = entry.displayName
+        // Truncate aggressively only if absurdly long (none in catalog are)
+        return if (short.length > 45) short.take(42) + "…" else short
+    }
+
+    /** Creates a blue hyperlink-style label that executes [action] on click. */
+    private fun makeLinkLabel(
+        text: String,
+        action: () -> Unit,
+    ): JLabel =
+        JLabel("<html><a href='#'>$text</a></html>").apply {
+            cursor = java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR)
+            addMouseListener(
+                object : MouseAdapter() {
+                    override fun mouseClicked(e: MouseEvent?) {
+                        action()
+                    }
+                },
+            )
         }
 
-    /** Adds a row with [label]–[control] pair to [this] panel at the given row index. */
-    private fun JPanel.row(
-        row: Int,
-        label: JLabel,
-        control: JComponent,
+    /** Checks or unchecks every license within a single category. */
+    private fun setCategory(
+        category: LicenseCatalog.Category,
+        checked: Boolean,
     ) {
-        val c = GridBagConstraints()
-        c.gridy = row
-        c.insets = JBUI.insets(4, 0, 4, 8)
-        c.gridx = 0
-        c.fill = GridBagConstraints.NONE
-        c.anchor = GridBagConstraints.EAST
-        add(label, c)
-        c.gridx = 1
-        c.weightx = 1.0
-        c.fill = GridBagConstraints.HORIZONTAL
-        c.anchor = GridBagConstraints.WEST
-        add(control, c)
+        val ids = LicenseCatalog.byCategory[category]?.map { it.spdxId } ?: return
+        ids.forEach { checkBoxes[it]?.isSelected = checked }
     }
 
-    /** Adds a component that spans both columns (e.g. a checkbox or note). */
-    private fun JPanel.spanRow(
-        row: Int,
-        control: JComponent,
-    ) {
-        val c = GridBagConstraints()
-        c.gridy = row
-        c.gridx = 0
-        c.gridwidth = 2
-        c.weightx = 1.0
-        c.fill = GridBagConstraints.HORIZONTAL
-        c.insets = JBUI.insets(4, 0)
-        c.anchor = GridBagConstraints.WEST
-        add(control, c)
-    }
-
+    /** Wraps [inner] in a panel with a titled border. */
     private fun sectionPanel(
         title: String,
-        panel: JPanel,
+        inner: JComponent,
     ): JPanel {
-        panel.border =
+        val p = JPanel(BorderLayout())
+        p.border =
             BorderFactory.createCompoundBorder(
                 TitledBorder(title),
                 BorderFactory.createEmptyBorder(4, 8, 8, 8),
             )
-        return panel
+        p.add(inner, BorderLayout.CENTER)
+        return p
     }
 
-    override fun isModified(): Boolean {
-        val currentAllowed = parseList(allowedField.text)
-        val currentBlocked = parseList(blockedField.text)
-        val currentCopyleft = parseList(copyleftField.text)
+    // ─────────────── Configurable contract ───────────────
 
-        return policy.allowedLicenses != currentAllowed ||
-            policy.blockedLicenses != currentBlocked ||
-            policy.copyleftAllowList != currentCopyleft ||
+    override fun isModified(): Boolean {
+        val currentAllowed = selectedIds()
+        return policy.allowedLicenses.toSet() != currentAllowed ||
             policy.strictMode != strictCheck.isSelected
     }
 
     override fun apply() {
-        policy.allowedLicenses = parseList(allowedField.text)
-        policy.blockedLicenses = parseList(blockedField.text)
-        policy.copyleftAllowList = parseList(copyleftField.text)
+        policy.allowedLicenses = selectedIds().toList().sorted()
         policy.strictMode = strictCheck.isSelected
     }
 
     override fun reset() {
-        allowedField.text = policy.allowedLicenses.joinToString(", ")
-        blockedField.text = policy.blockedLicenses.joinToString(", ")
-        copyleftField.text = policy.copyleftAllowList.joinToString(", ")
+        val allowedSet =
+            policy.allowedLicenses
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+                .toSet()
+        checkBoxes.forEach { (id, cb) ->
+            cb.isSelected = id in allowedSet
+        }
         strictCheck.isSelected = policy.strictMode
     }
 
     override fun disposeUIResources() {
-        // No external resources
+        checkBoxes.clear()
     }
 
-    private fun parseList(text: String): List<String> =
-        text
-            .split(",")
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
+    /** Collects all currently-checked SPDX ids from the checkbox grid. */
+    private fun selectedIds(): Set<String> =
+        checkBoxes
+            .filter { (_, cb) -> cb.isSelected }
+            .map { (id, _) -> id }
+            .toSet()
 }
