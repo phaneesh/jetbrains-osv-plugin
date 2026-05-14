@@ -23,22 +23,13 @@ build/
 # OSV Plugin - Planning & Configuration Files
 
 # Phase directories (keep structure but exclude contents)
-.planning/phases/*/
-!.planning/phases/*/README.md
+.planning/
 
-# State files
-.planning/STATE.md
-.planning/IMPLEMENTATION.md
-.planning/PROJECT.md
-.planning/REQUIREMENTS.md
-.planning/ROADMAP.md
 
 # Agent configuration and runtime
 .pi/
-.pi/
 
 # GSD (Global State Database) configuration
-.gsd/
 .gsd/
 
 # Pi Lens
@@ -46,10 +37,8 @@ build/
 
 # Agent workflows and runs
 .workflows/
-.workflows/
 
 # Agent-specific state
-.agents/
 .agents/
 
 # Plugin-specific config
@@ -104,10 +93,6 @@ local.properties
 .settings/
 bin/
 
-# OSV Plugin - Custom directories
-.planning/
-
-
 # Spec documents
 ENTERPRISE_GAP_ANALYSIS.md
 ENTERPRISE_TASK_LIST.md
@@ -121,6 +106,9 @@ RESEARCH_SUMMARY.md
 TESTING-CHECKLIST.md
 COMPETITIVE_RESEARCH.md
 COMPATIBILITY_NOTES.md
+WIKI.md
+PLUGIN_DOCUMENTATION.md
 
-# Graphify cache
-graphify-out/cache/
+# Graphify
+graphify-out/
+
